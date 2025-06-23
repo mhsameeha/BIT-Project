@@ -1,0 +1,32 @@
+﻿@{
+    ViewData["Title"] = "Create / Edit";
+}
+
+@model SpendSmart.Models.Learners
+
+<div class="text-center">
+    <h1 class="display-4">Create or Edit a Learner</h1>
+</div>
+<form asp-action="CreateEditLearnerForm" asp-controller="Home">
+    <div class="form-row">
+        <input type="number" class="form-control" placeholder="0"  asp-for="learnerId" hidden/> 
+
+        <div class="form-group col-md-6">
+            <label for="firstname">First Name</label>
+            <input type="text" class="form-control" id="firstname" placeholder="First Name" asp-for="firstName">
+        </div>
+        <div class="form-group col-md-6">
+            <label for="lastname">Password</label>
+            <input type="text" class="form-control" id="lastname" placeholder="Last Name" asp-for="lastName">
+        </div>
+        <div class="form-group col-md-6">
+            <label for="inputEmail4">Email</label>
+            <input type="email" class="form-control" id="inputEmail4" placeholder="Email" asp-for="email">
+        </div>
+        <div class="form-group col-md-6">
+            <label for="inputPassword4">Password</label>
+            <input type="password" class="form-control" id="inputPassword4" placeholder="Password" asp-for="password">
+        </div>
+       </div> 
+    <button type="submit" class="btn btn-primary mt-4">Create</button>
+</form>
