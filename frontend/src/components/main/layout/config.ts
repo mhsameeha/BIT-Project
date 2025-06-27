@@ -9,6 +9,8 @@ export const navItems = [
   // { key: 'customers', title: 'Customers', href: paths.main.customers, icon: 'users' },
   { key: 'courses', title: 'Courses', href: paths.main.courses, icon: 'users' },
   { key: 'tutorcourse', title: 'Courses', href: paths.main.tutorcourse, icon: 'users' },
+  { key: 'session', title: 'Session', href: paths.main.session, icon: 'users' },
+
 
   // { key: 'integrations', title: 'Integrations', href: paths.main.integrations, icon: 'plugs-connected' },
   { key: 'settings', title: 'Settings', href: paths.main.settings, icon: 'gear-six' },

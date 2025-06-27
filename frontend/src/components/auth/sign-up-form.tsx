@@ -17,7 +17,7 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Controller, useForm, useWatch } from 'react-hook-form';
-import { z as zod } from 'zod';
+import { z, z as zod } from 'zod';
 
 import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
@@ -33,16 +33,27 @@ import { watch } from 'fs';
 const schema = zod.object({
   firstName: zod.string().min(1, { message: 'First name is required' }),
   lastName: zod.string().min(1, { message: 'Last name is required' }),
-  dob: zod.date().min(dayjs().toDate(), { message: 'Date of Birth is required' }),
-  email: zod.string().min(1, { message: 'Email is required' }).email(),
-  password: zod.string().min(6, { message: 'Password should be at least 6 characters' }),
-  role: zod.string().min(0,{message: 'Select your role'}),
+  // dob: zod.string()
+  // // .nonempty({ message: 'Date of Birth is required' })
+  // .transform((val) => new Date(val))
+  // .refine((date) => date > new Date(), {
+  //   message: 'Date of Birth must be in the past',
+  // }),
+  dob: z.coerce
+  .date({ required_error: 'Date of Birth is required' }) // Catch empty
+  .max(new Date(), { message: 'Invalid Date of Birth' }),
+  email: zod.string().min(1, { message: 'Enter a valid Email Address' }).email(),
+  password: zod.string().min(1, { message: 'Password is Required' })
+  .min(8, { message: "Password must be at least 8 characters long" }),
+  role: zod.string().min(1,{message: 'Select your role'}),
   terms: zod.boolean().refine((value) => value, 'You must accept the terms and conditions'),
 });
 
+
+
 type Values = zod.infer<typeof schema>;
 
-const defaultValues = { firstName: '', lastName: '', dob : new Date() , email: '', password: '', role: '', terms: false } satisfies Values;
+const defaultValues = { firstName: '', lastName: '', dob :new Date() , email: '', password: '', role: '', terms: false } satisfies Values;
 
 export function SignUpForm(): React.JSX.Element {
   const router = useRouter();
@@ -164,7 +175,7 @@ export function SignUpForm(): React.JSX.Element {
             name="dob"
             render={(field) => (
               <FormControl error={Boolean(errors.dob)}>
-                <DatePicker label="Date of Birth" {...field}/> 
+                <DatePicker label="Date of Birth" {...field} /> 
                 {errors.dob ? <FormHelperText>{errors.dob.message}</FormHelperText> : null}
               </FormControl>
             )}

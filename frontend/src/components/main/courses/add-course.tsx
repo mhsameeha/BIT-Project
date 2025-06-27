@@ -26,9 +26,11 @@ import { z as zod } from 'zod';
 
 import { useUser } from '@/hooks/use-user';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import Input from '@mui/material/Input';
 import axios from 'axios';
+import FormHelperText from '@mui/material/FormHelperText';
+import Stack from '@mui/system/Stack';
 
 
   const schema = zod.object({
@@ -36,8 +38,9 @@ import axios from 'axios';
   briefIntro: zod.string().min(50, { message: 'Brief introfuction is required' }),
   courseDescription: zod.string().min(200, { message: 'Course Description is required' }),
   courseCategory: zod.string().min(6, { message: 'Select a Category' }),
-  price: zod.number().min(10, { message: 'Course Description is required' }),
-  course: zod.string().min(6, { message: 'Select a Category' }),
+  price: zod.number({ invalid_type_error: 'Price must be greater than 0' })
+  .min(1, { message: 'Price must be a number' }),
+  course: zod.string().min(6, { message: 'Add File' }),
 });
 
 type Values = zod.infer<typeof schema>;
@@ -45,6 +48,9 @@ type Values = zod.infer<typeof schema>;
 const defaultValues = { courseName: '', briefIntro:'', courseDescription: '', courseCategory: '', course:'', price:0 } satisfies Values;
 
 class CourseForm {
+  static addCourse(values: { courseName: string; briefIntro: string; courseDescription: string; courseCategory: string; price: number; course: string; }): { error: any; } | PromiseLike<{ error: any; }> {
+    throw new Error('Method not implemented.');
+  }
   async addCourse(params:Values) {
     
 
@@ -57,6 +63,7 @@ class CourseForm {
         price:params.price,
         course: params.course
       });
+  console.log(response);
 
         return {};
   } catch (error: any) {
@@ -73,19 +80,23 @@ export const courseFrom = new CourseForm();
 
 export function AddCourseForm(): React.JSX.Element {
 
+  
+
   const [open, setOpen] = React.useState(false);
 
   const handleClick = () => {
     setOpen(true);
   };
 
-  const handleClose = () => {
+  const handleCancel = () => {
     setOpen(false);
   };
   const [category, setCategory] = React.useState('');
 
   const handleChange = (event: SelectChangeEvent) => {
     setCategory(event.target.value as string);
+    console.log(event.target.value);
+    
   };
 
     const [categoryList, setCategoryList] =  React.useState<Category[]>([]);
@@ -169,7 +180,7 @@ export function AddCourseForm(): React.JSX.Element {
     setValue,
     watch,
     formState: { errors },
-  } = useForm<Values>({ defaultValues, resolver: zodResolver(schema) });
+  } = useForm<Values>({ defaultValues, resolver: zodResolver(schema), mode:'onTouched' });
 
 
 
@@ -177,16 +188,16 @@ export function AddCourseForm(): React.JSX.Element {
     async (values: Values) => {
       setIsPending(true);
 
-      // const { error } = await CourseForm.addCourse(values);
+      const { error } = await CourseForm.addCourse(values);
 
-      // if (error) {
-      //   setError('root', { type: 'server', message: error });
-      //   setIsPending(false);
-      //   return;
-      // }
+      if (error) {
+        setError('root', { type: 'server', message: error });
+        setIsPending(false);
+        return;
+      }
 
       // Refresh the auth state
-      // await checkSession?.();
+      await checkSession?.();
 
       // UserProvider, for this case, will not refresh the router
       // After refresh, GuestGuard will handle the redirect
@@ -218,101 +229,116 @@ export function AddCourseForm(): React.JSX.Element {
         <DialogTitle>Add New Course</DialogTitle>
 
         <DialogContent>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Card elevation={0}>
-              <Divider />
-              <CardContent>
-                <Grid container spacing={3}>
-                  <Grid item md={12} xs={12}>
-                    <FormControl fullWidth required>
-                      <InputLabel>Course Name</InputLabel>
-                      <OutlinedInput label="Course Name" name="courseName" />
-                    </FormControl>
-                  </Grid>
-                  <Grid item md={12} xs={12}>
-                    <FormControl fullWidth required>
-                      <InputLabel>Course Description In Brief</InputLabel>
-                      <OutlinedInput label="Course Description" name="briefIntro" />
-                    </FormControl>
-                  </Grid>
+<form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
+  <Stack spacing={3}>
 
-                  <Grid item md={12} xs={12}>
-                    <FormControl fullWidth required>
-                      <InputLabel>Course Description</InputLabel>
-                      <OutlinedInput label="Course Description" name="courseDescription" />
-                    </FormControl>
-                  </Grid>
+    {/* Course Name */}
+    <Controller
+      control={control}
+      name="courseName"
+      render={({ field }) => (
+        <FormControl error={Boolean(errors.courseName)} fullWidth>
+          <InputLabel>Course Name</InputLabel>
+          <OutlinedInput {...field} label="Course Name" />
+          {errors.courseName ? <FormHelperText>{errors.courseName.message}</FormHelperText>:null}
+        </FormControl>
+      )}
+    />
 
-                  <Grid item md={6} xs={12}>
-                    <FormControl fullWidth required>
-                      <InputLabel>Course Category</InputLabel>
-                      <Select label="Course Category" onChange={handleChange}>
-                        {categoryList.map((list:Category) => (
+    {/* Course Brief */}
+    <Controller
+      control={control}
+      name="briefIntro"
+      render={({ field }) => (
+        <FormControl error={Boolean(errors.briefIntro)} fullWidth >
+          <InputLabel>Course Brief</InputLabel>
+          <OutlinedInput {...field} label="Course Brief" />
+          {errors.briefIntro && <FormHelperText>{errors.briefIntro.message}</FormHelperText>}
+        </FormControl>
+      )}
+    />
+
+    {/* Course Description */}
+    <Controller
+      control={control}
+      name="courseDescription"
+      render={({ field }) => (
+        <FormControl error={Boolean(errors.courseDescription)} fullWidth >
+          <InputLabel>Course Description</InputLabel>
+          <OutlinedInput
+            {...field}
+            label="Course Description"
+            multiline
+            rows={4}
+          />
+          {errors.courseDescription && <FormHelperText>{errors.courseDescription.message}</FormHelperText>}
+        </FormControl>
+      )}
+    />
+
+    {/* Course Category (Dropdown) */}
+    <Controller
+      control={control}
+      name="courseCategory"
+      render={({ field }) => (
+        <FormControl error={Boolean(errors.courseCategory)} fullWidth >
+          <InputLabel>Course Category</InputLabel>
+          <Select {...field} label="Course Category" onChange={handleChange}>
+           {categoryList.map((list:Category) => (
                           <MenuItem key={list.categoryid}>
                             {list.categoryName}
                           </MenuItem>
                         ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item md={6} xs={12}>
-                    <FormControl fullWidth required>
-                      <InputLabel>Course Price</InputLabel>
-                      <OutlinedInput label="Course Price" name="price" />
-                    </FormControl>
-                  </Grid>
-                  
+          </Select>
+          {errors.courseCategory && <FormHelperText>{errors.courseCategory.message}</FormHelperText>}
+        </FormControl>
+      )}
+    />
 
-                  <Grid item md={3} xs={6}>
-                    <FormControl fullWidth>
-                          {/* <Button
-                component="label"
-      role={undefined}
-      variant="contained"
-      tabIndex={-1}
-      startIcon={<CloudUploadIcon />}
-    > */}
-      <OutlinedInput color='secondary'
-      type = "file"
-      name='course'
-      
-      />
-      {/* <VisuallyHiddenInput
-        type="file"
-        onChange={(event: { target: { files: any; }; }) => console.log(event.target.files)}
-        multiple
-      /> */}
-    {/* </Button> */}
-                      
-                    </FormControl>
-                  </Grid>
+    {/* Course Price */}
+    <Controller
+      control={control}
+      name="price"
+      render={({ field }) => (
+        <FormControl error={Boolean(errors.price)} fullWidth >
+          <InputLabel>Course Price</InputLabel>
+          <OutlinedInput {...field} label="Course Price" type="number" />
+          {errors.price && <FormHelperText>{errors.price.message}</FormHelperText>}
+        </FormControl>
+      )}
+    />
 
-                  {/* <Grid item md={6} xs={12}>
-                    <FormControl fullWidth>
-                      <InputLabel>State</InputLabel>
-                      <Select defaultValue="New York" label="State" name="state">
-                     
-                      </Select>
-                    </FormControl>
-                  </Grid> */}
+    {/* File Upload */}
+    <Controller
+      control={control}
+      name="course"
+      render={({ field }) => (
+        <FormControl fullWidth>
+          <Button variant="outlined" component="label">
+            Choose File
+            <input
+              type="file"
+              hidden
+              // onChange={(e) => field.onChange(e.target.files[0])}
+            />
+          </Button>
+          {field.value && <FormHelperText>{field.value}</FormHelperText>}
+        </FormControl>
+      )}
+    />
 
-                  {/* <Grid item md={6} xs={12}>
-                    <FormControl fullWidth>
-                      <InputLabel>City</InputLabel>
-                      <OutlinedInput label="City" name="city" />
-                    </FormControl>
-                  </Grid> */}
-                </Grid>
-              </CardContent>
-              <Divider />
-              <CardActions sx={{ justifyContent: 'flex-end' }}>
-                <Button onClick={() => setOpen(false)}>Cancel</Button>
-                <Button variant="contained" type="submit">
-                  Save details
-                </Button>
-              </CardActions>
-            </Card>
-          </form>
+    {/* Action Buttons */}
+    <Stack direction="row" justifyContent="flex-end" spacing={2}>
+      <Button variant="text" color="inherit" onClick={handleCancel}>
+        Cancel
+      </Button>
+      <Button type="submit" variant="contained" color="primary">
+        Save details
+      </Button>
+    </Stack>
+
+  </Stack>
+</form>
         </DialogContent>
       </Dialog>
     </>

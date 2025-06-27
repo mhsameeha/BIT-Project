@@ -49,14 +49,14 @@ export interface tutorpage {
         <CompaniesFilters />
         
         <Typography variant="h4">My Courses</Typography>
-        <Grid container spacing={3}>
+        {/* <Grid container spacing={3}>
           {courses.map((course)=>(
             <Grid key= {course.courseid} lg={4} md={6} xs={12} >
               <CourseCards course = {course}/>
             </Grid>
           ))}
           
-        </Grid>
+        </Grid> */}
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
           
           <Pagination count={3} size="small" />

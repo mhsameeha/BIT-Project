@@ -21,15 +21,18 @@ import { z as zod } from 'zod';
 import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
 import { useUser } from '@/hooks/use-user';
+import { watch } from 'fs';
+
 
 const schema = zod.object({
   email: zod.string().min(1, { message: 'Email is required' }).email(),
   password: zod.string().min(1, { message: 'Password is required' }),
+  role:zod.string().min(1, { message: 'Select your Role' })
 });
 
 type Values = zod.infer<typeof schema>;
 
-const defaultValues = { email: 'raashid07@gmail.com', password: '1qaz!QAZ' } satisfies Values;
+const defaultValues = { email: '', password: '', role:'' } satisfies Values;
 
 export function SignInForm(): React.JSX.Element {
   const router = useRouter();
@@ -44,6 +47,8 @@ export function SignInForm(): React.JSX.Element {
     control,
     handleSubmit,
     setError,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<Values>({ defaultValues, resolver: zodResolver(schema) });
 
@@ -58,16 +63,23 @@ export function SignInForm(): React.JSX.Element {
         setIsPending(false);
         return;
       }
-
-      // Refresh the auth state
       await checkSession?.();
 
-      // UserProvider, for this case, will not refresh the router
-      // After refresh, GuestGuard will handle the redirect
       router.refresh();
     },
     [checkSession, router, setError]
   );
+
+
+  const handleClick =  (_role:string) => {
+    
+    console.log(_role);
+    setValue('role', _role);
+//  setRole(_role);
+
+  };
+    const formRole = watch('role');
+
 
   return (
     <Stack spacing={4}>
@@ -79,12 +91,35 @@ export function SignInForm(): React.JSX.Element {
             Sign up
           </Link>
         </Typography>
-        <Typography>  <Button variant='contained' color='primary' sx={{mr: 2}}>As a Tutor</Button>
-      <Button variant='contained' color='primary'>As a Learner</Button>
-      </Typography>
+      
+      
       </Stack>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form autoComplete='off' onSubmit={handleSubmit(onSubmit)} >
         <Stack spacing={2}>
+            <Stack  direction ="row">
+      <Controller
+            control={control}
+            name="role"
+            render={() => (
+              <FormControl error={Boolean(errors.role)}>
+                <Button type= "button" value="Tutor" variant={ formRole === 'Tutor' ? 'contained' : 'outlined'} onClick = {() => handleClick('Tutor')} sx={{mr: 2}} >As a Tutor</Button>
+          {errors.role ? <FormHelperText>{errors.role.message}</FormHelperText> : null} 
+
+                
+              </FormControl>
+            )}
+          />
+          <Controller
+            control={control}
+            name="role"
+            render={() => (
+              <FormControl error={Boolean(errors.role)}>
+                <Button id='lbotton' value="Learner" variant={formRole === 'Learner' ? 'contained' : 'outlined'} onClick = {() =>handleClick('Learner')}  sx={{mr: 2}} >As a Learner</Button>
+          {errors.role ? <FormHelperText>{errors.role.message}</FormHelperText> : null} 
+
+              </FormControl>
+            )}
+          /></Stack>
           <Controller
             control={control}
             name="email"

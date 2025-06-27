@@ -23,6 +23,7 @@ export const paths = {
     integrations: '/integrations',
     settings: '/settings',
     courses: '/courses/list',
+    session:'/session'
   },
   errors: { notFound: '/errors/not-found' },
 } as const;

@@ -72,9 +72,7 @@ class AuthClient {
   async signInWithPassword(params: SignInWithPasswordParams): Promise<{ error?: string }> {
     const { email, password } = params;
 
-    // Make API request
-
-    // We do not handle the API, so we'll check if the credentials match with the hardcoded ones.
+    //Sign In API request
     try {
       const response = await fetch('https://localhost:7028/api/User/signin', {
         method: 'POST',

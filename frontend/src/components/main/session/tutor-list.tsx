@@ -14,6 +14,8 @@ import type { SxProps } from '@mui/material/styles';
 import { ArrowRight as ArrowRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowRight';
 import { DotsThreeVertical as DotsThreeVerticalIcon } from '@phosphor-icons/react/dist/ssr/DotsThreeVertical';
 import dayjs from 'dayjs';
+import Typography from '@mui/material/Typography';
+import Stack from '@mui/material/Stack';
 
 export interface Product {
   id: string;
@@ -22,15 +24,19 @@ export interface Product {
   updatedAt: Date;
 }
 
-export interface LatestProductsProps {
+export interface TutorListProps {
   products?: Product[];
   sx?: SxProps;
 }
 
-export function LatestProducts({ products = [], sx }: LatestProductsProps): React.JSX.Element {
+export function TutorList({ products = [], sx }: TutorListProps): React.JSX.Element {
   return (
     <Card sx={sx}>
-      <CardHeader title="Course Approval" />
+        <Stack spacing={1}>
+   <Typography color="text.secondary" variant="overline">
+                Tutors 
+              </Typography> 
+              </Stack>
       <Divider />
       <List>
         {products.map((product, index) => (
