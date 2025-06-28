@@ -20,51 +20,9 @@ import { ArrowLeft as ArrowLeftIcon } from '@phosphor-icons/react/dist/ssr/Arrow
 import { CaretDown as CaretDownIcon } from '@phosphor-icons/react/dist/ssr/CaretDown';
 import { Clock as ClockIcon } from '@phosphor-icons/react/dist/ssr/Clock';
 import dayjs from 'dayjs';
-
-// Types
-interface Lesson {
-  id: number;
-  title: string;
-  duration: string;
-}
-
-interface CurriculumSection {
-  id: number;
-  title: string;
-  duration: string;
-  lessons: Lesson[];
-}
-
-interface Review {
-  id: number;
-  userName: string;
-  userAvatar: string;
-  rating: number;
-  comment: string;
-  date: Date;
-}
-
-interface CourseData {
-  id: string;
-  title: string;
-  description: string;
-  level: string;
-  category: string;
-  tutorName: string;
-  tutorAvatar: string;
-  logo: string;
-  enrolledStudents: number;
-  rating: number;
-  reviewCount: number;
-  fee: number;
-  currency: string;
-  curriculum: CurriculumSection[];
-  reviews: Review[];
-}
+import { getCourseData } from '@/constants/courses';
 
 // Types for styled components
-
-
 interface StyledCardProps {
   children: React.ReactNode;
   sx?: SxProps<Theme>;
@@ -87,157 +45,6 @@ function MainCard({ children, sx = {}, ...props }: StyledCardProps): React.JSX.E
     </Paper>
   );
 }
-
-
-// Mock course data - in a real app, this would come from an API
-const getCourseData = (id: string): CourseData | null => {
-  const courses = {
-    'INTEG-001': {
-      id: 'INTEG-001',
-      title: 'Introduction to Programming',
-      description: 'Learn the basics of programming using Python. Ideal for complete beginners.',
-      level: 'Beginner',
-      category: 'Programming',
-      tutorName: 'Dr. Sarah Johnson',
-      tutorAvatar: '/assets/avatar-1.png',
-      logo: '/assets/logo-python.png',
-      enrolledStudents: 594,
-      rating: 4.5,
-      reviewCount: 127,
-      fee: 99.99,
-      currency: 'USD',
-      curriculum: [
-        {
-          id: 1,
-          title: 'Getting Started with Python',
-          duration: '45 min',
-          lessons: [
-            { id: 1, title: 'What is Programming?', duration: '8 min' },
-            { id: 2, title: 'Installing Python', duration: '12 min' },
-            { id: 3, title: 'Your First Python Program', duration: '15 min' },
-            { id: 4, title: 'Understanding Variables', duration: '10 min' }
-          ]
-        },
-        {
-          id: 2,
-          title: 'Basic Programming Concepts',
-          duration: '1hr 20min',
-          lessons: [
-            { id: 5, title: 'Data Types in Python', duration: '20 min' },
-            { id: 6, title: 'Working with Strings', duration: '25 min' },
-            { id: 7, title: 'Numbers and Math Operations', duration: '18 min' },
-            { id: 8, title: 'Boolean Logic', duration: '17 min' }
-          ]
-        },
-        {
-          id: 3,
-          title: 'Control Structures',
-          duration: '1hr 35min',
-          lessons: [
-            { id: 9, title: 'If Statements', duration: '22 min' },
-            { id: 10, title: 'Loops - For and While', duration: '28 min' },
-            { id: 11, title: 'Nested Loops', duration: '20 min' },
-            { id: 12, title: 'Break and Continue', duration: '15 min' },
-            { id: 13, title: 'Practice Exercises', duration: '10 min' }
-          ]
-        }
-      ],
-      reviews: [
-        {
-          id: 1,
-          userName: 'John Smith',
-          userAvatar: '/assets/avatar-2.png',
-          rating: 5,
-          comment: 'Excellent course for beginners! Dr. Johnson explains everything clearly and the hands-on exercises really help solidify the concepts.',
-          date: dayjs().subtract(2, 'day').toDate()
-        },
-        {
-          id: 2,
-          userName: 'Emily Chen',
-          userAvatar: '/assets/avatar-3.png',
-          rating: 4,
-          comment: 'Great introduction to programming. The pace is perfect for someone with no prior experience. Would recommend!',
-          date: dayjs().subtract(1, 'week').toDate()
-        },
-        {
-          id: 3,
-          userName: 'Michael Davis',
-          userAvatar: '/assets/avatar-4.png',
-          rating: 5,
-          comment: 'This course gave me the confidence to start my programming journey. The projects are practical and engaging.',
-          date: dayjs().subtract(2, 'week').toDate()
-        },
-        {
-          id: 4,
-          userName: 'Sarah Wilson',
-          userAvatar: '/assets/avatar-5.png',
-          rating: 4,
-          comment: 'Very well structured course. The instructor is knowledgeable and responsive to questions.',
-          date: dayjs().subtract(3, 'week').toDate()
-        }
-      ]
-    },
-    'INTEG-002': {
-      id: 'INTEG-002',
-      title: 'Software Testing & Quality Assurance',
-      description: 'Understand the fundamentals of software testing including test cases, manual & automated testing tools.',
-      level: 'Beginner–Intermediate',
-      category: 'Programming',
-      tutorName: 'Mark Thompson',
-      tutorAvatar: '/assets/avatar-6.png',
-      logo: '/assets/qa.png',
-      enrolledStudents: 594,
-      rating: 4.3,
-      reviewCount: 89,
-      fee: 129.99,
-      currency: 'USD',
-      curriculum: [
-        {
-          id: 1,
-          title: 'Introduction to Software Testing',
-          duration: '1hr 10min',
-          lessons: [
-            { id: 1, title: 'What is Software Testing?', duration: '15 min' },
-            { id: 2, title: 'Types of Testing', duration: '20 min' },
-            { id: 3, title: 'Testing Life Cycle', duration: '25 min' },
-            { id: 4, title: 'Quality Assurance vs Testing', duration: '10 min' }
-          ]
-        },
-        {
-          id: 2,
-          title: 'Manual Testing Fundamentals',
-          duration: '2hr 15min',
-          lessons: [
-            { id: 5, title: 'Writing Test Cases', duration: '30 min' },
-            { id: 6, title: 'Test Execution', duration: '25 min' },
-            { id: 7, title: 'Bug Reporting', duration: '40 min' },
-            { id: 8, title: 'Test Documentation', duration: '40 min' }
-          ]
-        }
-      ],
-      reviews: [
-        {
-          id: 1,
-          userName: 'Alex Johnson',
-          userAvatar: '/assets/avatar-7.png',
-          rating: 4,
-          comment: 'Good coverage of testing fundamentals. The practical examples are very helpful.',
-          date: dayjs().subtract(3, 'day').toDate()
-        },
-        {
-          id: 2,
-          userName: 'Lisa Rodriguez',
-          userAvatar: '/assets/avatar-8.png',
-          rating: 5,
-          comment: 'Mark is an excellent instructor. This course prepared me well for my QA role.',
-          date: dayjs().subtract(1, 'week').toDate()
-        }
-      ]
-    }
-  };
-
-  return courses[id as keyof typeof courses] || null;
-};
 
 export default function CourseDetailPage(): React.JSX.Element {
   const params = useParams();
@@ -337,7 +144,7 @@ export default function CourseDetailPage(): React.JSX.Element {
                   Course Fee
                 </Typography>
                 <Typography variant="h4" color="primary" sx={{ fontWeight: 600 }}>
-                  ${course.fee}
+                  LKR {course.fee}
                 </Typography>
               </Box>
             </Stack>

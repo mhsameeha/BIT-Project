@@ -25,6 +25,7 @@ export interface Integration {
   enrolledStudents: number;
   rating: number;
   reviewCount: number;
+  fee: number;
   updatedAt: Date;
 }
 
@@ -154,20 +155,27 @@ export function IntegrationListItem({ integration }: IntegrationListItemProps): 
             </Stack>
             
             {/* Meta Information */}
-            <Stack direction="row" spacing={3} alignItems="center">
-              <Stack direction="row" alignItems="center" spacing={0.5}>
-                <UsersIcon fontSize="var(--icon-fontSize-sm)" />
-                <Typography variant="body2" color="text.secondary">
-                  {integration.enrolledStudents.toLocaleString()} students
-                </Typography>
+            <Stack direction="row" spacing={3} alignItems="center" sx={{ justifyContent: 'space-between' }}>
+              <Stack direction="row" spacing={3} alignItems="center">
+                <Stack direction="row" alignItems="center" spacing={0.5}>
+                  <UsersIcon fontSize="var(--icon-fontSize-sm)" />
+                  <Typography variant="body2" color="text.secondary">
+                    {integration.enrolledStudents.toLocaleString()} students
+                  </Typography>
+                </Stack>
+                
+                <Stack direction="row" alignItems="center" spacing={0.5}>
+                  <ClockIcon fontSize="var(--icon-fontSize-sm)" />
+                  <Typography variant="body2" color="text.secondary">
+                    Updated {dayjs(integration.updatedAt).format('MMM D, YYYY')}
+                  </Typography>
+                </Stack>
               </Stack>
-              
-              <Stack direction="row" alignItems="center" spacing={0.5}>
-                <ClockIcon fontSize="var(--icon-fontSize-sm)" />
-                <Typography variant="body2" color="text.secondary">
-                  Updated {dayjs(integration.updatedAt).format('MMM D, YYYY')}
-                </Typography>
-              </Stack>
+
+              {/* Course Fee */}
+              <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
+                LKR {integration.fee.toLocaleString()}
+              </Typography>
             </Stack>
           </Stack>
         </Box>
