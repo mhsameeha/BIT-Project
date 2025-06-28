@@ -1,0 +1,45 @@
+
+# Ignore Visual Studio temporary files, build results, and
+# user-specific files for .NET projects
+
+# Build results
+**/bin/
+**/obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Visual Studio Code settings
+**/.vscode/
+**/.vs/
+
+
+# NuGet packages
+*.nupkg
+*.snupkg
+packages/
+*.nuspec
+
+# Logs
+*.log
+
+# Publish output
+publish/
+out/
+
+# Others
+*.vspscc
+*.vssscc
+_ReSharper*/
+*.resharper
+*.DotSettings.user
+
+# Rider
+.idea/
