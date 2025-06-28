@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Divider from '@mui/material/Divider';
+import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Clock as ClockIcon } from '@phosphor-icons/react/dist/ssr/Clock';
@@ -16,7 +17,9 @@ export interface Integration {
   description: string;
   level : string;
   logo: string;
-  installs: number;
+  enrolledStudents: number;
+  rating: number;
+  reviewCount: number;
   updatedAt: Date;
 }
 
@@ -42,6 +45,12 @@ export function IntegrationCard({ integration }: IntegrationCardProps): React.JS
             <Typography align="center" fontWeight={600}>
             {integration.level}
             </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1 }}>
+              <Rating value={integration.rating} readOnly precision={0.1} size="small" />
+              <Typography variant="body2" color="text.secondary">
+                {integration.rating} ({integration.reviewCount} reviews)
+              </Typography>
+            </Box>
           </Stack>
         </Stack>
       </CardContent>
@@ -56,7 +65,7 @@ export function IntegrationCard({ integration }: IntegrationCardProps): React.JS
         <Stack sx={{ alignItems: 'center' }} direction="row" spacing={1}>
           <DownloadIcon fontSize="var(--icon-fontSize-sm)" />
           <Typography color="text.secondary" display="inline" variant="body2">
-            {integration.installs} installs
+            {integration.enrolledStudents} students enrolled
           </Typography>
         </Stack>
       </Stack>

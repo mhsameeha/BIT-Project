@@ -10,7 +10,9 @@ import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
 import InputLabel from '@mui/material/InputLabel';
 import Link from '@mui/material/Link';
+import MenuItem from '@mui/material/MenuItem';
 import OutlinedInput from '@mui/material/OutlinedInput';
+import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Eye as EyeIcon } from '@phosphor-icons/react/dist/ssr/Eye';
@@ -21,7 +23,6 @@ import { z as zod } from 'zod';
 import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
 import { useUser } from '@/hooks/use-user';
-import { watch } from 'fs';
 
 
 const schema = zod.object({
@@ -32,7 +33,7 @@ const schema = zod.object({
 
 type Values = zod.infer<typeof schema>;
 
-const defaultValues = { email: '', password: '', role:'' } satisfies Values;
+const defaultValues = { email: '', password: '', role:'Learner' } satisfies Values;
 
 export function SignInForm(): React.JSX.Element {
   const router = useRouter();
@@ -47,8 +48,6 @@ export function SignInForm(): React.JSX.Element {
     control,
     handleSubmit,
     setError,
-    setValue,
-    watch,
     formState: { errors },
   } = useForm<Values>({ defaultValues, resolver: zodResolver(schema) });
 
@@ -71,16 +70,6 @@ export function SignInForm(): React.JSX.Element {
   );
 
 
-  const handleClick =  (_role:string) => {
-    
-    console.log(_role);
-    setValue('role', _role);
-//  setRole(_role);
-
-  };
-    const formRole = watch('role');
-
-
   return (
     <Stack spacing={4}>
       <Stack spacing={1}>
@@ -96,30 +85,20 @@ export function SignInForm(): React.JSX.Element {
       </Stack>
       <form autoComplete='off' onSubmit={handleSubmit(onSubmit)} >
         <Stack spacing={2}>
-            <Stack  direction ="row">
-      <Controller
-            control={control}
-            name="role"
-            render={() => (
-              <FormControl error={Boolean(errors.role)}>
-                <Button type= "button" value="Tutor" variant={ formRole === 'Tutor' ? 'contained' : 'outlined'} onClick = {() => handleClick('Tutor')} sx={{mr: 2}} >As a Tutor</Button>
-          {errors.role ? <FormHelperText>{errors.role.message}</FormHelperText> : null} 
-
-                
-              </FormControl>
-            )}
-          />
           <Controller
             control={control}
             name="role"
-            render={() => (
-              <FormControl error={Boolean(errors.role)}>
-                <Button id='lbotton' value="Learner" variant={formRole === 'Learner' ? 'contained' : 'outlined'} onClick = {() =>handleClick('Learner')}  sx={{mr: 2}} >As a Learner</Button>
-          {errors.role ? <FormHelperText>{errors.role.message}</FormHelperText> : null} 
-
+            render={({ field }) => (
+              <FormControl error={Boolean(errors.role)} fullWidth>
+                <InputLabel>Login as</InputLabel>
+                <Select {...field} label="Login as">
+                  <MenuItem value="Learner">Learner</MenuItem>
+                  <MenuItem value="Tutor">Tutor</MenuItem>
+                </Select>
+                {errors.role ? <FormHelperText>{errors.role.message}</FormHelperText> : null}
               </FormControl>
             )}
-          /></Stack>
+          />
           <Controller
             control={control}
             name="email"
