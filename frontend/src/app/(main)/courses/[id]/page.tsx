@@ -144,7 +144,7 @@ export default function CourseDetailPage(): React.JSX.Element {
                   Course Fee
                 </Typography>
                 <Typography variant="h4" color="primary" sx={{ fontWeight: 600 }}>
-                  LKR {course.fee}
+                  LKR {course.fee.toLocaleString()}
                 </Typography>
               </Box>
             </Stack>

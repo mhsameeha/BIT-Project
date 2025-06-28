@@ -23,7 +23,10 @@ export const paths = {
     integrations: '/integrations',
     settings: '/settings',
     courses: '/courses/list',
-    session:'/session'
+    courseDetail: (id: string) => `/courses/${id}`,
+    session:'/session',
+    sessionBooking: (tutorId: string) => `/session/book/${tutorId}`,
+    tutorProfile: (tutorId: string) => `/tutors/${tutorId}`
   },
   errors: { notFound: '/errors/not-found' },
 } as const;
