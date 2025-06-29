@@ -119,7 +119,7 @@ const getOngoingCourses = async ()  => {
           </TableBody>
         </Table>
       </Box>
-      <Button color="secondary"onClick={() => router.push(paths.main.course)}> Explore more Courses</Button>
+      <Button color="secondary"onClick={() => router.push(paths.main.courses)}> Explore more Courses</Button>
         </Stack>
       </CardContent>
     </Card>

@@ -14,7 +14,7 @@ import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
 import Divider from '@mui/material/Divider';
 import { Session, SessionStatus } from '@/types/session';
 import dayjs from 'dayjs';
-import { Session } from 'inspector';
+
 import { table } from 'console';
 import Table from '@mui/material/Table';
 import TableHead from '@mui/material/TableHead';
