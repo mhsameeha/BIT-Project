@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import type { TutorCourse } from '../types/course';
 
 // Types
 export interface Lesson {
@@ -596,4 +597,298 @@ export const getCourseData = (id: string): CourseData | null => {
 // Helper function to get all courses as array (for list page)
 export const getAllCourses = (): CourseData[] => {
   return Object.values(COURSES_DATA);
+};
+
+// Tutor Course Management Data
+export const TUTOR_COURSES_DATA: TutorCourse[] = [
+  {
+    id: 'COURSE-001',
+    title: 'Introduction to Programming',
+    description: 'Learn the basics of programming using Python. Perfect for beginners who want to start their coding journey.',
+    briefIntro: 'Master the fundamentals of programming with Python',
+    level: 'Beginner',
+    category: 'Programming',
+    tutorId: 'TUTOR-001',
+    tutorName: 'Dr. Sarah Johnson',
+    logo: '/assets/logo-python.png',
+    fee: 2500,
+    currency: 'LKR',
+    isEnabled: true,
+    enrolledStudents: 156,
+    rating: 4.8,
+    reviewCount: 89,
+    createdAt: dayjs().subtract(6, 'month').toDate(),
+    updatedAt: dayjs().subtract(1, 'week').toDate(),
+    totalLessons: 25,
+    totalDuration: '8h 30m',
+    languages: ['English'],
+    tags: ['Python', 'Programming', 'Beginner', 'Coding'],
+    contents: [
+      {
+        id: 'content-1',
+        title: 'Introduction to Programming',
+        duration: '45 min',
+        description: 'Overview of programming concepts and Python basics',
+        subContents: [
+          {
+            id: 'sub-1',
+            title: 'Welcome Video',
+            description: 'Introduction to the course and what you will learn',
+            type: 'video',
+            videoFile: null,
+            documentFile: null
+          },
+          {
+            id: 'sub-2',
+            title: 'Course Syllabus',
+            description: 'Detailed course outline and requirements',
+            type: 'document',
+            videoFile: null,
+            documentFile: null
+          }
+        ]
+      },
+      {
+        id: 'content-2',
+        title: 'Setting Up Python Environment',
+        duration: '30 min',
+        description: 'Install Python and set up your development environment',
+        subContents: [
+          {
+            id: 'sub-3',
+            title: 'Installation Guide',
+            description: 'Step by step Python installation',
+            type: 'both',
+            videoFile: null,
+            documentFile: null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'COURSE-002',
+    title: 'Advanced JavaScript Development',
+    description: 'Deep dive into modern JavaScript, ES6+, async programming, and advanced concepts for professional web development.',
+    briefIntro: 'Become a JavaScript expert with advanced techniques',
+    level: 'Advanced',
+    category: 'Web Development',
+    tutorId: 'TUTOR-001',
+    tutorName: 'Dr. Sarah Johnson',
+    logo: '/assets/logo-python.png',
+    fee: 4500,
+    currency: 'LKR',
+    isEnabled: true,
+    enrolledStudents: 87,
+    rating: 4.9,
+    reviewCount: 52,
+    createdAt: dayjs().subtract(4, 'month').toDate(),
+    updatedAt: dayjs().subtract(3, 'day').toDate(),
+    totalLessons: 40,
+    totalDuration: '15h 45m',
+    languages: ['English'],
+    tags: ['JavaScript', 'ES6', 'Advanced', 'Web Development', 'Async'],
+    contents: [
+      {
+        id: 'content-1',
+        title: 'Modern JavaScript Fundamentals',
+        duration: '2 hours',
+        description: 'ES6+ features, arrow functions, and modern syntax',
+        subContents: [
+          {
+            id: 'sub-1',
+            title: 'ES6+ Overview',
+            description: 'Introduction to modern JavaScript features',
+            type: 'video',
+            videoFile: null,
+            documentFile: null
+          },
+          {
+            id: 'sub-2',
+            title: 'Code Examples',
+            description: 'Practical examples and exercises',
+            type: 'document',
+            videoFile: null,
+            documentFile: null
+          }
+        ]
+      },
+      {
+        id: 'content-2',
+        title: 'Asynchronous Programming',
+        duration: '1.5 hours',
+        description: 'Promises, async/await, and handling asynchronous operations',
+        subContents: [
+          {
+            id: 'sub-3',
+            title: 'Async Tutorial',
+            description: 'Complete guide to async programming',
+            type: 'both',
+            videoFile: null,
+            documentFile: null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'COURSE-003',
+    title: 'Data Structures & Algorithms',
+    description: 'Master fundamental data structures and algorithms essential for software engineering interviews and efficient programming.',
+    briefIntro: 'Build strong problem-solving skills with DSA',
+    level: 'Intermediate',
+    category: 'Computer Science',
+    tutorId: 'TUTOR-001',
+    tutorName: 'Dr. Sarah Johnson',
+    logo: '/assets/logo-python.png',
+    fee: 3500,
+    currency: 'LKR',
+    isEnabled: false,
+    enrolledStudents: 23,
+    rating: 4.6,
+    reviewCount: 15,
+    createdAt: dayjs().subtract(2, 'month').toDate(),
+    updatedAt: dayjs().subtract(1, 'month').toDate(),
+    totalLessons: 35,
+    totalDuration: '12h 20m',
+    languages: ['English'],
+    tags: ['Algorithms', 'Data Structures', 'Problem Solving', 'Interview Prep'],
+    contents: [
+      {
+        id: 'content-1',
+        title: 'Introduction to Data Structures',
+        duration: '1 hour',
+        description: 'Overview of basic data structures and their use cases',
+        subContents: [
+          {
+            id: 'sub-1',
+            title: 'Arrays and Lists',
+            description: 'Understanding arrays and linked lists',
+            type: 'video',
+            videoFile: null,
+            documentFile: null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'COURSE-004',
+    title: 'React.js Complete Guide',
+    description: 'Build modern, responsive web applications with React.js, including hooks, context, and state management.',
+    briefIntro: 'Create dynamic UIs with React.js',
+    level: 'Intermediate',
+    category: 'Frontend Development',
+    tutorId: 'TUTOR-001',
+    tutorName: 'Dr. Sarah Johnson',
+    logo: '/assets/logo-python.png',
+    fee: 4000,
+    currency: 'LKR',
+    isEnabled: true,
+    enrolledStudents: 234,
+    rating: 4.7,
+    reviewCount: 128,
+    createdAt: dayjs().subtract(8, 'month').toDate(),
+    updatedAt: dayjs().subtract(2, 'week').toDate(),
+    totalLessons: 48,
+    totalDuration: '18h 15m',
+    languages: ['English'],
+    tags: ['React', 'Frontend', 'JavaScript', 'UI/UX', 'Component'],
+    contents: [
+      {
+        id: 'content-1',
+        title: 'React Fundamentals',
+        duration: '3 hours',
+        description: 'Introduction to React components, JSX, and basic concepts',
+        subContents: [
+          {
+            id: 'sub-1',
+            title: 'Getting Started with React',
+            description: 'Setting up React and creating your first component',
+            type: 'video',
+            videoFile: null,
+            documentFile: null
+          },
+          {
+            id: 'sub-2',
+            title: 'React Documentation',
+            description: 'Reference guide and best practices',
+            type: 'document',
+            videoFile: null,
+            documentFile: null
+          }
+        ]
+      },
+      {
+        id: 'content-2',
+        title: 'Hooks and State Management',
+        duration: '2.5 hours',
+        description: 'Using React hooks for state management and side effects',
+        subContents: [
+          {
+            id: 'sub-3',
+            title: 'Hooks Deep Dive',
+            description: 'Complete guide to React hooks with examples',
+            type: 'both',
+            videoFile: null,
+            documentFile: null
+          }
+        ]
+      }
+    ]
+  }
+];
+
+// Helper functions for tutor course management
+export const getCoursesByTutor = (tutorId: string): TutorCourse[] => {
+  return TUTOR_COURSES_DATA.filter(course => course.tutorId === tutorId);
+};
+
+export const getEnabledCoursesByTutor = (tutorId: string): TutorCourse[] => {
+  return TUTOR_COURSES_DATA.filter(course => course.tutorId === tutorId && course.isEnabled);
+};
+
+export const getDisabledCoursesByTutor = (tutorId: string): TutorCourse[] => {
+  return TUTOR_COURSES_DATA.filter(course => course.tutorId === tutorId && !course.isEnabled);
+};
+
+export const toggleCourseStatus = (courseId: string): boolean => {
+  const courseIndex = TUTOR_COURSES_DATA.findIndex(course => course.id === courseId);
+  if (courseIndex !== -1) {
+    TUTOR_COURSES_DATA[courseIndex].isEnabled = !TUTOR_COURSES_DATA[courseIndex].isEnabled;
+    TUTOR_COURSES_DATA[courseIndex].updatedAt = new Date();
+    return true;
+  }
+  return false;
+};
+
+export const deleteCourse = (courseId: string): boolean => {
+  const courseIndex = TUTOR_COURSES_DATA.findIndex(course => course.id === courseId);
+  if (courseIndex !== -1) {
+    TUTOR_COURSES_DATA.splice(courseIndex, 1);
+    return true;
+  }
+  return false;
+};
+
+export const getCourseById = (courseId: string): TutorCourse | undefined => {
+  return TUTOR_COURSES_DATA.find(course => course.id === courseId);
+};
+
+export const addCourse = (course: TutorCourse): boolean => {
+  try {
+    TUTOR_COURSES_DATA.push(course);
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+export const updateCourse = (courseId: string, updatedCourse: Partial<TutorCourse>): boolean => {
+  const courseIndex = TUTOR_COURSES_DATA.findIndex(course => course.id === courseId);
+  if (courseIndex !== -1) {
+    TUTOR_COURSES_DATA[courseIndex] = { ...TUTOR_COURSES_DATA[courseIndex], ...updatedCourse, updatedAt: new Date() };
+    return true;
+  }
+  return false;
 };
