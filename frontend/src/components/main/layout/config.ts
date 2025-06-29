@@ -10,6 +10,7 @@ export const navItems = [
   { key: 'courses', title: 'Courses', href: paths.main.courses, icon: 'users' },
   // { key: 'tutorcourse', title: 'Courses', href: paths.main.tutorcourse, icon: 'users' },
   { key: 'session', title: 'Session', href: paths.main.session, icon: 'users' },
+  { key: 'session-management', title: 'Session Management', href: paths.main.sessionManagement, icon: 'calendar' },
 
 
   // { key: 'integrations', title: 'Integrations', href: paths.main.integrations, icon: 'plugs-connected' },
