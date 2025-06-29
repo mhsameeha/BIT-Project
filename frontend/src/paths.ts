@@ -15,7 +15,7 @@ export const paths = {
   main: {
     overview: '/dashboard',
     // admindashboard : '/admin-dashboard',
-    // tutordashboard : '/tutor-dashboard',
+    tutorDashboard : '/tutor-dashboard',
     learnerdashboard : '/learner-dashboard',
     // tutorcourse: '/courses/tutor-course',
     account: '/account',
