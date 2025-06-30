@@ -29,7 +29,8 @@ export const paths = {
     tutorProfile: (tutorId: string) => `/tutors/${tutorId}`,
     sessionManagement: '/session-management',
     courseManagement: '/course-management',
-    reports: '/reports'
+    reports: '/reports',
+    adminReports: '/admin-reports'
   },
   errors: { notFound: '/errors/not-found' },
 } as const;
