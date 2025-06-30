@@ -12,7 +12,7 @@ export const navItems = [
   { key: 'course-management', title: 'Course Management', href: paths.main.courseManagement, icon: 'books' },
   { key: 'session', title: 'Session', href: paths.main.session, icon: 'users' },
   { key: 'session-management', title: 'Session Management', href: paths.main.sessionManagement, icon: 'calendar' },
-
+  { key: 'reports', title: 'Reports', href: paths.main.reports, icon: 'chart-bar' },
 
   // { key: 'integrations', title: 'Integrations', href: paths.main.integrations, icon: 'plugs-connected' },
   { key: 'settings', title: 'Settings', href: paths.main.settings, icon: 'gear-six' },
