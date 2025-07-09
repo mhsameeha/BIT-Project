@@ -41,7 +41,7 @@ namespace BusinessService.Services
             user.FirstName = newUser.FirstName;
             user.LastName = newUser.LastName;
             user.Email = newUser.Email;
-            user.DOB = newUser.DOB;
+            user.Dob = newUser.Dob;
             user.Role = newUser.Role;
             _context.Add(user);
             _context.SaveChanges();

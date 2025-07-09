@@ -1,10 +1,8 @@
 ﻿using BusinessService.Data;
 using BusinessService.Interfaces;
-using BusinessService.Models.DTOs;
 using BusinessService.Models.Entities;
 using BusinessService.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -12,44 +10,44 @@ namespace mybackend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TutorController : ControllerBase
+    public class SpecialityController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        public TutorController(ApplicationDbContext context)
+
+        public SpecialityController (ApplicationDbContext context)
         {
             _context = context;
         }
-        //GET: api/<TutorController>
-        [HttpGet("tutors")]
-        public List<TutorDto> getAllTutors()
+
+        // GET: api/<SpecialityController>
+        [HttpGet]
+        public List<Speciality> Get()
         {
-            ITutorService TutorService = new TutorService(_context);
-            var result = TutorService.getAllTutors();
-            return result;
+            ISpecialityService speciality = new SpecialityService(_context);
+            var specialityList = speciality.SpecialityList();
+            return specialityList;
         }
 
-        // GET api/<TutorController>/5
+        // GET api/<SpecialityController>/5
         [HttpGet("{id}")]
-        public List<SessionDto> TutorSessions(Guid id)
+        public string Get(int id)
         {
-            ITutorService TutorService = new TutorService(_context);
-            var result = TutorService.UpcomingSessions(id);
-            return result;
+            return "value";
         }
 
-        // POST api/<TutorController>
+        // POST api/<SpecialityController>
         [HttpPost]
         public void Post([FromBody] string value)
         {
         }
 
-        // PUT api/<TutorController>/5
+        // PUT api/<SpecialityController>/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] string value)
         {
         }
 
-        // DELETE api/<TutorController>/5
+        // DELETE api/<SpecialityController>/5
         [HttpDelete("{id}")]
         public void Delete(int id)
         {

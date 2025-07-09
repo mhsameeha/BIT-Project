@@ -17,6 +17,7 @@ import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/di
 import { CourseListItem } from '@/components/main/courses/course-list-item';
 import { getAllCourses, type CourseData } from '@/constants/courses';
 
+
 // Get unique categories from courses
 const getAllCategories = (): string[] => {
   const categories = new Set<string>();

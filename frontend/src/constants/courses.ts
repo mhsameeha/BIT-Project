@@ -44,6 +44,11 @@ export interface CourseData {
 }
 
 export const COURSES_DATA: Record<string, CourseData> = {
+
+
+
+
+
   'INTEG-001': {
     id: 'INTEG-001',
     title: 'Introduction to Programming',

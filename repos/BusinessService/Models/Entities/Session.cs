@@ -11,23 +11,25 @@ namespace BusinessService.Models.Entities
     public class Session
     {
         [Key]
+
         public Guid SessionId { get; set; }
 
-        [ForeignKey("Tutor")]
-        public Guid TutorId { get; set; }
-        public required Tutor Tutor { get; set; }
+        public string? SessionName { get; set; }
+        public string? SessionLink { get; set; }
 
-        [ForeignKey("Learner")]
-        public Guid LearnerId { get; set; }
-        public required Learner Learner { get; set; }
+        public Guid? LearnerFk { get; set; }
+        public Guid? TutorFk { get; set; }
 
-        public DateTime? SessionTime { get; set; }
-        public TimeOnly? Duration { get; set; }
+        public DateTime? StartTime { get; set; }
+        public DateTime? EndTime { get; set; }
+        public string? AdditionalInfo { get; set; }
 
-        public required string Status { get; set; }
+        public string? SessionStatus { get; set; }
+        public string? SessionStatusInfo { get; set; }
 
-        public required string SessionName { get; set; }
-        public string? RecordingUrl { get; set; }
+
+
+
     }
 
 }

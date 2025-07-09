@@ -11,8 +11,7 @@ namespace BusinessService.Interfaces
     public interface IUserService
     {
         public User addUser(UserDto newUser);
-        public string GenerateToken(LoginDto currentUser);
-        public bool SignIn(LoginDto currentUser);
+        public string SignIn(LoginDto currentUser);
         //public void Claims(LoginDto currentUser);
     }
 }

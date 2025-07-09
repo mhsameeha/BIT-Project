@@ -16,147 +16,97 @@ namespace BusinessService.Services
     public class UserService : IUserService
 
     {
-        
+
         private readonly ApplicationDbContext _context;
 
-        public UserService(ApplicationDbContext context) {
+        public UserService(ApplicationDbContext context)
+        {
 
             _context = context;
         }
 
 
+        //register users to the system
+        public User addUser(UserDto newUser)
 
-    public User addUser( UserDto newUser)
-            
         {
-            var user = new User {
-                Id = Guid.NewGuid(),
+            var user = new User
+            {
+                UserId = Guid.NewGuid(),
                 FirstName = newUser.FirstName,
                 LastName = newUser.LastName,
-                DOB = newUser.DOB,
+                Dob = newUser.Dob,
                 Email = newUser.Email,
                 Role = newUser.Role,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(newUser.Password),
-                CreatedDate = DateTime.Now,
+                Password = BCrypt.Net.BCrypt.HashPassword(newUser.Password),
+                CreatedAt = DateTime.Now,
 
-                };
+            };
             _context.Add(user);
             _context.SaveChanges();
-            if (newUser.Role == "Learner") {
+            if (newUser.Role == "Learner")
+            {
                 var newlearner = new Learner
                 {
 
-                    UserFk = user.Id
+                    UserFk = user.UserId
                 };
                 _context.Add(newlearner);
                 _context.SaveChanges();
-                };
-                if (newUser.Role == "Tutor")
-                {
+            }
+            ;
+            if (newUser.Role == "Tutor")
+            {
                 var newTutor = new Tutor
                 {
 
-                    UserFk = user.Id,
-                    ApprovalStatus = "Pending"
+                    UserFk = user.UserId,
+                    Status = "Pending"
                 };
 
                 _context.Add(newTutor);
                 _context.SaveChanges();
             }
-            ;
+                ;
 
-                
-            
+
+
             return user;
         }
 
-        public string GenerateToken(LoginDto currentUser)
-        {
-            List<Claim> claims = new List<Claim>
-            {
-                new Claim (ClaimTypes.Email, currentUser.Email),
-       
-            };
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("my-secret-is-this-tree-this0is-randombatehdhdtuasbkhcvsdugkahsdvjgsdvchftugdsdbfgusfgduybvgsdhfvgv"));
-
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
-            var token = new JwtSecurityToken(
-                claims: claims,
-                expires: DateTime.Now.AddDays(1),
-                signingCredentials: creds
-                );
-
-            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-            return jwt;
-        }
-
- 
-
-        //public void Claims(LoginDto currentUser)
-        //{
-        //    var user = _context.Users.SingleOrDefault(x => x.Email == currentUser.Email);
-        //    var learner = _context.Learners.SingleOrDefault(x => x.UserFk == user.Id);
-        //    var tutor = _context.Tutors.SingleOrDefault(x => x.UserFk == user.Id);
-        //    var admin = _context.Admins.SingleOrDefault(x => x.UserFk == user.Id);
-
-        //    List<Claim> Claims;
-
-
-        //    if (user != null && BCrypt.Net.BCrypt.Verify(currentUser.Password, user.PasswordHash))
-        //    {
-        //        if (user.Role == "Learner" && learner != null)
-        //        {
-        //            Claims = new List<Claim>
-        //        {
-        //             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-        //             new Claim(ClaimTypes.Role, user.Role),
-        //            new Claim(ClaimTypes.NameIdentifier, learner.LearnerId.ToString())
-
-
-        //        };
-        //        }
-        //            if (user.Role == "Tutor" && tutor != null)
-        //            {
-        //                Claims = new List<Claim>
-        //        {
-        //             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-        //             new Claim(ClaimTypes.Role, user.Role),
-        //            new Claim(ClaimTypes.NameIdentifier, tutor.TutorId.ToString())
-
-        //        };
-
-
-        //            }
-        //            if (user.Role == "Admin" && admin != null)
-        //            {
-        //                Claims = new List<Claim>
-        //        {
-        //             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-        //             new Claim(ClaimTypes.Role, user.Role),
-        //            new Claim(ClaimTypes.NameIdentifier, admin.AdminId.ToString())
-
-        //        };
-
-
-        //            }
-        //        } 
-        //    }
-                
-
-        public bool SignIn(LoginDto currentUser)
+        public string SignIn(LoginDto currentUser)
         {
             var user = _context.Users.SingleOrDefault(x => x.Email == currentUser.Email);
 
-            if (user != null && BCrypt.Net.BCrypt.Verify(currentUser.Password, user.PasswordHash))
+            if (user != null && BCrypt.Net.BCrypt.Verify(currentUser.Password, user.Password))
             {
-                return true;
+                List<Claim> claims = new List<Claim>
+            {
+                new Claim (ClaimTypes.Email, currentUser.Email),
+
+                new Claim (ClaimTypes.NameIdentifier, user.UserId.ToString()),
+
+            };
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("my-secret-is-this-tree-this" +
+                    "0is-randombatehdhdtuasbkhcvsdugkahsdvjgsdvchftugdsdbfgusfgduybvgsdhfvgv"));
+
+                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+                var token = new JwtSecurityToken(
+                    claims: claims,
+                    expires: DateTime.Now.AddDays(1),
+                    signingCredentials: creds
+                    );
+
+                var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+                return jwt;
             }
 
-            return false;
+            return "Invalid Credential";
+        }
 
-        }
-        }
+
+    }
 
 
 

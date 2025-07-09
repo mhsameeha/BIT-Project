@@ -3,6 +3,7 @@ using BusinessService.Services;
 using Microsoft.AspNetCore.Mvc;
 using BusinessService.Data;
 using BusinessService.Models.DTOs;
+using BusinessService.Models.Entities;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -19,13 +20,15 @@ namespace mybackend.Controllers
             _context = context;
         }
         // GET: api/<CourseController>
-        [HttpGet]
+        [HttpGet ("Courses")]
         public List<CourseDetailDto> Get()
         {
             ICourseService courseService = new CourseService(_context);
             var course = courseService.GetCourseDetails();
             return course;
         }
+
+   
 
         // GET api/<CourseController>/5
         //[HttpGet("{id}")]

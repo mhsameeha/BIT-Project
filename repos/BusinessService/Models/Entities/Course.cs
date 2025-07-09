@@ -11,25 +11,28 @@ namespace BusinessService.Models.Entities
     public class Course
     {
         [Key]
+
         public Guid CourseId { get; set; }
 
-        public required string CourseName { get; set; }
-        public decimal Fee { get; set; }
-
-        [ForeignKey("TutorProfile")]
         public Guid TutorFk { get; set; }
+        public decimal? Price { get; set; }
 
-        public DateTime CreatedDate { get; set; }
+        public string? Title { get; set; }
+        public string? Introduction { get; set; }
+        public string? Description { get; set; }
+
+        public Guid CourseDifficultyFk { get; set; }
+        public Guid? CategoryFk { get; set; }
+
+        public DateTime? CreatedDate { get; set; }
         public DateTime? UpdatedDate { get; set; }
         public DateTime? PublishedDate { get; set; }
 
-        [ForeignKey("Category")]
-        public Guid CategoryFk { get; set; }
-        public Category? Category { get; set; }
+        public bool IsEnabled { get; set; } = false;
+        public byte CourseImage {  get; set; }
+        public Guid LanguageFk { get; set; }
 
-        public required string Status { get; set; }
+        }
 
-        //public ICollection<Enrollment> Enrollments { get; set; }
-    }
 
-}
+        }

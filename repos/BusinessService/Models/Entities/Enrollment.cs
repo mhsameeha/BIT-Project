@@ -11,25 +11,21 @@ namespace BusinessService.Models.Entities
     public class Enrollment
     {
         [Key]
-        public Guid EnrolmentId { get; set; }
 
-        [ForeignKey("LearnerProfile")]
-        public Guid LearnerId { get; set; }
-        public required Learner Learner { get; set; }
+        public Guid EnrollmentId { get; set; }
 
-        [ForeignKey("Course")]
-        public Guid CourseId { get; set; }
-        public required Course Course { get; set; }
+        public Guid? CourseFk { get; set; }
+        public Guid? LearnerFk { get; set; }
 
-        [ForeignKey("TutorProfile")]
-        public Guid TutorId { get; set; }
-        public required Tutor Tutor { get; set; }
+        public bool IsPaid { get; set; } = false;
 
-        public bool FeePayment { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        public DateTime? EnrolledDate { get; set; }
 
-        public required string Status { get; set; }
+
+        public string? EnrollmentStatus { get; set; }
+
+
     }
 
 }
+

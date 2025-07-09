@@ -9,23 +9,27 @@ using static System.Collections.Specialized.BitVector32;
 
 namespace BusinessService.Models.Entities
 {
-   
-        public class Tutor
-        {
-            [Key]
-            public Guid TutorId { get; set; }
 
-        [ForeignKey("User")]
-            public Guid UserFk { get; set; }
-            //public  User User { get; set; }
+    public class Tutor
+    {
+        [Key]
 
-            public string ? ApprovalStatus  { get; set; }
-            public DateTime? ApprovalDate { get; set; }
+        public Guid TutorId { get; set; }
 
-            //public ICollection<Course> Courses { get; set; }
-            //public ICollection<Enrollment> Enrollments { get; set; }
-            //public ICollection<Session> Sessions { get; set; }
-        }
+        public string? TutorDescription { get; set; }
+
+        public decimal? TutorRating { get; set; }
+        public string? Status { get; set; }
+        public DateTime? ApprovedDate { get; set; }
+        public DateTime? ApprovalRequestDate { get; set; }
+
+        public string? TutorProfPic { get; set; }
+        public string? Experience { get; set; }
+        public string? Education { get; set; }
+        public Guid UserFk { get; set; }
+        public string? Language {get; set;}
+
 
     }
+}
 

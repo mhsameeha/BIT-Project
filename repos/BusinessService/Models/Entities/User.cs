@@ -8,30 +8,26 @@ using System.Threading.Tasks;
 
 namespace BusinessService.Models.Entities
 {
-    public class User
+
+
+public class User
     {
-            [Key]
-            public Guid Id { get; set; }
-            public required string FirstName { get; set; }
+        [Key]
+        public Guid UserId { get; set; }
 
-        public required string LastName { get; set; }
-             public required DateTime DOB { get; set; }
-
-
-        [EmailAddress]
-            public required string Email { get; set; }
-
-            public required string PasswordHash { get; set; }
-            public required string Role { get; set; }
-
-            public DateTime CreatedDate { get; set; }
-            public bool IsActive { get; set; }
-            public bool IsDeleted { get; set; }
-
-           // public required LearnerProfile Learner { get; set; }
-           // public required TutorProfile Tutor { get; set; }
-           //public required AdminProfile Admin { get; set; }
-
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string? Email { get; set; }
+        public DateTime? Dob { get; set; }
+        public string? Password { get; set; }
+        public string? Role { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public bool IsActive { get; set; } = true;
+        public bool? IsDeleted { get; set; }
 
     }
+
+
+
 }
+

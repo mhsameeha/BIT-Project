@@ -1,16 +1,34 @@
+// export interface Course {
+//        courseid: number ;
+//        courseName: string ;
+//        courseIntro:string;
+//        price: number;
+//        categoryName : string;
+//        PublishedDate: Date;
+//        courseContentId: string;          
+//        courseDescription: string;
+//        briefIntro: string;
+//        resources: string | null;
+//        courseLink: string;
+//        level : string;
+//        duration: string;  
+// }
+
+
 export interface Course {
-       courseid: number ;
-       courseName: string ;
-       courseIntro:string;
-       fee: number;
-       categoryName : string;
-       PublishedDate: Date;
-       courseContentId: string;          
-       courseDescription: string;
-       briefIntro: string;
-       resources: string | null;
-       courseLink: string;  
+  courseId: string;                // GUID
+  courseName?: string;
+  price?: number;
+  categoryName?: string;
+  tutorName?: string;              // Tutor full name
+  rating?: number;                 // e.g., 4.5
+  enrolledStudents?: number;       // Number of students enrolled
+  duration?: string;               // e.g., "2h 30m"
+  briefIntro?: string;             // Short course description
+  level?: string;                  // e.g., "Beginner"
+  lastUpdated?: string;            // ISO date string (e.g., "2025-07-06T12:00:00Z")
 }
+
 
 // Course content types for tutor course management
 export interface SubContent {

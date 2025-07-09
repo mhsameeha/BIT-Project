@@ -11,23 +11,24 @@ namespace BusinessService.Models.Entities
     public class CourseContent
     {
         [Key]
-        public Guid CourseContentId { get; set; } = Guid.NewGuid();
+        public Guid ContentId { get; set; }
+        public Guid CourseFk { get; set; }
 
-        [MaxLength(255)]
-        public required string CourseDescription { get; set; }
+        public string? Title { get; set; }
 
-        [MaxLength(100)]
-        public required string BriefIntro { get; set; }
+        public string? Description { get; set; }
+        public TimeSpan? Duration { get; set; } 
 
-        [MaxLength(255)]
-        public string? Resources { get; set; }
+        public int SortOrder { get; set; }
 
-        [MaxLength(255)]
-        public string? CourseLink { get; set; }
+        public bool IsActive { get; set; }
 
-        // Foreign key
-        [ForeignKey("CourseId")]
-        public Guid CourseId { get; set; }
-        public Course? Course { get; set; }
+        public DateTime CreatedDate { get; set; }
+
+        public DateTime UpdatedDate { get; set; }
+
+        public string? SubContent { get; set; }
+
+        public string? Tags { get; set; }
     }
 }

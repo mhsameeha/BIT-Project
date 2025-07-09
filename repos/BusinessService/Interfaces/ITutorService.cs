@@ -10,5 +10,6 @@ namespace BusinessService.Interfaces
     public interface ITutorService
     {
         public List<SessionDto> UpcomingSessions(Guid tutorId);
+        public List<TutorDto> getAllTutors();
     }
 }

@@ -11,10 +11,10 @@ namespace BusinessService.Models.DTOs
     {
         public Guid Id { get; set; }
 
-        public required string FirstName { get; set; }
-        public required string LastName { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
 
-        public required DateTime DOB { get; set; }
+        public  DateTime? Dob { get; set; }
 
         [EmailAddress]
         public required string Email { get; set; }

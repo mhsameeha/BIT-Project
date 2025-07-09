@@ -5,7 +5,6 @@ using BusinessService.Models.Entities;
 using BusinessService.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using BusinessService.Services;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -45,21 +44,14 @@ namespace mybackend.Controllers
 
         }
 
-        [HttpPost("signin")]
+        [HttpPost("SignIn")]
         public IActionResult SignIn(LoginDto currentUser)
         {
 
             IUserService UserService = new UserService(_context);
             var access = UserService.SignIn(currentUser);
 
-            if (access == true)
-            {
-                var token = UserService.GenerateToken(currentUser);
-                return Ok(new { token });
-
-            }
-
-            return BadRequest("Invalid Credentials");
+            return Ok(new {token = access});
         }
 
 

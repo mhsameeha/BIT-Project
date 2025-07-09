@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using BusinessService.Data;
+﻿using BusinessService.Data;
 using BusinessService.Interfaces;
 using BusinessService.Models.DTOs;
-using BusinessService.Models.Entities;
 
 namespace BusinessService.Services
 {
@@ -22,19 +15,57 @@ namespace BusinessService.Services
 
         public List<CourseDetailDto> GetCourseDetails()
         {
+            var ratingQuery = (from course in _context.Courses
+                               join coursereview in _context.CourseReviews on course.CourseId equals coursereview.CourseFk
+                               group coursereview by new { course.CourseId } into g
+                               select new
+                               {
+                                   g.Key.CourseId,
+                                   AverageRating = g.Average(r => r.Rating)
+                               }
+                          );
 
-            var result = (from coursecontent in _context.CourseContents
-                          join course in _context.Courses on coursecontent.CourseId equals course.CourseId
+            var totalDurationQuery = (from course in _context.Courses
+                                      join coursecontent in _context.CourseContents on course.CourseId equals coursecontent.CourseFk
+                                      group coursecontent by new { course.CourseId } into g
+                                      select new
+                                      {
+                                          g.Key.CourseId,
+                                          TotalDurationTicks = g.Sum(s => s.Duration.HasValue ? s.Duration.Value.Ticks : 0),
+                                      }
+                                 ).ToList()
+                     .Select(x => new
+                     {
+                         x.CourseId,
+                         TotalDuration = new TimeSpan(x.TotalDurationTicks) // back to TimeSpan
+                     }).ToList();
+
+
+
+            var result = (from course in _context.Courses
                           join category in _context.Categories on course.CategoryFk equals category.CategoryId
-
+                          join difficulty in _context.CourseDifficulties on course.CourseDifficultyFk equals difficulty.CourseDifficultyId
+                          join tutor in _context.Tutors on course.TutorFk equals tutor.TutorId
+                          join user in _context.Users on tutor.UserFk equals user.UserId
+                          join rating in ratingQuery on course.CourseId equals rating.CourseId into ratings
+                          from courseRating in ratings.DefaultIfEmpty()
+                          join totalDuration in totalDurationQuery on course.CourseId equals totalDuration.CourseId into duration
+                          from totalCourseDuration in duration.DefaultIfEmpty()
                           select new CourseDetailDto
                           {
                               CourseId = course.CourseId,
-                              CourseName = course.CourseName,
-                              Fee = course.Fee,
-                              PublishedDate = course.PublishedDate,
+                              Title = course.Title,
+                              TutorName = user.FirstName + ' ' + user.LastName,
+                              Rating = courseRating != null ? courseRating.AverageRating : 0,
+                              Duration = totalCourseDuration != null ? totalCourseDuration.TotalDuration : TimeSpan.Zero,
+                              EnrolledStudents = 2,
+                              ReviewCount = 2,
+                              Sections = 2,
+                              Price = course.Price,
+                              CourseDifficulty = difficulty.CourseDifficultyName,
+                              UpdatedDate = course.UpdatedDate,
                               CategoryName = category.CategoryName,
-                              CourseIntro = coursecontent.BriefIntro
+                              Introduction = course.Introduction
                           }).ToList();
             return result;
         }

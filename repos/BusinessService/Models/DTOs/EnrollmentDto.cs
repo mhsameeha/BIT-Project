@@ -8,6 +8,6 @@ namespace BusinessService.Models.DTOs
 {
     public class EnrollmentDto
     {
-        public  required string courseName{ get; set; }
+        public  string? courseName{ get; set; }
     }
 }
