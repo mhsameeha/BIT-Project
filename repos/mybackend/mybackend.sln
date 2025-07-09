@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35728.132 d17.12
+VisualStudioVersion = 17.12.35728.132
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mybackend", "mybackend.csproj", "{29DA2D4C-81AF-42EB-AEA3-0FB57F48D78C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EduConnect.API", "EduConnect.API.csproj", "{29DA2D4C-81AF-42EB-AEA3-0FB57F48D78C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusinessService", "..\BusinessService\BusinessService.csproj", "{CAFF0A10-483C-466E-8AA2-D7F2ED81F2D7}"
 EndProject

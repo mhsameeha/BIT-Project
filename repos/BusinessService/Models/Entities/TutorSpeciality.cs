@@ -12,8 +12,9 @@ namespace BusinessService.Models.Entities
     [PrimaryKey(nameof(TutorFk), nameof(SpecialityFk))]
     public class TutorSpeciality
         {
-    
+        [Column("tutorFk")]
             public Guid TutorFk { get; set; }
+        [Column("specialityFk")]
             public Guid SpecialityFk { get; set; }
 
  

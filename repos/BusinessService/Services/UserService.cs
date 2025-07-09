@@ -39,7 +39,7 @@ namespace BusinessService.Services
                 Email = newUser.Email,
                 Role = newUser.Role,
                 Password = BCrypt.Net.BCrypt.HashPassword(newUser.Password),
-                CreatedAt = DateTime.Now,
+                CreatedDate = DateTime.Now,
 
             };
             _context.Add(user);

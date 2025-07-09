@@ -11,9 +11,10 @@ namespace BusinessService.Models.Entities
     public class Admin
     {
         [Key]
-
+        [Column("adminId")]
         public Guid AdminId { get; set; }
 
+        [Column("userFk")]
         public Guid UserFk { get; set; }
 
 }
