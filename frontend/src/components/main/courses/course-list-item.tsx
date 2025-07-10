@@ -14,28 +14,23 @@ import { Clock as ClockIcon } from '@phosphor-icons/react/dist/ssr/Clock';
 import { BookOpen as BookOpenIcon } from '@phosphor-icons/react/dist/ssr/BookOpen';
 import { Student as StudentIcon } from '@phosphor-icons/react/dist/ssr/Student';
 import { useRouter } from 'next/navigation';
+import { Course } from '@/types/course';
 
-import type { CourseData } from '@/constants/courses';
+
 
 export interface CourseListItemProps {
-  course: CourseData;
+  course: Course;
 }
 
 export function CourseListItem({ course }: CourseListItemProps): React.JSX.Element {
+
   const router = useRouter();
 
   const handleViewCourse = (): void => {
-    router.push(`/courses/${course.id}`);
+    router.push(`/courses/${course.courseId}`);
   };
 
-  // Calculate total course duration
-  const totalDuration = course.curriculum.reduce((total, section) => {
-    const sectionDuration = section.lessons.reduce((sectionTotal, lesson) => {
-      const minutes = parseInt(lesson.duration.replace(/\D/g, ''));
-      return sectionTotal + minutes;
-    }, 0);
-    return total + sectionDuration;
-  }, 0);
+
 
   const formatDuration = (minutes: number): string => {
     const hours = Math.floor(minutes / 60);
@@ -52,7 +47,7 @@ export function CourseListItem({ course }: CourseListItemProps): React.JSX.Eleme
         <Box sx={{ display: 'flex', gap: 3 }}>
           {/* Course Logo */}
           <Avatar
-            src={course.logo}
+            // src={course.logo}
             sx={{ width: 80, height: 80 }}
             variant="rounded"
           />
@@ -92,14 +87,14 @@ export function CourseListItem({ course }: CourseListItemProps): React.JSX.Eleme
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <ClockIcon size={16} />
                       <Typography color="text.secondary" variant="body2">
-                        {formatDuration(totalDuration)} total
+                        {course.duration} total
                       </Typography>
                     </Box>
                     
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <BookOpenIcon size={16} />
                       <Typography color="text.secondary" variant="body2">
-                        {course.curriculum.length} sections
+                        {course.sections} sections
                       </Typography>
                     </Box>
                   </Box>
@@ -109,7 +104,7 @@ export function CourseListItem({ course }: CourseListItemProps): React.JSX.Eleme
                 <Stack alignItems="flex-end" spacing={1}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                      {course.currency} {course.fee.toLocaleString()}
+                      {course.price?.toLocaleString()} LKR
                     </Typography>
                   </Box>
                 </Stack>
@@ -117,14 +112,14 @@ export function CourseListItem({ course }: CourseListItemProps): React.JSX.Eleme
               
               {/* Description */}
               <Typography color="text.secondary" variant="body2" sx={{ lineHeight: 1.6 }}>
-                {course.description}
+                {course.introduction}
               </Typography>
               
               {/* Course Details */}
               <Box sx={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
                 <Box>
                   <Chip 
-                    label={course.level} 
+                    label={course.courseDifficulty} 
                     size="small" 
                     color="primary"
                     variant="outlined"
@@ -133,7 +128,7 @@ export function CourseListItem({ course }: CourseListItemProps): React.JSX.Eleme
                 
                 <Box>
                   <Chip 
-                    label={course.category} 
+                    label={course.categoryName} 
                     size="small" 
                     color="secondary"
                     variant="outlined"
@@ -142,19 +137,19 @@ export function CourseListItem({ course }: CourseListItemProps): React.JSX.Eleme
                 
                 <Box>
                   <Typography color="text.secondary" variant="body2">
-                    Last updated: {new Date(course.updatedAt).toLocaleDateString()}
+                    Last updated: {(course.updatedDate?.toLocaleString())}
                   </Typography>
                 </Box>
               </Box>
               
               {/* Course Preview - First few curriculum items */}
-              {course.curriculum.length > 0 && (
+              {course.sections > 0 && (
                 <Box>
                   <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
                     What you&apos;ll learn:
                   </Typography>
-                  <Box sx={{ pl: 2 }}>
-                    {course.curriculum[0].lessons.slice(0, 3).map((lesson) => (
+                  {/* <Box sx={{ pl: 2 }}>
+                    {course.sections[0].lessons.slice(0, 3).map((lesson) => (
                       <Typography key={lesson.id} color="text.secondary" variant="body2" sx={{ mb: 0.5 }}>
                         • {lesson.title}
                       </Typography>
@@ -164,7 +159,7 @@ export function CourseListItem({ course }: CourseListItemProps): React.JSX.Eleme
                         +{course.curriculum[0].lessons.length - 3} more lessons...
                       </Typography>
                     )}
-                  </Box>
+                  </Box> */}
                 </Box>
               )}
             </Stack>

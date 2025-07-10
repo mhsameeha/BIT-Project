@@ -30,6 +30,8 @@ public class User
         public string? Role { get; set; }
         [Column("createdDate")]
         public DateTime? CreatedDate { get; set; }
+        [Column("updatedDate")]
+        public DateTime? UpdatedDate { get; set; }
         [Column("isActive")]
         public bool IsActive { get; set; } = true;
         [Column("isDeleted")]

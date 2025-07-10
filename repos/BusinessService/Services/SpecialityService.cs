@@ -16,7 +16,9 @@ namespace BusinessService.Services
         _context = context;
         }
         public List<Speciality> SpecialityList() { 
-             var specialityList = _context.Specialities.ToList();
+             var specialityList = _context.Specialities
+                .OrderBy(s => s.SpecialityName)
+                .ToList();
             return specialityList;
         }
     }

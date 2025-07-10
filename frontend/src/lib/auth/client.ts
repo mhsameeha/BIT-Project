@@ -74,20 +74,21 @@ class AuthClient {
 
     //Sign In API request
     try {
-      const response = await fetch('https://localhost:7028/api/User/signin', {
+      const response = await fetch('https://localhost:7028/api/User/Signin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(params),
       });
-  
-      if (!response.ok) {
-        const errorMessage = await response.text();
-        return { error: errorMessage || 'Invalid credentials' };
+const {token} = await response.json()
+      if (!response.ok || token.toLowerCase().includes("invalid")  ) {
+
+        return { error: token || 'Invalid credentials' };
       }
   
-      const { token } = await response.json();
+
+
       localStorage.setItem('custom-auth-token', token);
   
       return {};

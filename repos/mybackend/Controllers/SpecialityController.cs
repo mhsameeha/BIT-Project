@@ -20,7 +20,7 @@ namespace mybackend.Controllers
         }
 
         // GET: api/<SpecialityController>
-        [HttpGet]
+        [HttpGet("Speciality")]
         public List<Speciality> Get()
         {
             ISpecialityService speciality = new SpecialityService(_context);

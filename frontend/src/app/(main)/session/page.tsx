@@ -16,14 +16,63 @@ import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/di
 
 import { TutorListItem } from '@/components/main/session/tutor-list-item';
 import { getAllTutors, getAllSpecialties, searchTutors, type TutorData } from '@/constants/tutors';
+import { Speciality } from '@/types/speciality';
 
 export default function Page(): React.JSX.Element {
   const [tutors, setTutors] = React.useState<TutorData[]>(getAllTutors());
   const [searchQuery, setSearchQuery] = React.useState<string>('');
   const [selectedSpecialties, setSelectedSpecialties] = React.useState<string[]>([]);
+  const [allSpecialties, setAllSpecialties] = React.useState<Speciality[]>([]);
+
   const [sortBy, setSortBy] = React.useState<string>('name');
 
-  const allSpecialties = getAllSpecialties();
+
+const getAllSpecialties = async ()  => {
+        try {
+
+            // set this up after developing the API
+            const response = await fetch('https://localhost:7028/api/Speciality/Speciality', {
+            method: 'GET',
+            });
+        
+            if (!response.ok) {
+            const errorMessage = await response.text();
+            return { error: errorMessage || 'Invalid Request' };
+            }
+            return response.json();
+        }
+        catch (error) {
+            console.error('Request Error:', error);
+        }
+return []
+       
+    }
+
+  React.useEffect(()   =>   {
+    const fetchData = async () => {
+        const returnValue = await getAllSpecialties();
+        console.log('returnValue', returnValue);
+        
+            if ('error' in returnValue) {
+      console.error(returnValue.error);
+            const errorMessage = returnValue;
+
+      // Optionally, handle error UI here
+      return { error: errorMessage || 'Invalid Request' };
+    }        
+    setAllSpecialties(returnValue);
+    console.log(returnValue);
+    
+  
+      };
+
+      fetchData();
+   
+    //initial load 
+  }, [])
+
+
+
 
   // Handle search and filtering
   React.useEffect(() => {
@@ -126,9 +175,9 @@ export default function Page(): React.JSX.Element {
                     </Box>
                   )}
                 >
-                  {allSpecialties.map((specialty) => (
-                    <MenuItem key={specialty} value={specialty}>
-                      {specialty}
+                  {allSpecialties.map((speciality:Speciality) => (
+                    <MenuItem key={speciality.specialityId} value={speciality.specialityName}>
+                      {speciality.specialityName}
                     </MenuItem>
                   ))}
                 </Select>

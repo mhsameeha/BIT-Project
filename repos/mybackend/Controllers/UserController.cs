@@ -45,13 +45,18 @@ namespace mybackend.Controllers
         }
 
         [HttpPost("SignIn")]
-        public IActionResult SignIn(LoginDto currentUser)
+        public string SignIn(LoginDto currentUser)
         {
 
             IUserService UserService = new UserService(_context);
             var access = UserService.SignIn(currentUser);
 
-            return Ok(new {token = access});
+            if (access == "Invalid Credentials")
+            {
+                return  "Invalid Credential" ;
+            }
+
+            return access;
         }
 
 

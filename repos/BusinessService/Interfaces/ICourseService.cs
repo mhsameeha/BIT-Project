@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BusinessService.Models.DTOs;
+using BusinessService.Models.Entities;
 
 namespace BusinessService.Interfaces
 {
@@ -12,9 +13,12 @@ namespace BusinessService.Interfaces
         //string GetCoursebyId(int id);
         //public IEnumerable<string> GetAllCourses();
 
-        public List<CourseDetailDto> GetCourseDetails();
+        public Task<PaginatedCoursesDto> GetCoursesAsync(int page, int pageSize);
+        public List<Category> getCourseCategories();
 
-       //AddCourseDto addCourse(AddCourseDto course);
+        public List<CourseDifficulty> getCourseDifficulties();
+
+        //AddCourseDto addCourse(AddCourseDto course);
 
         //void DeleteCourse(int id);
     }

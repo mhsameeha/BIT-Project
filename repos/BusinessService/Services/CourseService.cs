@@ -1,6 +1,8 @@
 ﻿using BusinessService.Data;
 using BusinessService.Interfaces;
 using BusinessService.Models.DTOs;
+using BusinessService.Models.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace BusinessService.Services
 {
@@ -13,32 +15,56 @@ namespace BusinessService.Services
             _context = context;
         }
 
-        public List<CourseDetailDto> GetCourseDetails()
+        public List<Category> getCourseCategories()
         {
-            var ratingQuery = (from course in _context.Courses
-                               join coursereview in _context.CourseReviews on course.CourseId equals coursereview.CourseFk
-                               group coursereview by new { course.CourseId } into g
-                               select new
-                               {
-                                   g.Key.CourseId,
-                                   AverageRating = g.Average(r => r.Rating)
-                               }
-                          );
+         
+        
+            var categories = _context.Categories
+                .OrderBy(c => c.CategoryName)
+                .ToList();
+            return categories;
+        }
 
-            var totalDurationQuery = (from course in _context.Courses
-                                      join coursecontent in _context.CourseContents on course.CourseId equals coursecontent.CourseFk
-                                      group coursecontent by new { course.CourseId } into g
-                                      select new
-                                      {
-                                          g.Key.CourseId,
-                                          TotalDurationTicks = g.Sum(s => s.Duration.HasValue ? s.Duration.Value.Ticks : 0),
-                                      }
-                                 ).ToList()
-                     .Select(x => new
-                     {
-                         x.CourseId,
-                         TotalDuration = new TimeSpan(x.TotalDurationTicks) // back to TimeSpan
-                     }).ToList();
+        public List<CourseDifficulty> getCourseDifficulties()
+        {
+            var difficulties = _context.CourseDifficulties
+               .OrderBy(c => c.CourseDifficultyName)
+               .ToList();
+            return difficulties;
+        }
+
+        public async Task<PaginatedCoursesDto> GetCoursesAsync(int page, int pageSize)
+        {
+            //var ratingQuery = (from course in _context.Courses
+            //                   join coursereview in _context.CourseReviews on course.CourseId equals coursereview.CourseFk into ccr
+            //                   from courserating in ccr.DefaultIfEmpty()
+            //                   select new
+            //                   {
+            //                       CourseId = course.CourseId,
+            //                       AverageRating = ccr.Average(r => r.Rating)
+            //                   }
+            //              ).ToListAsync();
+
+
+
+            //var totalDurationQuery = (from course in _context.Courses
+            //                          join coursecontent in _context.CourseContents on course.CourseId equals coursecontent.CourseFk into ccc
+            //                          from duration in ccc.DefaultIfEmpty()
+            //                          select new
+            //                          {
+            //                              CourseId = course.CourseId,
+            //                              TotalDurationTicks = ccc.Sum(s => s.Duration.HasValue ? s.Duration.Value.Ticks : 0),
+            //                          }
+            //                     ).ToList()
+            //         .Select(x => new
+            //         {
+            //             x.CourseId,
+            //             TotalDuration = new TimeSpan(x.TotalDurationTicks) // back to TimeSpan
+            //         }).ToList();
+
+            //var totalEnrolledStudents = (from course in _context.Courses
+            //                             join enrollment in _context.Enrollments on course.CourseId equals enrollment.CourseFk
+            //                             )
 
 
 
@@ -46,18 +72,20 @@ namespace BusinessService.Services
                           join category in _context.Categories on course.CategoryFk equals category.CategoryId
                           join difficulty in _context.CourseDifficulties on course.CourseDifficultyFk equals difficulty.CourseDifficultyId
                           join tutor in _context.Tutors on course.TutorFk equals tutor.TutorId
-                          join user in _context.Users on tutor.UserFk equals user.UserId
-                          join rating in ratingQuery on course.CourseId equals rating.CourseId into ratings
-                          from courseRating in ratings.DefaultIfEmpty()
-                          join totalDuration in totalDurationQuery on course.CourseId equals totalDuration.CourseId into duration
-                          from totalCourseDuration in duration.DefaultIfEmpty()
+                          join user in _context.Users on tutor.UserFk equals user.UserId //innerJoin
+                          //join rating in ratingQuery on course.CourseId equals rating.CourseId into temp
+                          //from courseRating in temp.DefaultIfEmpty()
+                          //join totalDuration in totalDurationQuery on course.CourseId equals totalDuration.CourseId into duration
+                          //from totalCourseDuration in duration.DefaultIfEmpty()
                           select new CourseDetailDto
                           {
                               CourseId = course.CourseId,
                               Title = course.Title,
                               TutorName = user.FirstName + ' ' + user.LastName,
-                              Rating = courseRating != null ? courseRating.AverageRating : 0,
-                              Duration = totalCourseDuration != null ? totalCourseDuration.TotalDuration : TimeSpan.Zero,
+                              //Rating = courseRating != null ? courseRating.AverageRating : 0,
+                              //Duration = totalCourseDuration != null ? totalCourseDuration.TotalDuration : TimeSpan.Zero,
+                              Rating = (decimal?)4.2,
+                              Duration = null,
                               EnrolledStudents = 2,
                               ReviewCount = 2,
                               Sections = 2,
@@ -67,7 +95,20 @@ namespace BusinessService.Services
                               CategoryName = category.CategoryName,
                               Introduction = course.Introduction
                           }).ToList();
-            return result;
+
+            var totalCount = await _context.Courses.CountAsync();
+
+            return new PaginatedCoursesDto
+            {
+                TotalItems = totalCount,
+                Page = page,
+                PageSize = (int)Math.Ceiling((decimal)totalCount / pageSize),
+                Courses = result
+                .Skip((page-1) * pageSize)
+                .Take(pageSize)
+                .ToList(),
+            };
+          
         }
 
 

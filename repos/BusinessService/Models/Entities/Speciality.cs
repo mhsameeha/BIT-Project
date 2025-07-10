@@ -14,7 +14,7 @@ namespace BusinessService.Models.Entities
         [Key]
         [Column("specialityId")]
         public Guid SpecialityId { get; set; }
-        [Column("speciality")]
+        [Column("specialityName")]
         public string? SpecialityName { get; set; }
     }
 }

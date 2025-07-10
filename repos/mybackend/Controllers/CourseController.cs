@@ -20,15 +20,28 @@ namespace mybackend.Controllers
             _context = context;
         }
         // GET: api/<CourseController>
-        [HttpGet ("Courses")]
-        public List<CourseDetailDto> Get()
+        [HttpGet("Courses")]
+        public Task<PaginatedCoursesDto> GetCoursesAsync(int page = 1, int pageSize = 5)
         {
             ICourseService courseService = new CourseService(_context);
-            var course = courseService.GetCourseDetails();
+            var course = courseService.GetCoursesAsync(page, pageSize);
             return course;
         }
 
-   
+        [HttpGet ("Categories")]
+        public List<Category> GetCourseCategories()
+        {
+            ICourseService courseService = new CourseService(_context);
+            return courseService.getCourseCategories();
+        }
+
+        [HttpGet("Difficulties")]
+        public List<CourseDifficulty> GetCourseDifficulties()
+        {
+            ICourseService courseService = new CourseService(_context);
+            return courseService.getCourseDifficulties();
+        }
+
 
         // GET api/<CourseController>/5
         //[HttpGet("{id}")]

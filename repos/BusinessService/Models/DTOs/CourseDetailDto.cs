@@ -26,7 +26,7 @@ namespace BusinessService.Models.DTOs
 
 
         //aggregate functions
-        public TimeSpan Duration { get; set; }
+        public TimeSpan? Duration { get; set; }
         public decimal? Rating { get; set; }
 
         public int EnrolledStudents { get; set; }

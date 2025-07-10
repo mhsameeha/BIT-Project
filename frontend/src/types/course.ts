@@ -14,19 +14,30 @@
 //        duration: string;  
 // }
 
+export interface PaginatedCourse {
+course: Course[];
+page: number;
+pageSize : number;
+totalItems : number;
+
+}
+
+
 
 export interface Course {
-  courseId: string;                // GUID
-  courseName?: string;
-  price?: number;
-  categoryName?: string;
-  tutorName?: string;              // Tutor full name
-  rating?: number;                 // e.g., 4.5
-  enrolledStudents?: number;       // Number of students enrolled
-  duration?: string;               // e.g., "2h 30m"
-  briefIntro?: string;             // Short course description
-  level?: string;                  // e.g., "Beginner"
-  lastUpdated?: string;            // ISO date string (e.g., "2025-07-06T12:00:00Z")
+  courseId: string;                    // GUID
+  tutorName?: string;                  // optional
+  courseDifficulty?: string;          // optional
+  categoryName?: string;              // optional
+  price?: number;                     // optional (decimal)
+  title?: string;                     // optional
+  introduction?: string;              // optional
+  updatedDate?: string;               // optional (ISO 8601 datetime string)
+  duration?: string;                  // optional (ISO 8601 or "hh:mm:ss" format)
+  rating?: number;                    // optional (decimal)
+  enrolledStudents: number;
+  reviewCount: number;
+  sections: number;
 }
 
 

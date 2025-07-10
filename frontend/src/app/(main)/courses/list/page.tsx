@@ -16,16 +16,10 @@ import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/di
 
 import { CourseListItem } from '@/components/main/courses/course-list-item';
 import { getAllCourses, type CourseData } from '@/constants/courses';
+import { Category } from '@/types/category';
+import { Course, PaginatedCourse } from '@/types/course';
+import { Level } from '@/types/level';
 
-
-// Get unique categories from courses
-const getAllCategories = (): string[] => {
-  const categories = new Set<string>();
-  getAllCourses().forEach(course => {
-    categories.add(course.category);
-  });
-  return Array.from(categories).sort();
-};
 
 // Get unique levels from courses  
 const getAllLevels = (): string[] => {
@@ -37,73 +31,214 @@ const getAllLevels = (): string[] => {
 };
 
 // Search courses function
-const searchCourses = (query: string): CourseData[] => {
-  const lowercaseQuery = query.toLowerCase();
-  return getAllCourses().filter(course => 
-    course.title.toLowerCase().includes(lowercaseQuery) ||
-    course.description.toLowerCase().includes(lowercaseQuery) ||
-    course.category.toLowerCase().includes(lowercaseQuery) ||
-    course.tutorName.toLowerCase().includes(lowercaseQuery) ||
-    course.level.toLowerCase().includes(lowercaseQuery)
-  );
-};
+// const searchCourses = (query: string): Course[] => {
+//   const lowercaseQuery = query.toLowerCase();
+//   return getAllCourses().filter(course => 
+//     course.title.toLowerCase().includes(lowercaseQuery) ||
+//     course.introduction.toLowerCase().includes(lowercaseQuery) ||
+//     course.categoryName.toLowerCase().includes(lowercaseQuery) ||
+//     course.tutorName.toLowerCase().includes(lowercaseQuery) ||
+//     course.section.toLowerCase().includes(lowercaseQuery)
+//   );
+// };
 
 export default function Page(): React.JSX.Element {
-  const [courses, setCourses] = React.useState<CourseData[]>(getAllCourses());
+  const [courses, setCourses] = React.useState<Course[]>([]);
+  const [allCourses, setAllCourses] = React.useState<Course[]>([]);
+  const [page, setPage] = React.useState<PaginatedCourse[]>([]);
+
   const [searchQuery, setSearchQuery] = React.useState<string>('');
   const [selectedCategories, setSelectedCategories] = React.useState<string[]>([]);
+  const [allCategories, setAllCategories] = React.useState<Category[]>([]);
+
   const [selectedLevels, setSelectedLevels] = React.useState<string[]>([]);
+  const [levels, setLevels] = React.useState<Level[]>([]);
+
   const [sortBy, setSortBy] = React.useState<string>('title');
 
-  const allCategories = getAllCategories();
-  const allLevels = getAllLevels();
 
-  // Handle search and filtering
-  React.useEffect(() => {
-    let filteredCourses = getAllCourses();
+const getAllCategories = async ()  => {
+        try {
 
-    // Apply search filter
-    if (searchQuery.trim()) {
-      filteredCourses = searchCourses(searchQuery.trim());
+            // set this up after developing the API
+            const response = await fetch('https://localhost:7028/api/Course/Categories', {
+            method: 'GET',
+            });
+        
+            if (!response.ok) {
+            const errorMessage = await response.text();
+            return { error: errorMessage || 'Invalid Request' };
+            }
+            return response.json();
+        }
+        catch (error) {
+            console.error('Request Error:', error);
+        }
+return []
+       
     }
 
-    // Apply category filter
-    if (selectedCategories.length > 0) {
-      filteredCourses = filteredCourses.filter(course =>
-        selectedCategories.includes(course.category)
-      );
+  React.useEffect(()   =>   {
+    const fetchData = async () => {
+        const returnValue = await getAllCategories();
+        console.log('returnValue', returnValue);
+        
+            if ('error' in returnValue) {
+      console.error(returnValue.error);
+            const errorMessage = returnValue;
+
+      // Optionally, handle error UI here
+      return { error: errorMessage || 'Invalid Request' };
+    }        
+    setAllCategories(returnValue);
+    console.log(returnValue);
+    
+  
+      };
+
+      fetchData();
+   
+    //initial load 
+  }, [])
+
+
+  const getAllLevels = async ()  => {
+        try {
+
+            // set this up after developing the API
+            const response = await fetch('https://localhost:7028/api/Course/Difficulties', {
+            method: 'GET',
+            });
+        
+            if (!response.ok) {
+            const errorMessage = await response.text();
+            return { error: errorMessage || 'Invalid Request' };
+            }
+            return response.json();
+        }
+        catch (error) {
+            console.error('Request Error:', error);
+        }
+return []
+       
     }
 
-    // Apply level filter
-    if (selectedLevels.length > 0) {
-      filteredCourses = filteredCourses.filter(course =>
-        selectedLevels.includes(course.level)
-      );
+  React.useEffect(()   =>   {
+    const fetchData = async () => {
+        const returnValue = await getAllLevels();
+        console.log('returnValue', returnValue);
+        
+            if ('error' in returnValue) {
+      console.error(returnValue.error);
+            const errorMessage = returnValue;
+
+      // Optionally, handle error UI here
+      return { error: errorMessage || 'Invalid Request' };
+    }        
+    setLevels(returnValue);
+    console.log("level: " + returnValue);
+    
+  
+      };
+
+      fetchData();
+   
+    //initial load 
+  }, [])
+
+
+const pCourse = React.useState<PaginatedCourse[]>([]);
+  const getAllCourses = async ()  => {
+        try {
+
+            // set this up after developing the API
+            const response = await fetch('https://localhost:7028/api/Course/Courses', {
+            method: 'GET',
+            });
+        
+            if (!response.ok) {
+            const errorMessage = await response.text();
+            return { error: errorMessage || 'Invalid Request' };
+            }
+            return response.json();
+        }
+        catch (error) {
+            console.error('Request Error:', error);
+        }
+return []
+       
     }
 
-    // Apply sorting
-    switch (sortBy) {
-      case 'title':
-        filteredCourses.sort((a, b) => a.title.localeCompare(b.title));
-        break;
-      case 'rating':
-        filteredCourses.sort((a, b) => b.rating - a.rating);
-        break;
-      case 'students':
-        filteredCourses.sort((a, b) => b.enrolledStudents - a.enrolledStudents);
-        break;
-      case 'fee':
-        filteredCourses.sort((a, b) => a.fee - b.fee);
-        break;
-      case 'newest':
-        filteredCourses.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-        break;
-      default:
-        break;
-    }
+  React.useEffect(()   =>   {
+    const fetchData = async () => {
+        const returnValue = await getAllCourses();
+        console.log('returnValue', returnValue);
+        
+            if ('error' in returnValue) {
+      console.error(returnValue.error);
+            const errorMessage = returnValue;
 
-    setCourses(filteredCourses);
-  }, [searchQuery, selectedCategories, selectedLevels, sortBy]);
+      // Optionally, handle error UI here
+      return { error: errorMessage || 'Invalid Request' };
+    }        
+    setPage(returnValue);
+
+    
+  
+      };
+
+      fetchData();
+   
+    //initial load 
+  }, [])
+
+
+  // // Handle search and filtering
+  // React.useEffect(() => {
+  //   let filteredCourses = getAllCourses();
+
+  //   // Apply search filter
+  //   if (searchQuery.trim()) {
+  //     filteredCourses = searchCourses(searchQuery.trim());
+  //   }
+
+  //   // Apply category filter
+  //   if (selectedCategories.length > 0) {
+  //     filteredCourses = filteredCourses.filter(course =>
+  //       selectedCategories.includes(course.category)
+  //     );
+  //   }
+
+  //   // Apply level filter
+  //   if (selectedLevels.length > 0) {
+  //     filteredCourses = filteredCourses.filter(course =>
+  //       selectedLevels.includes(course.level)
+  //     );
+  //   }
+
+  //   // Apply sorting
+  //   switch (sortBy) {
+  //     case 'title':
+  //       filteredCourses.sort((a, b) => a.title.localeCompare(b.title));
+  //       break;
+  //     case 'rating':
+  //       filteredCourses.sort((a, b) => b.rating - a.rating);
+  //       break;
+  //     case 'students':
+  //       filteredCourses.sort((a, b) => b.enrolledStudents - a.enrolledStudents);
+  //       break;
+  //     case 'fee':
+  //       filteredCourses.sort((a, b) => a.fee - b.fee);
+  //       break;
+  //     case 'newest':
+  //       filteredCourses.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+  //       break;
+  //     default:
+  //       break;
+  //   }
+
+  //   setCourses(filteredCourses);
+  // }, [searchQuery, selectedCategories, selectedLevels, sortBy]);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     setSearchQuery(event.target.value);
@@ -170,9 +305,9 @@ export default function Page(): React.JSX.Element {
                     </Box>
                   )}
                 >
-                  {allCategories.map((category) => (
-                    <MenuItem key={category} value={category}>
-                      {category}
+                  {allCategories.map((category:Category) => (
+                    <MenuItem key={category.categoryId} value={category.categoryName}>
+                      {category.categoryName}
                     </MenuItem>
                   ))}
                 </Select>
@@ -196,9 +331,9 @@ export default function Page(): React.JSX.Element {
                     </Box>
                   )}
                 >
-                  {allLevels.map((level) => (
-                    <MenuItem key={level} value={level}>
-                      {level}
+                  {levels.map((level:Level) => (
+                    <MenuItem key={level.courseDifficultyId} value={level.courseDifficultyName}>
+                      {level.courseDifficultyName}
                     </MenuItem>
                   ))}
                 </Select>
@@ -239,8 +374,8 @@ export default function Page(): React.JSX.Element {
             </Card>
           ) : (
             <Grid container spacing={1}>
-              {courses.map((course) => (
-                <Grid key={course.id} xs={12}>
+              {courses.map((course:Course) => (
+                <Grid key={course.courseId} xs={12}>
                   <CourseListItem course={course} />
                 </Grid>
               ))}
