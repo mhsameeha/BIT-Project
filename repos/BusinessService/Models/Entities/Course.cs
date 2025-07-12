@@ -25,7 +25,7 @@ namespace BusinessService.Models.Entities
         [Column("description")]
         public string? Description { get; set; }
         [Column("courseDifficultyFk")]
-        public Guid CourseDifficultyFk { get; set; }
+        public Guid? CourseDifficultyFk { get; set; }
         [Column("categoryFk")]
         public Guid? CategoryFk { get; set; }
         [Column("createdDate")]
@@ -37,7 +37,7 @@ namespace BusinessService.Models.Entities
         [Column("isEnabled")]
         public bool IsEnabled { get; set; } = false;
         [Column("courseImage")]
-        public byte CourseImage {  get; set; }
+        public byte[]? CourseImage {  get; set; }
         [Column("languageFk")]
         public Guid LanguageFk { get; set; }
     }

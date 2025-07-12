@@ -18,8 +18,8 @@ namespace BusinessService.Models.Entities
         public Guid TutorId { get; set; }
         [Column("tutorDescription")]
         public string? TutorDescription { get; set; }
-        [Column("tutorRating")]
-        public decimal? TutorRating { get; set; }
+        [Column("tutorRate")]
+        public decimal TutorRate { get; set; }
         [Column("status")]
         public string? Status { get; set; }
         [Column("approvedDate")]

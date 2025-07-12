@@ -18,7 +18,7 @@ namespace BusinessService.Interfaces
 
         public List<CourseDifficulty> getCourseDifficulties();
 
-        //AddCourseDto addCourse(AddCourseDto course);
+        public (Course, CourseContent) addCourse(CourseDetailDto newCourse);
 
         //void DeleteCourse(int id);
     }

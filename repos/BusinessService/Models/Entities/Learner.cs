@@ -11,7 +11,7 @@ public class Learner
         [Column("learnerId")]
         public Guid LearnerId { get; set; }
         [Column("learnerProfPic")]
-        public string? LearnerProfPic { get; set; }
+        public byte[]? LearnerProfPic { get; set; }
         [Column("UserFk")]
         public Guid UserFk { get; set; }
     }

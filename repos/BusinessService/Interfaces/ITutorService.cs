@@ -11,5 +11,7 @@ namespace BusinessService.Interfaces
     {
         public List<SessionDto> UpcomingSessions(Guid tutorId);
         public List<TutorDto> getAllTutors();
+
+        public Task<PaginatedCoursesDto> tutorCourses(Guid tutorId, int page, int pageSize );
     }
 }

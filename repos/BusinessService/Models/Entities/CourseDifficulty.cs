@@ -16,7 +16,7 @@ public class CourseDifficulty
         [Column("courseDifficultyId")]
         public Guid CourseDifficultyId { get; set; }
         [Column("courseDifficultyName")]
-        public string? CourseDifficultyName { get; set; }
+        public required string CourseDifficultyName { get; set; }
     }
 
 }

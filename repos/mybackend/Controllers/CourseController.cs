@@ -21,10 +21,10 @@ namespace mybackend.Controllers
         }
         // GET: api/<CourseController>
         [HttpGet("Courses")]
-        public Task<PaginatedCoursesDto> GetCoursesAsync(int page = 1, int pageSize = 5)
+        public Task<PaginatedCoursesDto> GetCoursesAsync(int page = 1, int items = 5)
         {
             ICourseService courseService = new CourseService(_context);
-            var course = courseService.GetCoursesAsync(page, pageSize);
+            var course = courseService.GetCoursesAsync(page, items);
             return course;
         }
 
@@ -43,14 +43,13 @@ namespace mybackend.Controllers
         }
 
 
-        // GET api/<CourseController>/5
-        //[HttpGet("{id}")]
-        //public string Get(int id)
-        //{
-        //    ICourseService courseService = new CourseService();
-        //    var courseName = courseService.GetCoursebyId(id);
-        //    return courseName;
-        //}
+        [HttpPost("AddCourse")]
+        public (Course,CourseContent) AddNewCourse([FromBody] CourseDetailDto newCourse)
+        {
+            ICourseService courseService = new CourseService(_context);
+            var courseName = courseService.addCourse(newCourse);
+            return courseName;
+        }
 
         // POST api/<CourseController>
         //[HttpPost]

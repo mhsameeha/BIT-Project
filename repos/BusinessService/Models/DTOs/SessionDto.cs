@@ -10,13 +10,17 @@ namespace BusinessService.Models.DTOs
 {
     public class SessionDto
     {
+        public Guid SessionId { get; set; }
         public  string? SessionName { get; set; }
 
+        public string? LearnerProfPic { get; set; }
         public string? LearnerName { get; set; }
         //public required Learner Learner { get; set; }
 
         public DateTime? StartTime { get; set; }
         public DateTime? EndTime { get; set; }
+
+        public decimal TutorRate { get; set; }
 
   
 

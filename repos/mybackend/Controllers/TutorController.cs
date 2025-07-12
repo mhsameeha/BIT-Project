@@ -38,9 +38,12 @@ namespace mybackend.Controllers
         }
 
         // POST api/<TutorController>
-        [HttpPost]
-        public void Post([FromBody] string value)
+        [HttpGet ("tutorCourses")]
+        public Task<PaginatedCoursesDto> GetTutorCourses(Guid id, int page = 1, int items = 5 )
         {
+            ITutorService tutorService = new TutorService(_context);
+            var course = tutorService.tutorCourses(id, page, items);
+            return course;
         }
 
         // PUT api/<TutorController>/5

@@ -20,7 +20,7 @@ namespace BusinessService.Models.Entities
         [Column("description")]
         public string? Description { get; set; }
         [Column("duration")]
-        public TimeSpan? Duration { get; set; }
+        public string? Duration { get; set; }
         [Column("sortOrder")]
         public int SortOrder { get; set; }
         [Column("isActive")]
