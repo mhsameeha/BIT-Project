@@ -19,7 +19,7 @@ namespace BusinessService.Services
             _context = context;
         }
 
-        public List<TutorDto> getAllTutors()
+        public List<TutorDto> GetAllTutors()
         {
             var result = (from tutor in _context.Tutors
                           join user in _context.Users on tutor.UserFk equals user.UserId
@@ -34,7 +34,7 @@ namespace BusinessService.Services
             return result;
         }
 
-        public async Task<PaginatedCoursesDto> tutorCourses(Guid tutorId, int page, int items)
+        public async Task<PaginatedCoursesDto> TutorCourses(Guid tutorId, int page, int items)
         {
             var ratings = await _context.CourseReviews
                                          .GroupBy(r => r.CourseFk)

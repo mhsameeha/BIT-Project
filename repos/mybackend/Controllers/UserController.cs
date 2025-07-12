@@ -3,6 +3,7 @@ using BusinessService.Interfaces;
 using BusinessService.Models.DTOs;
 using BusinessService.Models.Entities;
 using BusinessService.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,11 +22,22 @@ namespace mybackend.Controllers
         }
 
         // GET: api/<UserController>
-        [HttpGet]
-        public IEnumerable<string> Get()
+        [HttpGet("GetUserProfile")]
+        [Authorize]
+
+        public ActionResult<UserDto> GetUserProfile()
         {
-            return new string[] { "value1", "value2" };
+            var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(email))
+                return Unauthorized("Email claim not found in token.");
+            IUserService userService = new UserService(_context);
+            var userProfile = userService.GetUserProfile(email);
+            if (userProfile == null)
+                return NotFound("User not found.");
+            return Ok(userProfile);
         }
+
+        
 
         // GET api/<UserController>/5
         [HttpGet("{id}")]

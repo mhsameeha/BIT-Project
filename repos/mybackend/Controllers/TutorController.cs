@@ -24,7 +24,7 @@ namespace mybackend.Controllers
         public List<TutorDto> getAllTutors()
         {
             ITutorService TutorService = new TutorService(_context);
-            var result = TutorService.getAllTutors();
+            var result = TutorService.GetAllTutors();
             return result;
         }
 
@@ -42,7 +42,7 @@ namespace mybackend.Controllers
         public Task<PaginatedCoursesDto> GetTutorCourses(Guid id, int page = 1, int items = 5 )
         {
             ITutorService tutorService = new TutorService(_context);
-            var course = tutorService.tutorCourses(id, page, items);
+            var course = tutorService.TutorCourses(id, page, items);
             return course;
         }
 

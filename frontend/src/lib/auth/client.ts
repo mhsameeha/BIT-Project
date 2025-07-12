@@ -39,7 +39,39 @@ export interface ResetPasswordParams {
 }
 
 //changes done here
+function decodeJWT(token: string): Record<string, any> | null {
+  try {
+    const payload = token.split('.')[1];
+    // atob for base64url (replace -/_)
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const json = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map(function (c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join('')
+    );
+    return JSON.parse(json);
+  } catch (e) {
+    console.error('Invalid JWT:', e);
+    return null;
+  }
+}
+
 class AuthClient {
+
+  getBasicUserInfo(): { email: string; name: string; role: string } | null {
+    const token = localStorage.getItem('custom-auth-token');
+    const decoded = decodeJWT(token);
+    if (!decoded) return null;
+    return {
+      email: decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || '',
+      name: decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || '',
+      role: decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || '',
+    };
+  }
+
   async signUp(params: SignUpParams): Promise<{ error?: string }> {
     try {
       const response = await axios.post('https://localhost:7028/api/User/signup', {
@@ -81,7 +113,7 @@ class AuthClient {
         },
         body: JSON.stringify(params),
       });
-const {token} = await response.json()
+        const {token} = await response.json()
       if (!response.ok || token.toLowerCase().includes("invalid")  ) {
 
         return { error: token || 'Invalid credentials' };

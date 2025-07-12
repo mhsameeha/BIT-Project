@@ -74,6 +74,19 @@ namespace BusinessService.Services
             return user;
         }
 
+        public GetUserProfileDto GetUserProfile(string email)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.Email == email);
+            if (user == null) return null;
+            return new GetUserProfileDto
+            {
+                Id = user.UserId,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email  = user.Email,
+            };
+        }
+
         public string SignIn(LoginDto currentUser)
         {
             var user = _context.Users.SingleOrDefault(x => x.Email == currentUser.Email);
@@ -85,6 +98,8 @@ namespace BusinessService.Services
                 new Claim (ClaimTypes.Email, currentUser.Email),
 
                 new Claim (ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(ClaimTypes.Name, user.FirstName + " " + user.LastName),
+                new Claim (ClaimTypes.Role, user.Role.ToString())
 
             };
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("my-secret-is-this-tree-this" +

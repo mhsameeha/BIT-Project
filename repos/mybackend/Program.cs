@@ -1,5 +1,9 @@
+
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using BusinessService.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 namespace mybackend
 {
     public class Program
@@ -25,7 +29,24 @@ namespace mybackend
                            .AllowAnyMethod());
             });
 
-           
+            // JWT Authentication configuration
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("my-secret-is-this-tree-this0is-randombatehdhdtuasbkhcvsdugkahsdvjgsdvchftugdsdbfgusfgduybvgsdhfvgv"))
+                };
+            });
+
 
             var app = builder.Build();
 
@@ -38,11 +59,13 @@ namespace mybackend
 
             app.UseHttpsRedirection();
 
+            app.UseCors("AllowAll");
+
+            app.UseAuthentication();
             app.UseAuthorization();
 
 
             app.MapControllers();
-            app.UseCors("AllowAll");
 
             app.Run();
         }
