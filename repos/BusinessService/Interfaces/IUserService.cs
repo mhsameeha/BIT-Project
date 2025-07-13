@@ -13,7 +13,7 @@ namespace BusinessService.Interfaces
         public User addUser(UserDto newUser);
         public string SignIn(LoginDto currentUser);
 
-        public UserDto GetUserProfile();
+        public GetUserProfileDto GetUserProfile();
         //public void Claims(LoginDto currentUser);
     }
 }
