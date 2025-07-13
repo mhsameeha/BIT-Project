@@ -15,7 +15,7 @@
 // }
 
 export interface PaginatedCourse {
-course: Course[];
+courses: Course[];
 page: number;
 pageSize : number;
 totalItems : number;

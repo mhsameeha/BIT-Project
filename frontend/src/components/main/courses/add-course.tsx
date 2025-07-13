@@ -29,6 +29,7 @@ import { useRouter } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
 import Input from '@mui/material/Input';
 import axios from 'axios';
+import { API_BASE_URL } from '@/config';
 import FormHelperText from '@mui/material/FormHelperText';
 import Stack from '@mui/system/Stack';
 
@@ -55,7 +56,7 @@ class CourseForm {
     
 
   try {
-      const response = await axios.post('https://localhost:7028/api/User/signup', {
+      const response = await axios.post(`${API_BASE_URL}/User/signup`, {
         courseName: params.courseName,
         briefIntro: params.briefIntro,
         courseDescription: params.courseDescription,
@@ -120,7 +121,7 @@ export function AddCourseForm(): React.JSX.Element {
           try {
   
               // set this up after developing the API
-              const response = await fetch('https://localhost:7028/api/category', {
+              const response = await fetch(`${API_BASE_URL}/category`, {
               method: 'GET',
               });
           

@@ -1,5 +1,6 @@
 'use client'
 import * as React from 'react';
+import { API_BASE_URL } from '@/config';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -47,7 +48,7 @@ const getAllTutors = async ()  => {
         try {
 
             // set this up after developing the API
-            const response = await fetch('https://localhost:7028/api/tutor/Tutors', {
+            const response = await fetch(`${API_BASE_URL}/tutor/Tutors`, {
             method: 'GET',
             });
         

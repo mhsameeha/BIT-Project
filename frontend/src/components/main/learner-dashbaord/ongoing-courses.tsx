@@ -4,6 +4,7 @@ import Avatar from '@mui/material/Avatar';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Stack from '@mui/material/Stack';
+import { API_BASE_URL } from '@/config';
 import type { SxProps } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { ArrowDown as ArrowDownIcon } from '@phosphor-icons/react/dist/ssr/ArrowDown';
@@ -37,7 +38,7 @@ const getOngoingCourses = async ()  => {
         try {
 
             // set this up after developing the API
-            const response = await fetch('https://localhost:7028/api/enrollment/10001', {
+            const response = await fetch(`${API_BASE_URL}/enrollment/10001`, {
             method: 'GET',
             });
         

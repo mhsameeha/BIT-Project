@@ -21,7 +21,7 @@ namespace mybackend.Controllers
         }
         // GET: api/<CourseController>
         [HttpGet("Courses")]
-        public Task<PaginatedCoursesDto> GetCoursesAsync(int page = 1, int items = 5)
+        public Task<PaginatedCoursesDto> GetCoursesAsync(int page = 1, int items = 10)
         {
             ICourseService courseService = new CourseService(_context);
             var course = courseService.GetCoursesAsync(page, items);

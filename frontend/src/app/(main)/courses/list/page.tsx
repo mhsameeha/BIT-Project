@@ -15,20 +15,14 @@ import Grid from '@mui/material/Unstable_Grid2';
 import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/dist/ssr/MagnifyingGlass';
 
 import { CourseListItem } from '@/components/main/courses/course-list-item';
-import { getAllCourses, type CourseData } from '@/constants/courses';
+import { getAllCategories, getAllLevels, getAllCourses } from '@/Services/courses';
 import { Category } from '@/types/category';
 import { Course, PaginatedCourse } from '@/types/course';
 import { Level } from '@/types/level';
+import { Button } from '@mui/material';
 
 
-// Get unique levels from courses  
-const getAllLevels = (): string[] => {
-  const levels = new Set<string>();
-  getAllCourses().forEach(course => {
-    levels.add(course.level);
-  });
-  return Array.from(levels).sort();
-};
+
 
 // Search courses function
 // const searchCourses = (query: string): Course[] => {
@@ -42,10 +36,9 @@ const getAllLevels = (): string[] => {
 //   );
 // };
 
+
 export default function Page(): React.JSX.Element {
-  const [courses, setCourses] = React.useState<Course[]>([]);
-  const [allCourses, setAllCourses] = React.useState<Course[]>([]);
-  const [page, setPage] = React.useState<PaginatedCourse[]>([]);
+  const [paginatedCourses, setPaginatedCourses] = React.useState<PaginatedCourse>();
 
   const [searchQuery, setSearchQuery] = React.useState<string>('');
   const [selectedCategories, setSelectedCategories] = React.useState<string[]>([]);
@@ -56,141 +49,47 @@ export default function Page(): React.JSX.Element {
 
   const [sortBy, setSortBy] = React.useState<string>('title');
 
+  // Pagination state
+  const [page, setPage] = React.useState(1);
+  const pageSize = 10;
 
-const getAllCategories = async ()  => {
-        try {
-
-            // set this up after developing the API
-            const response = await fetch('https://localhost:7028/api/Course/Categories', {
-            method: 'GET',
-            });
-        
-            if (!response.ok) {
-            const errorMessage = await response.text();
-            return { error: errorMessage || 'Invalid Request' };
-            }
-            return response.json();
-        }
-        catch (error) {
-            console.error('Request Error:', error);
-        }
-return []
-       
-    }
-
-  React.useEffect(()   =>   {
+  React.useEffect(() => {
     const fetchData = async () => {
-        const returnValue = await getAllCategories();
-        console.log('returnValue', returnValue);
-        
-            if ('error' in returnValue) {
-      console.error(returnValue.error);
-            const errorMessage = returnValue;
+      const returnValue = await getAllCategories();
+      if ('error' in returnValue) {
+        // Optionally, handle error UI here
+        return;
+      }
+      setAllCategories(returnValue);
+    };
+     fetchData();
+  }, []);
 
-      // Optionally, handle error UI here
-      return { error: errorMessage || 'Invalid Request' };
-    }        
-    setAllCategories(returnValue);
-    console.log(returnValue);
-    
-  
-      };
-
-      fetchData();
-   
-    //initial load 
-  }, [])
-
-
-  const getAllLevels = async ()  => {
-        try {
-
-            // set this up after developing the API
-            const response = await fetch('https://localhost:7028/api/Course/Difficulties', {
-            method: 'GET',
-            });
-        
-            if (!response.ok) {
-            const errorMessage = await response.text();
-            return { error: errorMessage || 'Invalid Request' };
-            }
-            return response.json();
-        }
-        catch (error) {
-            console.error('Request Error:', error);
-        }
-return []
-       
-    }
-
-  React.useEffect(()   =>   {
+  React.useEffect(() => {
     const fetchData = async () => {
-        const returnValue = await getAllLevels();
-        console.log('returnValue', returnValue);
-        
-            if ('error' in returnValue) {
-      console.error(returnValue.error);
-            const errorMessage = returnValue;
+      const returnValue = await getAllLevels();
+      if ('error' in returnValue) {
+        // Optionally, handle error UI here
+        return;
+      }
+      setLevels(returnValue);
+    };
+     fetchData();
+  }, []);
 
-      // Optionally, handle error UI here
-      return { error: errorMessage || 'Invalid Request' };
-    }        
-    setLevels(returnValue);
-    console.log("level: " + returnValue);
-    
-  
-      };
-
-      fetchData();
-   
-    //initial load 
-  }, [])
-
-
-const pCourse = React.useState<PaginatedCourse[]>([]);
-  const getAllCourses = async ()  => {
-        try {
-
-            // set this up after developing the API
-            const response = await fetch('https://localhost:7028/api/Course/Courses', {
-            method: 'GET',
-            });
-        
-            if (!response.ok) {
-            const errorMessage = await response.text();
-            return { error: errorMessage || 'Invalid Request' };
-            }
-            return response.json();
-        }
-        catch (error) {
-            console.error('Request Error:', error);
-        }
-return []
-       
-    }
-
-  React.useEffect(()   =>   {
+  React.useEffect(() => {
     const fetchData = async () => {
-        const returnValue = await getAllCourses();
-        console.log('returnValue', returnValue);
-        
-            if ('error' in returnValue) {
-      console.error(returnValue.error);
-            const errorMessage = returnValue;
+      const returnValue = await getAllCourses(page);
+      if ('error' in returnValue) {
+        // Optionally, handle error UI here
+        return;
+      }
 
-      // Optionally, handle error UI here
-      return { error: errorMessage || 'Invalid Request' };
-    }        
-    setPage(returnValue);
+        setPaginatedCourses(returnValue);
 
-    
-  
-      };
-
-      fetchData();
-   
-    //initial load 
-  }, [])
+    };
+    fetchData();
+  }, [page]);
 
 
   // // Handle search and filtering
@@ -257,6 +156,9 @@ return []
   const handleSortChange = (event: SelectChangeEvent): void => {
     setSortBy(event.target.value);
   };
+
+  const totalPages = Math.max(1, Math.ceil((paginatedCourses?.totalItems ?? 0) / pageSize));
+const currentPage = Math.min(page, totalPages);
 
   return (
     <Box sx={{ maxWidth: 'var(--Content-maxWidth)', m: 'var(--Content-margin)', p: 'var(--Content-padding)', width: 'var(--Content-width)' }}>
@@ -363,10 +265,10 @@ return []
         {/* Results */}
         <div>
           <Typography variant="h6" sx={{ mb: 2 }}>
-            {courses.length} {courses.length === 1 ? 'course' : 'courses'} found
+            {paginatedCourses?.courses?.length} {paginatedCourses?.courses?.length === 1 ? 'course' : 'courses'} found
           </Typography>
           
-          {courses.length === 0 ? (
+          {paginatedCourses?.courses?.length === 0 ? (
             <Card sx={{ p: 4, textAlign: 'center' }}>
               <Typography color="text.secondary" variant="body1">
                 No courses found matching your criteria. Try adjusting your search or filters.
@@ -374,13 +276,34 @@ return []
             </Card>
           ) : (
             <Grid container spacing={1}>
-              {courses.map((course:Course) => (
+              {paginatedCourses?.courses?.map((course: Course) => (
                 <Grid key={course.courseId} xs={12}>
                   <CourseListItem course={course} />
                 </Grid>
               ))}
             </Grid>
           )}
+
+          {/* Pagination Controls */}
+          <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, gap: 2, justifyContent: 'end' }}>
+            <Typography variant="body2">
+              Page {currentPage} of {totalPages}
+            </Typography>
+            <Button
+              onClick={() => setPage((prev) => Math.max(0, prev - 1))}
+              disabled={page === 1}
+              style={{ padding: '4px 12px', borderRadius: 4, border: '1px solid #ccc', background: page === 0 ? '#eee' : '#fff', cursor: page === 0 ? 'not-allowed' : 'pointer' }}
+            >
+              Previous
+            </Button>
+            <Button
+              onClick={() => setPage((prev) => (prev + 1 < Math.ceil(paginatedCourses?.courses?.length / pageSize) ? prev + 1 : prev))}
+              disabled={page >= Math.ceil(paginatedCourses?.courses?.length / pageSize)}
+              style={{ padding: '4px 12px', borderRadius: 4, border: '1px solid #ccc', background: page + 1 >= Math.ceil(paginatedCourses?.courses?.length / pageSize) ? 'not-allowed' : 'pointer' }}
+            >
+              Next
+            </Button>
+          </Box>
         </div>
       </Stack>
     </Box>
