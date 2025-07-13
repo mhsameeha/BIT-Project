@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { API_BASE_URL } from '@/config';
 import Avatar from '@mui/material/Avatar';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -26,7 +27,7 @@ export function WelcomeHere(): React.JSX.Element {
             try {
     
                 // set this up after developing the API
-                const response = await fetch('https://localhost:7028/api/tutor/20002', {
+                const response = await fetch(`${API_BASE_URL}/tutor/20002`, {
                 method: 'GET',
                 });
             

@@ -1,5 +1,6 @@
 'use client';
 import axios from 'axios';
+import { API_BASE_URL } from '@/config';
 import type { User } from '@/types/user';
 
 function generateToken(): string {
@@ -74,7 +75,7 @@ class AuthClient {
 
   async signUp(params: SignUpParams): Promise<{ error?: string }> {
     try {
-      const response = await axios.post('https://localhost:7028/api/User/signup', {
+      const response = await axios.post(`${API_BASE_URL}/User/signup`, {
         firstName: params.firstName,
         lastName: params.lastName,
         dob: params.dob,
@@ -106,7 +107,7 @@ class AuthClient {
 
     //Sign In API request
     try {
-      const response = await fetch('https://localhost:7028/api/User/Signin', {
+      const response = await fetch(`${API_BASE_URL}/User/Signin`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

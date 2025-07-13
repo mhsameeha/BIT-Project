@@ -15,6 +15,7 @@ import Grid from '@mui/material/Unstable_Grid2';
 import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/dist/ssr/MagnifyingGlass';
 
 import { TutorListItem } from '@/components/main/session/tutor-list-item';
+import { API_BASE_URL } from '@/config';
 import { getAllTutors, getAllSpecialties, searchTutors, type TutorData } from '@/constants/tutors';
 import { Speciality } from '@/types/speciality';
 
@@ -31,7 +32,7 @@ const getAllSpecialties = async ()  => {
         try {
 
             // set this up after developing the API
-            const response = await fetch('https://localhost:7028/api/Speciality/Speciality', {
+            const response = await fetch(`${API_BASE_URL}/Speciality/Speciality`, {
             method: 'GET',
             });
         
