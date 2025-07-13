@@ -18,7 +18,7 @@ namespace BusinessService.Services
         {
             _context = context;
         }
-        public List<EnrollmentDto> getEnrolledCourses(Guid learnerid)
+        public List<EnrollmentDto> GetEnrolledCourses(Guid learnerid)
         {
             var result = (from enrollement in _context.Enrollments
                           join course in _context.Courses on enrollement.CourseFk equals course.CourseId

@@ -51,7 +51,7 @@ namespace mybackend.Controllers
         public IActionResult SignUp([FromBody] UserDto user)
         {
             IUserService UserService = new UserService(_context);
-            var newUser = UserService.addUser(user);
+            var newUser = UserService.AddUser(user);
             return Ok(newUser);
 
         }

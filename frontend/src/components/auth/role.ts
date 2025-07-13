@@ -4,10 +4,11 @@ export const Role = {
     TUTOR: 'tutor',
 } as const;
 
+export type RoleType = typeof Role[keyof typeof Role];
 
-export const allowedNavKeys: Record<Role, string[]> = {
+export const allowedNavKeys: Record<RoleType, string[]> = {
   [Role.LEARNER]: [
-    'overview',
+    'dashboard',
     'courses',
     'session',
     'reports',

@@ -29,7 +29,7 @@ namespace mybackend.Controllers
         public List<EnrollmentDto> Get(Guid id)
         {
             IEnrollementService EnrollementService = new EnrollementService(_context);
-            var result = EnrollementService.getEnrolledCourses(id);
+            var result = EnrollementService.GetEnrolledCourses(id);
             return result;
         }
 

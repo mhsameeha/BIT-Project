@@ -6,7 +6,6 @@ import Grid from '@mui/material/Unstable_Grid2';
 
 import { config } from '@/config';
 import { AccountDetailsForm } from '@/components/main/account/account-details-form';
-import { AccountInfo } from '@/components/main/account/account-info';
 
 export const metadata = { title: `Account | Dashboard | ${config.site.name}` } satisfies Metadata;
 
@@ -17,11 +16,8 @@ export default function Page(): React.JSX.Element {
         <Typography variant="h4">Courses</Typography>
       </div>
       <Grid container spacing={3}>
-        <Grid lg={4} md={6} xs={12}>
-          {/* <AccountInfo /> */}
-        </Grid>
         <Grid lg={8} md={6} xs={12}>
-          {/* <AccountDetailsForm /> */}
+          <AccountDetailsForm />
         </Grid>
       </Grid>
     </Stack>

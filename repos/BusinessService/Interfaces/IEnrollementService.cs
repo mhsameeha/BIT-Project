@@ -9,6 +9,6 @@ namespace BusinessService.Interfaces
 {
     public interface IEnrollementService
     {
-        public List<EnrollmentDto> getEnrolledCourses(Guid learnerid);
+        public List<EnrollmentDto> GetEnrolledCourses(Guid learnerid);
     }
 }

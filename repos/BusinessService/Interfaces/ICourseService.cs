@@ -14,11 +14,11 @@ namespace BusinessService.Interfaces
         //public IEnumerable<string> GetAllCourses();
 
         public Task<PaginatedCoursesDto> GetCoursesAsync(int page, int pageSize);
-        public List<Category> getCourseCategories();
+        public List<Category> GetCourseCategories();
 
-        public List<CourseDifficulty> getCourseDifficulties();
+        public List<CourseDifficulty> GetCourseDifficulties();
 
-        public (Course, CourseContent) addCourse(CourseDetailDto newCourse);
+        public (Course, CourseContent) AddCourse(CourseDetailDto newCourse);
 
         //void DeleteCourse(int id);
     }

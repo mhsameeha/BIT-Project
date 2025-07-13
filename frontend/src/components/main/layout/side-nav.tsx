@@ -19,17 +19,16 @@ import { Logo } from '@/components/core/logo';
 import { navItems } from './config';
 import { navIcons } from './nav-icons';
 import { authClient } from '@/lib/auth/client';
-import { allowedNavKeys, Role } from '@/components/auth/role';
+import { allowedNavKeys, RoleType } from '@/components/auth/role';
 
 export function SideNav(): React.JSX.Element {
   const pathname = usePathname();
 
     const userInfo = authClient.getBasicUserInfo();
   const role = userInfo?.role?.toLowerCase();
-
   // Filter nav items for learners
-  let filteredNavItems = navItems;
-    const keys = allowedNavKeys[role as Role] || [];
+  let  filteredNavItems = navItems;
+  let keys = allowedNavKeys[role as RoleType] || '';
   filteredNavItems =  navItems.filter((item) => keys.includes(item.key));
 
   return (

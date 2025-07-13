@@ -32,23 +32,23 @@ namespace mybackend.Controllers
         public List<Category> GetCourseCategories()
         {
             ICourseService courseService = new CourseService(_context);
-            return courseService.getCourseCategories();
+            return courseService.GetCourseCategories();
         }
 
         [HttpGet("Difficulties")]
         public List<CourseDifficulty> GetCourseDifficulties()
         {
             ICourseService courseService = new CourseService(_context);
-            return courseService.getCourseDifficulties();
+            return courseService.GetCourseDifficulties();
         }
 
 
         [HttpPost("AddCourse")]
-        public (Course,CourseContent) AddNewCourse([FromBody] CourseDetailDto newCourse)
+        public IActionResult AddNewCourse([FromBody] CourseDetailDto newCourse)
         {
             ICourseService courseService = new CourseService(_context);
-            var courseName = courseService.addCourse(newCourse);
-            return courseName;
+            var (course, courseContent) = courseService.AddCourse(newCourse);
+            return Ok(new {course,courseContent});
         }
 
         // POST api/<CourseController>

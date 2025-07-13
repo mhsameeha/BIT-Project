@@ -27,7 +27,7 @@ namespace BusinessService.Services
 
 
         //register users to the system
-        public User addUser(UserDto newUser)
+        public User AddUser(UserDto newUser)
 
         {
             var user = new User
@@ -77,7 +77,11 @@ namespace BusinessService.Services
         public GetUserProfileDto GetUserProfile(string email)
         {
             var user = _context.Users.FirstOrDefault(u => u.Email == email);
+         
             if (user == null) return null;
+
+            
+
             return new GetUserProfileDto
             {
                 Id = user.UserId,
@@ -90,6 +94,28 @@ namespace BusinessService.Services
         public string SignIn(LoginDto currentUser)
         {
             var user = _context.Users.SingleOrDefault(x => x.Email == currentUser.Email);
+            Guid roleId = Guid.Empty; // Initialize with empty GUID
+
+            switch (user.Role.ToLower())
+            {
+                case "tutor":
+                    var tutor = _context.Tutors
+                        .FirstOrDefault(t => t.UserFk == user.UserId);
+                    roleId = tutor?.TutorId ?? Guid.Empty;
+                    break;
+
+                case "learner":
+                    var learner = _context.Learners
+                        .FirstOrDefault(l => l.UserFk == user.UserId);
+                    roleId = learner?.LearnerId ?? Guid.Empty;
+                    break;
+
+                case "admin":
+                    var admin = _context.Admins
+                        .FirstOrDefault(a => a.UserFk == user.UserId);
+                    roleId = admin?.AdminId ?? Guid.Empty;
+                    break;
+            }
 
             if (user != null && BCrypt.Net.BCrypt.Verify(currentUser.Password, user.Password))
             {
@@ -97,7 +123,7 @@ namespace BusinessService.Services
             {
                 new Claim (ClaimTypes.Email, currentUser.Email),
 
-                new Claim (ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim (ClaimTypes.NameIdentifier, roleId.ToString()),
                 new Claim(ClaimTypes.Name, user.FirstName + " " + user.LastName),
                 new Claim (ClaimTypes.Role, user.Role.ToString())
 

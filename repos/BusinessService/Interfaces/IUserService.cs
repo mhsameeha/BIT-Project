@@ -10,7 +10,7 @@ namespace BusinessService.Interfaces
 {
     public interface IUserService
     {
-        public User addUser(UserDto newUser);
+        public User AddUser(UserDto newUser);
         public string SignIn(LoginDto currentUser);
 
         public GetUserProfileDto GetUserProfile(string email);

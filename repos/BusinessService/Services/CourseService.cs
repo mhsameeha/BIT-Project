@@ -15,7 +15,7 @@ namespace BusinessService.Services
             _context = context;
         }
 
-        public (Course, CourseContent) addCourse(CourseDetailDto newCourse)
+        public (Course, CourseContent) AddCourse(CourseDetailDto newCourse)
         {
             var course = new Course
             {
@@ -62,7 +62,7 @@ namespace BusinessService.Services
             return (course, courseContent);
         }
 
-        public List<Category> getCourseCategories()
+        public List<Category> GetCourseCategories()
         {
          
         
@@ -72,7 +72,7 @@ namespace BusinessService.Services
             return categories;
         }
 
-        public List<CourseDifficulty> getCourseDifficulties()
+        public List<CourseDifficulty> GetCourseDifficulties()
         {
             var difficulties = _context.CourseDifficulties
                .OrderBy(c => c.CourseDifficultyName)
