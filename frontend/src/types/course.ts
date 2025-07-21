@@ -5,75 +5,40 @@
 //        price: number;
 //        categoryName : string;
 //        PublishedDate: Date;
-//        courseContentId: string;          
+//        courseContentId: string;
 //        courseDescription: string;
 //        briefIntro: string;
 //        resources: string | null;
 //        courseLink: string;
 //        level : string;
-//        duration: string;  
+//        duration: string;
 // }
 
 export interface PaginatedCourse {
-courses: Course[];
-page: number;
-pageSize : number;
-totalItems : number;
-
+  courses: Course[];
+  page: number;
+  pageSize: number;
+  totalItems: number;
 }
 
-
+export interface PaginatedCourses {
+  courses: TutorCourse[];
+  page: number;
+  pageSize: number;
+  totalItems: number;
+}
 
 export interface Course {
-  courseId: string;                    // GUID
-  tutorName?: string;                  // optional
-  courseDifficulty?: string;          // optional
-  categoryName?: string;              // optional
-  price?: number;                     // optional (decimal)
-  title?: string;                     // optional
-  introduction?: string;              // optional
-  updatedDate?: string;               // optional (ISO 8601 datetime string)
-  duration?: string;                  // optional (ISO 8601 or "hh:mm:ss" format)
-  rating?: number;                    // optional (decimal)
-  enrolledStudents: number;
-  reviewCount: number;
-  sections: number;
-}
-
-
-// Course content types for tutor course management
-export interface SubContent {
-  id: string;
+  courseId: string;
   title: string;
   description: string;
-  type: 'video' | 'document' | 'both';
-  videoFile?: File | null;
-  documentFile?: File | null;
-  videoUrl?: string; // For display purposes
-  documentUrl?: string; // For display purposes
-}
-
-export interface CourseContent {
-  id: string;
-  title: string;
-  duration: string; // e.g., "45 min", "1.5 hours"
-  description: string;
-  subContents: SubContent[];
-}
-
-// Enhanced course interface for tutor course management
-export interface TutorCourse {
-  id: string;
-  title: string;
-  description: string;
-  briefIntro: string;
-  level: 'Beginner' | 'Intermediate' | 'Advanced';
-  category: string;
+  introduction: string;
+  courseDifficultyName: 'Beginner' | 'Intermediate' | 'Advanced';
+  categoryName: string;
   tutorId: string;
   tutorName: string;
-  logo: string;
-  fee: number;
-  currency: string;
+  courseImage: string;
+  price: number;
   isEnabled: boolean;
   enrolledStudents: number;
   rating: number;
@@ -84,6 +49,52 @@ export interface TutorCourse {
   totalDuration: string; // e.g., "10h 30m"
   languages: string[];
   tags: string[];
-  contents?: CourseContent[]; // Optional course content
+  contents?: CourseContent[];
+  currency: string;
 }
 
+// Course content types for tutor course management
+export interface SubContent {
+  subContentId: string;
+  subContentTitle: string;
+  subContentDescription: string;
+  type: 'video' | 'document' | 'both';
+  videoFile?: File | null;
+  documentFile?: File | null;
+  videoUrl?: string; // For display purposes
+  documentUrl?: string; // For display purposes
+}
+
+export interface CourseContent {
+  contentId: string;
+  contentTitle: string;
+  contentDuration: string; // e.g., "45 min", "1.5 hours"
+  contentDescription: string;
+  subContents: SubContent[];
+}
+
+// Enhanced course interface for tutor course management
+export interface TutorCourse {
+  id: string;
+  title: string;
+  description: string;
+  introduction: string;
+  courseDifficultyFk: 'Beginner' | 'Intermediate' | 'Advanced';
+  categoryFk: string;
+  tutorId: string;
+  tutorName: string;
+  courseImage: string;
+  price: number;
+  isEnabled: boolean;
+  enrolledStudents: number;
+  rating: number;
+  reviewCount: number;
+  createdDate: Date;
+  updatedDate: Date;
+  totalLessons: number;
+  totalDuration: string; // e.g., "10h 30m"
+  languageFk: string;
+  tags: string[];
+  currency: string;
+  courseContents: CourseContent[]; // Optional course content
+}

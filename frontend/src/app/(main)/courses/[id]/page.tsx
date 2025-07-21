@@ -2,25 +2,25 @@
 
 import * as React from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
-import Paper from '@mui/material/Paper';
+import { getCourseData } from '@/constants/courses';
 import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import Chip from '@mui/material/Chip';
-import Rating from '@mui/material/Rating';
+import AccordionSummary from '@mui/material/AccordionSummary';
 import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
+import Paper from '@mui/material/Paper';
+import Rating from '@mui/material/Rating';
+import Stack from '@mui/material/Stack';
 import type { SxProps, Theme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 import { ArrowLeft as ArrowLeftIcon } from '@phosphor-icons/react/dist/ssr/ArrowLeft';
 import { CaretDown as CaretDownIcon } from '@phosphor-icons/react/dist/ssr/CaretDown';
 import { Clock as ClockIcon } from '@phosphor-icons/react/dist/ssr/Clock';
 import dayjs from 'dayjs';
-import { getCourseData } from '@/constants/courses';
 
 // Types for styled components
 interface StyledCardProps {
@@ -30,14 +30,14 @@ interface StyledCardProps {
 
 function MainCard({ children, sx = {}, ...props }: StyledCardProps): React.JSX.Element {
   return (
-    <Paper 
-      elevation={6} 
-      sx={{ 
-        p: 4, 
+    <Paper
+      elevation={6}
+      sx={{
+        p: 4,
         borderRadius: 3,
         background: 'linear-gradient(145deg, #ffffff 0%, #f8faff 100%)',
         boxShadow: '0 15px 35px rgba(0,0,0,0.08)',
-        ...(sx as object)
+        ...(sx as object),
       }}
       {...props}
     >
@@ -67,12 +67,7 @@ export default function CourseDetailPage(): React.JSX.Element {
       <Container maxWidth="lg">
         <Stack spacing={3} sx={{ py: 4 }}>
           <Box>
-            <Button
-              startIcon={<ArrowLeftIcon />}
-              onClick={handleBackToCourses}
-              variant="text"
-              sx={{ mb: 2 }}
-            >
+            <Button startIcon={<ArrowLeftIcon />} onClick={handleBackToCourses} variant="text" sx={{ mb: 2 }}>
               Back to Courses
             </Button>
           </Box>
@@ -94,20 +89,13 @@ export default function CourseDetailPage(): React.JSX.Element {
       <Stack spacing={4} sx={{ py: 4 }}>
         {/* Back Button */}
         <Box>
-          <Button
-            startIcon={<ArrowLeftIcon />}
-            onClick={handleBackToCourses}
-            variant="text"
-            sx={{ mb: 2 }}
-          >
+          <Button startIcon={<ArrowLeftIcon />} onClick={handleBackToCourses} variant="text" sx={{ mb: 2 }}>
             Back to Courses
           </Button>
         </Box>
 
         {/* Course Header Section */}
-        <MainCard 
-
->
+        <MainCard>
           <Stack spacing={3}>
             {/* Course Title and Basic Info */}
             <Box>
@@ -124,7 +112,11 @@ export default function CourseDetailPage(): React.JSX.Element {
             </Box>
 
             {/* Tutor and Fee Info */}
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} sx={{ alignItems: { md: 'center' }, justifyContent: 'space-between' }}>
+            <Stack
+              direction={{ xs: 'column', md: 'row' }}
+              spacing={3}
+              sx={{ alignItems: { md: 'center' }, justifyContent: 'space-between' }}
+            >
               {/* Tutor Info */}
               <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
                 <Avatar src={course.tutorAvatar} alt={course.tutorName} sx={{ width: 56, height: 56 }} />
@@ -162,29 +154,27 @@ export default function CourseDetailPage(): React.JSX.Element {
                   {course.enrolledStudents.toLocaleString()} students enrolled
                 </Typography>
               </Stack>
-              
+
               {/* Enroll Button */}
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 size="large"
-                sx={{ 
+                sx={{
                   minWidth: '150px',
                 }}
               >
                 Enroll Now
               </Button>
             </Stack>
-            </Stack>
-
-           
+          </Stack>
         </MainCard>
 
         {/* Curriculum Section */}
-        <MainCard >
+        <MainCard>
           <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
             Course Curriculum
           </Typography>
-          
+
           {course.curriculum.map((section) => (
             <Accordion
               key={section.id}
@@ -215,12 +205,12 @@ export default function CourseDetailPage(): React.JSX.Element {
                       key={lesson.id}
                       direction="row"
                       spacing={2}
-                      sx={{ 
-                        alignItems: 'center', 
-                        p: 1.5, 
-                        borderRadius: 1, 
+                      sx={{
+                        alignItems: 'center',
+                        p: 1.5,
+                        borderRadius: 1,
                         backgroundColor: 'background.default',
-                        '&:hover': { backgroundColor: 'action.hover' }
+                        '&:hover': { backgroundColor: 'action.hover' },
                       }}
                     >
                       <Typography variant="body2" color="text.secondary" sx={{ minWidth: '24px' }}>
@@ -244,11 +234,11 @@ export default function CourseDetailPage(): React.JSX.Element {
         </MainCard>
 
         {/* Reviews Section */}
-        <MainCard >
+        <MainCard>
           <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
             Student Reviews
           </Typography>
-          
+
           <Stack spacing={3}>
             {course.reviews.map((review) => (
               <Paper key={review.id} elevation={1} sx={{ p: 3, borderRadius: 2 }}>
@@ -266,9 +256,9 @@ export default function CourseDetailPage(): React.JSX.Element {
                     </Box>
                     <Rating value={review.rating} readOnly size="small" />
                   </Stack>
-                  
+
                   <Divider />
-                  
+
                   {/* Review Content */}
                   <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
                     {review.comment}

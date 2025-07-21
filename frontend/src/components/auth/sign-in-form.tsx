@@ -24,16 +24,15 @@ import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
 import { useUser } from '@/hooks/use-user';
 
-
 const schema = zod.object({
   email: zod.string().min(1, { message: 'Email is required' }).email(),
   password: zod.string().min(1, { message: 'Password is required' }),
-  role:zod.string().min(1, { message: 'Select your Role' })
+  role: zod.string().min(1, { message: 'Select your Role' }),
 });
 
 type Values = zod.infer<typeof schema>;
 
-const defaultValues = { email: '', password: '', role:'Learner' } satisfies Values;
+const defaultValues = { email: '', password: '', role: 'Learner' } satisfies Values;
 
 export function SignInForm(): React.JSX.Element {
   const router = useRouter();
@@ -69,7 +68,6 @@ export function SignInForm(): React.JSX.Element {
     [checkSession, router, setError]
   );
 
-
   return (
     <Stack spacing={4}>
       <Stack spacing={1}>
@@ -80,10 +78,8 @@ export function SignInForm(): React.JSX.Element {
             Sign up
           </Link>
         </Typography>
-      
-      
       </Stack>
-      <form autoComplete='off' onSubmit={handleSubmit(onSubmit)} >
+      <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={2}>
           <Controller
             control={control}

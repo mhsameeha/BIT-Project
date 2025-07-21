@@ -1,25 +1,22 @@
 'use client';
 
 import React, { useState } from 'react';
+import { AdminPanelSettings as AdminIcon, Download as DownloadIcon } from '@mui/icons-material';
 import {
   Box,
+  Button,
   Card,
   CardContent,
   CardHeader,
   Container,
-  Grid,
-  Typography,
   FormControl,
-  Select,
+  Grid,
   MenuItem,
+  Select,
   TextField,
-  Button,
+  Typography,
   type SelectChangeEvent,
 } from '@mui/material';
-import {
-  Download as DownloadIcon,
-  AdminPanelSettings as AdminIcon,
-} from '@mui/icons-material';
 import dayjs from 'dayjs';
 import { jsPDF } from 'jspdf';
 
@@ -76,11 +73,11 @@ const generateActiveUsersData = (startDate: string, endDate: string): ActiveUser
 
   while (current.isBefore(end) || current.isSame(end, 'month')) {
     const monthStr = current.format('MMM YYYY');
-    
+
     // Simulate growth over time
     const studentGrowth = Math.floor(Math.random() * 30) + 10;
     const tutorGrowth = Math.floor(Math.random() * 8) + 2;
-    
+
     baseStudents += studentGrowth;
     baseTutors += tutorGrowth;
 
@@ -106,7 +103,7 @@ const generatePopularCoursesData = (startDate: string, endDate: string): Popular
     const monthStr = current.format('MMM YYYY');
 
     // Generate course data for each month
-    const courses = MOCK_COURSES.map(course => {
+    const courses = MOCK_COURSES.map((course) => {
       const enrollments = Math.floor(Math.random() * 50) + 10;
       return {
         courseId: course.id,
@@ -134,7 +131,7 @@ const generateOverallRevenueData = (startDate: string, endDate: string): Overall
   let current = start.startOf('month');
   while (current.isBefore(end) || current.isSame(end, 'month')) {
     const monthStr = current.format('MMM YYYY');
-    
+
     const sessionRevenue = Math.floor(Math.random() * 200000) + 100000;
     const courseRevenue = Math.floor(Math.random() * 500000) + 300000;
     const userGrowth = Math.floor(Math.random() * 15) + 5;
@@ -153,47 +150,45 @@ const generateOverallRevenueData = (startDate: string, endDate: string): Overall
 };
 
 // Helper function to generate CSV content for Excel
-const generateCSV = (data: ActiveUsersData[] | PopularCoursesData[] | OverallRevenueData[], reportType: AdminReportType): string => {
+const generateCSV = (
+  data: ActiveUsersData[] | PopularCoursesData[] | OverallRevenueData[],
+  reportType: AdminReportType
+): string => {
   if (reportType === 'active-users') {
     const usersData = data as ActiveUsersData[];
     const headers = ['Month', 'Total Students', 'Total Tutors', 'Total Users'];
-    const rows = usersData.map(item => [
+    const rows = usersData.map((item) => [
       item.month,
       item.totalStudents.toString(),
       item.totalTutors.toString(),
-      item.totalUsers.toString()
+      item.totalUsers.toString(),
     ]);
-    
-    return [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+
+    return [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
   }
-  
+
   if (reportType === 'popular-courses') {
     const coursesData = data as PopularCoursesData[];
     const headers = ['Month', 'Top Course', 'Enrollments', 'Revenue (LKR)'];
-    const rows = coursesData.map(item => {
+    const rows = coursesData.map((item) => {
       const topCourse = item.courses[0];
-      return [
-        item.month,
-        topCourse.courseName,
-        topCourse.enrollments.toString(),
-        topCourse.revenue.toString()
-      ];
+      return [item.month, topCourse.courseName, topCourse.enrollments.toString(), topCourse.revenue.toString()];
     });
-    
-    return [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+
+    return [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
   }
-  
+
   const revenueData = data as OverallRevenueData[];
   const headers = ['Month', 'Session Revenue (LKR)', 'Course Revenue (LKR)', 'Total Revenue (LKR)', 'User Growth (%)'];
-  const rows = revenueData.map(item => [
+  const rows = revenueData.map((item) => [
     item.month,
     item.sessionRevenue.toString(),
     item.courseRevenue.toString(),
     item.totalRevenue.toString(),
-    item.userGrowth.toString()
+    item.userGrowth.toString(),
   ]);
-  
-  return [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+
+  return [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
 };
 
 // Helper function to download file
@@ -213,38 +208,43 @@ const downloadFile = (content: string, filename: string, format: ExportFormat): 
 };
 
 // Proper PDF generation using jsPDF
-const generatePDF = (data: ActiveUsersData[] | PopularCoursesData[] | OverallRevenueData[], reportType: AdminReportType, startDate: string, endDate: string): void => {
+const generatePDF = (
+  data: ActiveUsersData[] | PopularCoursesData[] | OverallRevenueData[],
+  reportType: AdminReportType,
+  startDate: string,
+  endDate: string
+): void => {
   // eslint-disable-next-line new-cap -- jsPDF constructor uses lowercase
   const doc = new jsPDF();
-  
+
   // Set up the document
   doc.setFontSize(20);
   const reportTitles = {
     'active-users': 'Active Users Report',
     'popular-courses': 'Popular Courses Report',
-    'overall-revenue': 'Overall Revenue Report'
+    'overall-revenue': 'Overall Revenue Report',
   };
   doc.text(reportTitles[reportType], 20, 30);
-  
+
   doc.setFontSize(12);
   doc.text(`Period: ${dayjs(startDate).format('MMM YYYY')} to ${dayjs(endDate).format('MMM YYYY')}`, 20, 45);
   doc.text(`Generated on: ${dayjs().format('YYYY-MM-DD HH:mm:ss')}`, 20, 55);
-  
+
   let yPosition = 75;
-  
+
   if (reportType === 'active-users') {
     const usersData = data as ActiveUsersData[];
-    
+
     // Add summary
     const latestData = usersData[usersData.length - 1];
     const firstData = usersData[0];
     const studentGrowth = latestData.totalStudents - firstData.totalStudents;
     const tutorGrowth = latestData.totalTutors - firstData.totalTutors;
-    
+
     doc.setFontSize(14);
     doc.text('Summary:', 20, yPosition);
     yPosition += 15;
-    
+
     doc.setFontSize(12);
     doc.text(`Current Active Students: ${latestData.totalStudents.toLocaleString()}`, 25, yPosition);
     yPosition += 10;
@@ -256,54 +256,53 @@ const generatePDF = (data: ActiveUsersData[] | PopularCoursesData[] | OverallRev
     yPosition += 10;
     doc.text(`Tutor Growth: +${tutorGrowth}`, 25, yPosition);
     yPosition += 20;
-    
+
     // Add table header
     doc.setFontSize(14);
     doc.text('Monthly Breakdown:', 20, yPosition);
     yPosition += 15;
-    
+
     doc.setFontSize(10);
     doc.text('Month', 20, yPosition);
     doc.text('Students', 60, yPosition);
     doc.text('Tutors', 100, yPosition);
     doc.text('Total Users', 140, yPosition);
     yPosition += 5;
-    
+
     // Add separator line
     doc.line(20, yPosition, 190, yPosition);
     yPosition += 10;
-    
+
     // Add data rows
     usersData.forEach((item) => {
       if (yPosition > 270) {
         doc.addPage();
         yPosition = 20;
       }
-      
+
       doc.text(item.month, 20, yPosition);
       doc.text(item.totalStudents.toString(), 60, yPosition);
       doc.text(item.totalTutors.toString(), 100, yPosition);
       doc.text(item.totalUsers.toString(), 140, yPosition);
       yPosition += 12;
     });
-    
   } else if (reportType === 'popular-courses') {
     const coursesData = data as PopularCoursesData[];
-    
+
     doc.setFontSize(14);
     doc.text('Top Performing Courses by Month:', 20, yPosition);
     yPosition += 20;
-    
+
     coursesData.forEach((monthData) => {
       if (yPosition > 250) {
         doc.addPage();
         yPosition = 20;
       }
-      
+
       doc.setFontSize(12);
       doc.text(`${monthData.month}:`, 20, yPosition);
       yPosition += 10;
-      
+
       doc.setFontSize(10);
       monthData.courses.slice(0, 3).forEach((course, index) => {
         doc.text(`${index + 1}. ${course.courseName}`, 25, yPosition);
@@ -313,20 +312,19 @@ const generatePDF = (data: ActiveUsersData[] | PopularCoursesData[] | OverallRev
       });
       yPosition += 10;
     });
-    
   } else {
     const revenueData = data as OverallRevenueData[];
-    
+
     // Add summary
     const totalRevenue = revenueData.reduce((sum, item) => sum + item.totalRevenue, 0);
     const totalSessionRevenue = revenueData.reduce((sum, item) => sum + item.sessionRevenue, 0);
     const totalCourseRevenue = revenueData.reduce((sum, item) => sum + item.courseRevenue, 0);
     const avgGrowth = revenueData.reduce((sum, item) => sum + item.userGrowth, 0) / revenueData.length;
-    
+
     doc.setFontSize(14);
     doc.text('Summary:', 20, yPosition);
     yPosition += 15;
-    
+
     doc.setFontSize(12);
     doc.text(`Total Revenue: LKR ${totalRevenue.toLocaleString()}`, 25, yPosition);
     yPosition += 10;
@@ -336,12 +334,12 @@ const generatePDF = (data: ActiveUsersData[] | PopularCoursesData[] | OverallRev
     yPosition += 10;
     doc.text(`Average User Growth: ${avgGrowth.toFixed(1)}%`, 25, yPosition);
     yPosition += 20;
-    
+
     // Add table header
     doc.setFontSize(14);
     doc.text('Monthly Breakdown:', 20, yPosition);
     yPosition += 15;
-    
+
     doc.setFontSize(10);
     doc.text('Month', 20, yPosition);
     doc.text('Session Rev.', 50, yPosition);
@@ -349,18 +347,18 @@ const generatePDF = (data: ActiveUsersData[] | PopularCoursesData[] | OverallRev
     doc.text('Total Rev.', 130, yPosition);
     doc.text('Growth %', 170, yPosition);
     yPosition += 5;
-    
+
     // Add separator line
     doc.line(20, yPosition, 190, yPosition);
     yPosition += 10;
-    
+
     // Add data rows
     revenueData.forEach((item) => {
       if (yPosition > 270) {
         doc.addPage();
         yPosition = 20;
       }
-      
+
       doc.text(item.month, 20, yPosition);
       doc.text(`${(item.sessionRevenue / 1000).toFixed(0)}K`, 50, yPosition);
       doc.text(`${(item.courseRevenue / 1000).toFixed(0)}K`, 90, yPosition);
@@ -369,7 +367,7 @@ const generatePDF = (data: ActiveUsersData[] | PopularCoursesData[] | OverallRev
       yPosition += 12;
     });
   }
-  
+
   // Download the PDF
   const filename = `admin_${reportType}_report_${dayjs().format('YYYY-MM-DD')}.pdf`;
   doc.save(filename);
@@ -420,7 +418,6 @@ export default function AdminReportsPage(): React.JSX.Element {
         // Generate PDF directly (no need to return content)
         generatePDF(data, reportType, startDate, endDate);
       }
-      
     } catch (error) {
       // Handle error silently or log to proper logging service
     } finally {
@@ -461,7 +458,7 @@ export default function AdminReportsPage(): React.JSX.Element {
       </Typography>
 
       <Card sx={{ maxWidth: 600, mx: 'auto' }}>
-        <CardHeader 
+        <CardHeader
           title="Download Admin Report"
           avatar={
             <Box
@@ -484,11 +481,7 @@ export default function AdminReportsPage(): React.JSX.Element {
                 <Typography variant="subtitle2" sx={{ mb: 1 }}>
                   Report Type
                 </Typography>
-                <Select
-                  value={reportType}
-                  onChange={handleReportTypeChange}
-                  size="small"
-                >
+                <Select value={reportType} onChange={handleReportTypeChange} size="small">
                   <MenuItem value="active-users">Total Active Users</MenuItem>
                   <MenuItem value="popular-courses">Popular Courses</MenuItem>
                   <MenuItem value="overall-revenue">Overall Revenue</MenuItem>
@@ -502,11 +495,7 @@ export default function AdminReportsPage(): React.JSX.Element {
                 <Typography variant="subtitle2" sx={{ mb: 1 }}>
                   Export Format
                 </Typography>
-                <Select
-                  value={exportFormat}
-                  onChange={handleFormatChange}
-                  size="small"
-                >
+                <Select value={exportFormat} onChange={handleFormatChange} size="small">
                   <MenuItem value="excel">Excel (CSV)</MenuItem>
                   <MenuItem value="pdf">PDF</MenuItem>
                 </Select>
@@ -521,7 +510,9 @@ export default function AdminReportsPage(): React.JSX.Element {
               <TextField
                 type="date"
                 value={startDate}
-                onChange={(e) => { setStartDate(e.target.value); }}
+                onChange={(e) => {
+                  setStartDate(e.target.value);
+                }}
                 size="small"
                 fullWidth
                 InputLabelProps={{ shrink: true }}
@@ -536,7 +527,9 @@ export default function AdminReportsPage(): React.JSX.Element {
               <TextField
                 type="date"
                 value={endDate}
-                onChange={(e) => { setEndDate(e.target.value); }}
+                onChange={(e) => {
+                  setEndDate(e.target.value);
+                }}
                 size="small"
                 fullWidth
                 InputLabelProps={{ shrink: true }}
@@ -554,7 +547,9 @@ export default function AdminReportsPage(): React.JSX.Element {
                 startIcon={<DownloadIcon />}
                 sx={{ mt: 2, py: 1.5 }}
               >
-                {isGenerating ? 'Generating Report...' : `Download ${getReportTitle()} Report (${exportFormat.toUpperCase()})`}
+                {isGenerating
+                  ? 'Generating Report...'
+                  : `Download ${getReportTitle()} Report (${exportFormat.toUpperCase()})`}
               </Button>
             </Grid>
           </Grid>
@@ -562,7 +557,8 @@ export default function AdminReportsPage(): React.JSX.Element {
           {/* Report Description */}
           <Box sx={{ mt: 3, p: 2, backgroundColor: 'grey.50', borderRadius: 1 }}>
             <Typography variant="body2" color="text.secondary">
-              {getReportDescription()} Report covers data from {dayjs(startDate).format('MMM YYYY')} to {dayjs(endDate).format('MMM YYYY')}.
+              {getReportDescription()} Report covers data from {dayjs(startDate).format('MMM YYYY')} to{' '}
+              {dayjs(endDate).format('MMM YYYY')}.
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
               Format: {exportFormat === 'excel' ? 'CSV file (opens in Excel)' : 'PDF file'}

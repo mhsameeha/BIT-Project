@@ -15,8 +15,8 @@ export const paths = {
   main: {
     overview: '/dashboard',
     // admindashboard : '/admin-dashboard',
-    tutorDashboard : '/tutor-dashboard',
-    learnerdashboard : '/learner-dashboard',
+    tutorDashboard: '/tutor-dashboard',
+    learnerdashboard: '/learner-dashboard',
     // tutorcourse: '/courses/tutor-course',
     account: '/account',
     customers: '/customers',
@@ -24,13 +24,13 @@ export const paths = {
     settings: '/settings',
     courses: '/courses/list',
     courseDetail: (id: string) => `/courses/${id}`,
-    session:'/session',
+    session: '/session',
     sessionBooking: (tutorId: string) => `/session/book/${tutorId}`,
     tutorProfile: (tutorId: string) => `/tutors/${tutorId}`,
     sessionManagement: '/session-management',
     courseManagement: '/course-management',
     reports: '/reports',
-    adminReports: '/admin-reports'
+    adminReports: '/admin-reports',
   },
   errors: { notFound: '/errors/not-found' },
 } as const;

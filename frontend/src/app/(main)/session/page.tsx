@@ -1,23 +1,23 @@
 'use client';
 
 import * as React from 'react';
+import { getAllTutors, searchTutors, type TutorData } from '@/constants/tutors';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Select, { type SelectChangeEvent } from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Unstable_Grid2';
 import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/dist/ssr/MagnifyingGlass';
-
 import { TutorListItem } from '@/components/main/session/tutor-list-item';
-import { API_BASE_URL } from '@/config';
-import { getAllTutors, getAllSpecialties, searchTutors, type TutorData } from '@/constants/tutors';
 import { Speciality } from '@/types/speciality';
+import { API_BASE_URL } from '@/config';
+import { getAllSpecialties } from '@/Services/courses';
 
 export default function Page(): React.JSX.Element {
   const [tutors, setTutors] = React.useState<TutorData[]>(getAllTutors());
@@ -28,52 +28,22 @@ export default function Page(): React.JSX.Element {
   const [sortBy, setSortBy] = React.useState<string>('name');
 
 
-const getAllSpecialties = async ()  => {
-        try {
 
-            // set this up after developing the API
-            const response = await fetch(`${API_BASE_URL}/Speciality/Speciality`, {
-            method: 'GET',
-            });
-        
-            if (!response.ok) {
-            const errorMessage = await response.text();
-            return { error: errorMessage || 'Invalid Request' };
-            }
-            return response.json();
-        }
-        catch (error) {
-            console.error('Request Error:', error);
-        }
-return []
-       
-    }
 
-  React.useEffect(()   =>   {
+  React.useEffect(() => {
     const fetchData = async () => {
-        const returnValue = await getAllSpecialties();
-        console.log('returnValue', returnValue);
-        
-            if ('error' in returnValue) {
-      console.error(returnValue.error);
-            const errorMessage = returnValue;
+      const returnValue = await getAllSpecialties();
+      if ('error' in returnValue) {
+        // Optionally, handle error UI here
+        return;
 
-      // Optionally, handle error UI here
-      return { error: errorMessage || 'Invalid Request' };
-    }        
-    setAllSpecialties(returnValue);
-    console.log(returnValue);
-    
-  
-      };
+      }
 
-      fetchData();
-   
-    //initial load 
-  }, [])
-
-
-
+      console.log(returnValue);
+      setAllSpecialties(returnValue);
+    };
+     fetchData();
+  }, []);
 
   // Handle search and filtering
   React.useEffect(() => {
@@ -86,11 +56,9 @@ return []
 
     // Apply specialty filter
     if (selectedSpecialties.length > 0) {
-      filteredTutors = filteredTutors.filter(tutor =>
-        selectedSpecialties.some(specialty =>
-          tutor.specialties.some(tutorSpecialty =>
-            tutorSpecialty.toLowerCase().includes(specialty.toLowerCase())
-          )
+      filteredTutors = filteredTutors.filter((tutor) =>
+        selectedSpecialties.some((specialty) =>
+          tutor.specialties.some((tutorSpecialty) => tutorSpecialty.toLowerCase().includes(specialty.toLowerCase()))
         )
       );
     }
@@ -130,7 +98,14 @@ return []
   };
 
   return (
-    <Box sx={{ maxWidth: 'var(--Content-maxWidth)', m: 'var(--Content-margin)', p: 'var(--Content-padding)', width: 'var(--Content-width)' }}>
+    <Box
+      sx={{
+        maxWidth: 'var(--Content-maxWidth)',
+        m: 'var(--Content-margin)',
+        p: 'var(--Content-padding)',
+        width: 'var(--Content-width)',
+      }}
+    >
       <Stack spacing={4}>
         {/* Header */}
         <div>
@@ -176,7 +151,7 @@ return []
                     </Box>
                   )}
                 >
-                  {allSpecialties.map((speciality:Speciality) => (
+                  {allSpecialties.map((speciality: Speciality) => (
                     <MenuItem key={speciality.specialityId} value={speciality.specialityName}>
                       {speciality.specialityName}
                     </MenuItem>
@@ -189,11 +164,7 @@ return []
             <Grid xs={12} md={4}>
               <FormControl fullWidth>
                 <InputLabel>Sort by</InputLabel>
-                <Select
-                  value={sortBy}
-                  onChange={handleSortChange}
-                  label="Sort by"
-                >
+                <Select value={sortBy} onChange={handleSortChange} label="Sort by">
                   <MenuItem value="name">Name (A-Z)</MenuItem>
                   <MenuItem value="rating">Highest Rating</MenuItem>
                   <MenuItem value="experience">Most Experienced</MenuItem>
@@ -209,7 +180,7 @@ return []
           <Typography variant="h6" sx={{ mb: 2 }}>
             {tutors.length} {tutors.length === 1 ? 'tutor' : 'tutors'} found
           </Typography>
-          
+
           {tutors.length === 0 ? (
             <Card sx={{ p: 4, textAlign: 'center' }}>
               <Typography color="text.secondary" variant="body1">

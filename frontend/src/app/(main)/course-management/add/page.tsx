@@ -1,7 +1,9 @@
 'use client';
 
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
 import {
+  Alert,
   Avatar,
   Box,
   Button,
@@ -14,6 +16,7 @@ import {
   FormHelperText,
   Grid,
   IconButton,
+  InputAdornment,
   InputLabel,
   MenuItem,
   Select,
@@ -21,29 +24,34 @@ import {
   Switch,
   TextField,
   Typography,
-  Alert,
-  InputAdornment,
 } from '@mui/material';
 import {
   ArrowLeft,
   Books,
+  Clock,
   CloudArrowUp,
+
+  FilePdf,
   Plus,
   Trash,
-  Clock,
-  CurrencyDollar,
   VideoCamera,
-  FilePdf,
 } from '@phosphor-icons/react/dist/ssr';
-import { useRouter } from 'next/navigation';
 
+// import { addCourse } from '../../../../constants/courses';
 import type { TutorCourse } from '../../../../types/course';
-import { addCourse } from '../../../../constants/courses';
+import { Category } from '@/types/category';
+import { getAllCategories, getAllLanguages, getAllLevels } from '@/Services/courses';
+import { Language } from '@/types/language';
+import { useForm } from 'react-hook-form';
+import { API_BASE_URL } from '@/config';
+import { Level } from '@/types/level';
+import dayjs from 'dayjs';
+import { CurrencyRupee } from '@mui/icons-material';
 
 interface SubContent {
-  id: string;
-  title: string;
-  description: string;
+  subContentSortOrder: string;
+  subContentTitle: string;
+  subContentDescription: string;
   type: 'video' | 'document' | 'both';
   videoFile?: File | null;
   documentFile?: File | null;
@@ -52,70 +60,118 @@ interface SubContent {
 }
 
 interface CourseContent {
-  id: string;
+  contentSortOrder: string;
+  contentTitle: string;
+  contentDuration: string; // e.g., "45 min", "1.5 hours"
+  contentDescription: string;
+  subContent: SubContent[];
+}
+
+interface Course {
   title: string;
-  duration: string; // e.g., "45 min", "1.5 hours"
   description: string;
-  subContents: SubContent[];
+  introduction: string;
+  categoryFk: string;
+  courseDifficultyFk: string;
+  price: number;
+  currency: string;
+  isEnabled: boolean;
+  tags: string[];
+  languageFk: string;
+  courseContent: CourseContent[];
+  courseImage: string;
+  updatedDate: Date;
+  createdDate: Date;
 }
 
 interface CourseFormData {
   title: string;
   description: string;
-  briefIntro: string;
-  category: string;
-  level: 'Beginner' | 'Intermediate' | 'Advanced';
-  fee: number;
+  introduction: string;
+  categoryFk: string;
+  courseDifficultyFk: string;
+  price: number;
   currency: string;
   isEnabled: boolean;
   tags: string[];
-  languages: string[];
-  contents: CourseContent[];
-  logo: string;
+  languageFk: string;
+  courseContent: CourseContent[];
+  courseImage: string;
+  updatedDate: Date;
+  createdDate: Date;
 }
 
-const CATEGORIES = [
-  'Programming',
-  'Web Development',
-  'Mobile Development',
-  'Data Science',
-  'Machine Learning',
-  'Artificial Intelligence',
-  'Database',
-  'DevOps',
-  'Cybersecurity',
-  'UI/UX Design',
-  'Project Management',
-  'Business',
-  'Marketing',
-  'Other'
-];
+let success = false; 
+async function addCourse(courseData: CourseFormData): Promise<{ data?: any; error?: string }> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/Course/AddCourse`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('custom-auth-token')}`
+      },
+      body: JSON.stringify(courseData),
+    });
 
-const CURRENCIES = ['LKR', 'USD', 'EUR', 'GBP', 'INR'];
-const LANGUAGES = ['English', 'Sinhala', 'Tamil', 'Spanish', 'French', 'German', 'Mandarin'];
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.log('error', errorData);
+      return { error: errorData.message || 'Failed to add course' };
+    }
+    const result = await response.json();
+ console.log('data', result);
+
+    success=true;
+    return { data: result };
+  } catch (error) {
+    console.error('Add course error:', error);
+    return { error: 'Something went wrong while adding the course' };
+  }
+}
+
+
+
 
 export default function AddCoursePage(): React.JSX.Element {
   const router = useRouter();
+
   
+
   const [formData, setFormData] = React.useState<CourseFormData>({
     title: '',
     description: '',
-    briefIntro: '',
-    category: '',
-    level: 'Beginner',
-    fee: 3000,
+    introduction: '',
+    categoryFk: '',
+    courseDifficultyFk: '',
+    price: 0,
     currency: 'LKR',
     isEnabled: true,
     tags: [],
-    languages: ['English'],
-    contents: [],
-    logo: ''
+    languageFk: '',
+    courseContent: [],
+    courseImage: '',
+    updatedDate: dayjs().toDate(),
+    createdDate: dayjs().toDate(),
   });
+
+  const {
+  control,
+  register,
+  handleSubmit,
+  setError,
+  watch,
+  setValue,
+} = useForm<CourseFormData>();
 
   const [newTag, setNewTag] = React.useState('');
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [submitSuccess, setSubmitSuccess] = React.useState(false);
+  const [categories, setCategories] = React.useState<Category[]>([])
+  const [languages, setLanguages] = React.useState<Language[]>([])
+  const [levels, setLevels] = React.useState<Level[]>([])
+
+
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -128,211 +184,233 @@ export default function AddCoursePage(): React.JSX.Element {
       newErrors.description = 'Course description is required';
     }
 
-    if (!formData.briefIntro.trim()) {
-      newErrors.briefIntro = 'Brief introduction is required';
+    if (!formData.introduction.trim()) {
+      newErrors.introduction = 'Brief introduction is required';
     }
 
-    if (!formData.category) {
-      newErrors.category = 'Category is required';
+    if (!formData.categoryFk) {
+      newErrors.categoryFk = 'Category is required';
     }
 
-    if (formData.fee <= 0) {
-      newErrors.fee = 'Fee must be greater than 0 (typical range: LKR 2000-6000 per hour)';
+      if (!formData.languageFk) {
+      newErrors.languageFk = 'Category is required';
     }
 
-    if (formData.contents.length === 0) {
-      newErrors.contents = 'At least one course content is required';
+
+    if (formData.price <= 0) {
+      newErrors.price = 'Fee must be greater than 0 (typical range: LKR 2000-6000 per hour)';
+    }
+
+    if (formData.courseContent.length === 0) {
+      newErrors.courseContent = 'At least one course content is required';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (): Promise<void> => {
-    if (!validateForm()) return;
-
-    setIsSubmitting(true);
-    
-    try {
+    // try {
       // Calculate total duration
-      const totalMinutes = formData.contents.reduce((total, content) => {
-        const duration = content.duration.toLowerCase();
-        let minutes = 0;
-        
-        if (duration.includes('hour')) {
-          const hours = parseFloat(duration);
-          minutes += hours * 60;
-        } else if (duration.includes('min')) {
-          minutes += parseFloat(duration);
-        }
-        
-        return total + minutes;
-      }, 0);
+      // const totalMinutes = formData.contents.reduce((total, content) => {
+      //   const duration = content.duration.toLowerCase();
+      //   let minutes = 0;
 
-      const totalHours = Math.floor(totalMinutes / 60);
-      const remainingMinutes = totalMinutes % 60;
-      const totalDuration = totalHours > 0 
-        ? `${totalHours}h ${remainingMinutes > 0 ? `${remainingMinutes}m` : ''}` 
-        : `${remainingMinutes}m`;
+      //   if (duration.includes('hour')) {
+      //     const hours = parseFloat(duration);
+      //     minutes += hours * 60;
+      //   } else if (duration.includes('min')) {
+      //     minutes += parseFloat(duration);
+      //   }
 
-      const newCourse: TutorCourse = {
-        id: `COURSE-${Date.now()}`,
-        title: formData.title,
-        description: formData.description,
-        briefIntro: formData.briefIntro,
-        level: formData.level,
-        category: formData.category,
-        tutorId: 'TUTOR-001', // Mock tutor ID
-        tutorName: 'Dr. Sarah Johnson', // Mock tutor name
-        logo: formData.logo || '/assets/logo-python.png',
-        fee: formData.fee,
-        currency: formData.currency,
-        isEnabled: formData.isEnabled,
-        enrolledStudents: 0,
-        rating: 0,
-        reviewCount: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        totalLessons: formData.contents.length,
-        totalDuration,
-        languages: formData.languages,
-        tags: formData.tags,
-        contents: formData.contents, // Save course content
-      };
+      //   return total + minutes;
+      // }, 0);
+
+      // const totalHours = Math.floor(totalMinutes / 60);
+      // const remainingMinutes = totalMinutes % 60;
+      // const totalDuration =
+      //   totalHours > 0
+      //     ? `${totalHours}h ${remainingMinutes > 0 ? `${remainingMinutes}m` : ''}`
+      //     : `${remainingMinutes}m`;
 
       // Add to mock data (in real app, this would be an API call)
-      const success = addCourse(newCourse);
-      
-      if (success) {
-        setSubmitSuccess(true);
-        
-        // Redirect after success
-        setTimeout(() => {
-          router.push('/course-management');
-        }, 2000);
-      } else {
-        throw new Error('Failed to add course');
-      }
+      // const success = addCourse(newCourse);
+  const onSubmit = async (data: CourseFormData) => {
+    if (!validateForm()) return;
+  setIsSubmitting(true);
 
-    } catch (error) {
-      // eslint-disable-next-line no-console -- Error logging for development
-      console.error('Error creating course:', error);
-    } finally {
-      setIsSubmitting(false);
+  try {
+    console.log(formData);
+    const { error } = await addCourse(formData);
+    
+    if (error) {
+      setErrors({ submit: error });
+      return;
     }
-  };
+   console.log("data", data);
+    setSubmitSuccess(true);
+    setTimeout(() => router.push('/course-management'), 2000);
+  } catch (err) {
+    setErrors({ submit: 'Failed to create course' });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+
+    React.useEffect(() => {
+      const fetchData = async () => {
+        const returnValue = await getAllCategories();
+        if ('error' in returnValue) {
+          // Optionally, handle error UI here
+          return;
+        }
+        setCategories(returnValue);
+      };
+       fetchData();
+    }, []);
+
+
+        React.useEffect(() => {
+      const fetchData = async () => {
+        const returnValue = await getAllLanguages();
+        if ('error' in returnValue) {
+          // Optionally, handle error UI here
+          return;
+        }
+        setLanguages(returnValue);
+      };
+       fetchData();
+    }, []);
+
+            React.useEffect(() => {
+      const fetchData = async () => {
+        const returnValue = await getAllLevels();
+        if ('error' in returnValue) {
+          // Optionally, handle error UI here
+          return;
+        }
+        setLevels(returnValue);
+      };
+       fetchData();
+    }, []);
 
   const handleAddContent = (): void => {
     const newContent: CourseContent = {
-      id: `content-${Date.now()}`,
-      title: '',
-      duration: '',
-      description: '',
-      subContents: []
+      contentSortOrder: '',
+      contentTitle: '',
+      contentDuration: '',
+      contentDescription: '',
+      subContent: [],
     };
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      contents: [...prev.contents, newContent]
+      courseContent: [...prev.courseContent, newContent],
     }));
   };
 
   const handleAddSubContent = (contentId: string): void => {
     const newSubContent: SubContent = {
-      id: `subcontent-${Date.now()}`,
-      title: '',
-      description: '',
-      type: 'video'
+      subContentSortOrder: '',
+      subContentTitle: '',
+      subContentDescription: '',
+      type: 'video',
     };
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      contents: prev.contents.map(content =>
-        content.id === contentId
-          ? { ...content, subContents: [...content.subContents, newSubContent] }
-          : content
-      )
+      courseContent: prev.courseContent.map((content) =>
+        content.contentSortOrder === contentId ? { ...content, subContent: [...content.subContent, newSubContent] } : content
+      ),
     }));
   };
 
   const handleRemoveSubContent = (contentId: string, subContentId: string): void => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      contents: prev.contents.map(content =>
-        content.id === contentId
-          ? { ...content, subContents: content.subContents.filter(sub => sub.id !== subContentId) }
+      courseContent: prev.courseContent.map((content) =>
+        content.contentSortOrder === contentId
+          ? { ...content, subContent: content.subContent.filter((sub) => sub.subContentSortOrder !== subContentId) }
           : content
-      )
+      ),
     }));
   };
 
-  const handleUpdateSubContent = (contentId: string, subContentId: string, field: keyof SubContent, value: string | File | null): void => {
-    setFormData(prev => ({
+  const handleUpdateSubContent = (
+    contentId: string,
+    subContentId: string,
+    field: keyof SubContent,
+    value: string | File | null
+  ): void => {
+    setFormData((prev) => ({
       ...prev,
-      contents: prev.contents.map(content =>
-        content.id === contentId
+      courseContent: prev.courseContent.map((content) =>
+        content.contentSortOrder === contentId
           ? {
               ...content,
-              subContents: content.subContents.map(sub =>
-                sub.id === subContentId ? { ...sub, [field]: value } : sub
-              )
+              subContent: content.subContent.map((sub) =>
+                sub.subContentSortOrder === subContentId ? { ...sub, [field]: value } : sub
+              ),
             }
           : content
-      )
+      ),
     }));
   };
 
-  const handleFileUpload = (contentId: string, subContentId: string, fileType: 'video' | 'document', file: File): void => {
+  const handleFileUpload = (
+    contentId: string,
+    subContentId: string,
+    fileType: 'video' | 'document',
+    file: File
+  ): void => {
     const fileUrl = URL.createObjectURL(file);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      contents: prev.contents.map(content =>
-        content.id === contentId
+      courseContent: prev.courseContent.map((content) =>
+        content.contentSortOrder === contentId
           ? {
               ...content,
-              subContents: content.subContents.map(sub =>
-                sub.id === subContentId
+              subContent: content.subContent.map((sub) =>
+                sub.subContentSortOrder === subContentId
                   ? {
                       ...sub,
                       [fileType === 'video' ? 'videoFile' : 'documentFile']: file,
-                      [fileType === 'video' ? 'videoUrl' : 'documentUrl']: fileUrl
+                      [fileType === 'video' ? 'videoUrl' : 'documentUrl']: fileUrl,
                     }
                   : sub
-              )
+              ),
             }
           : content
-      )
+      ),
     }));
   };
 
   const handleUpdateContent = (id: string, field: keyof CourseContent, value: string): void => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      contents: prev.contents.map(content =>
-        content.id === id ? { ...content, [field]: value } : content
-      )
+      courseContent: prev.courseContent.map((content) => (content.contentSortOrder === id ? { ...content, [field]: value } : content)),
     }));
   };
 
   const handleRemoveContent = (id: string): void => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      contents: prev.contents.filter(content => content.id !== id)
+      courseContent: prev.courseContent.filter((content) => content.contentSortOrder !== id),
     }));
   };
 
   const handleAddTag = (): void => {
     if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        tags: [...prev.tags, newTag.trim()]
+        tags: [...prev.tags, newTag.trim()],
       }));
       setNewTag('');
     }
   };
 
   const handleRemoveTag = (tagToRemove: string): void => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
+      tags: prev.tags.filter((tag) => tag !== tagToRemove),
     }));
   };
 
@@ -342,7 +420,7 @@ export default function AddCoursePage(): React.JSX.Element {
       // In a real app, you would upload the file to a server
       // For now, we'll just create a mock URL
       const mockUrl = `/assets/course-${Date.now()}.jpg`;
-      setFormData(prev => ({ ...prev, logo: mockUrl }));
+      setFormData((prev) => ({ ...prev, logo: mockUrl }));
     }
   };
 
@@ -368,11 +446,16 @@ export default function AddCoursePage(): React.JSX.Element {
   }
 
   return (
+    <Container component="form" onSubmit={handleSubmit(onSubmit)}>
     <Container maxWidth="lg" sx={{ py: 3 }}>
       <Stack spacing={3}>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <IconButton onClick={() => { router.back(); }}>
+          <IconButton
+            onClick={() => {
+              router.back();
+            }}
+          >
             <ArrowLeft size={24} />
           </IconButton>
           <Box>
@@ -400,7 +483,9 @@ export default function AddCoursePage(): React.JSX.Element {
                         fullWidth
                         label="Course Title"
                         value={formData.title}
-                        onChange={(e) => { setFormData(prev => ({ ...prev, title: e.target.value })); }}
+                        onChange={(e) => {
+                          setFormData((prev) => ({ ...prev, title: e.target.value }));
+                        }}
                         error={Boolean(errors.title)}
                         helperText={errors.title}
                         placeholder="e.g., Introduction to React.js"
@@ -410,8 +495,10 @@ export default function AddCoursePage(): React.JSX.Element {
                       <TextField
                         fullWidth
                         label="Brief Introduction"
-                        value={formData.briefIntro}
-                        onChange={(e) => { setFormData(prev => ({ ...prev, briefIntro: e.target.value })); }}
+                        value={formData.introduction}
+                        onChange={(e) => {
+                          setFormData((prev) => ({ ...prev, introduction: e.target.value }));
+                        }}
                         error={Boolean(errors.briefIntro)}
                         helperText={errors.briefIntro}
                         placeholder="A short, compelling summary of your course"
@@ -424,7 +511,9 @@ export default function AddCoursePage(): React.JSX.Element {
                         rows={4}
                         label="Course Description"
                         value={formData.description}
-                        onChange={(e) => { setFormData(prev => ({ ...prev, description: e.target.value })); }}
+                        onChange={(e) => {
+                          setFormData((prev) => ({ ...prev, description: e.target.value }));
+                        }}
                         error={Boolean(errors.description)}
                         helperText={errors.description}
                         placeholder="Detailed description of what students will learn..."
@@ -434,13 +523,15 @@ export default function AddCoursePage(): React.JSX.Element {
                       <FormControl fullWidth error={Boolean(errors.category)}>
                         <InputLabel>Category</InputLabel>
                         <Select
-                          value={formData.category}
+                          value={formData.categoryFk}
                           label="Category"
-                          onChange={(e) => { setFormData(prev => ({ ...prev, category: e.target.value })); }}
+                          onChange={(e) => {
+                            setFormData((prev) => ({ ...prev, categoryFk: e.target.value }));
+                          }}
                         >
-                          {CATEGORIES.map((category) => (
-                            <MenuItem key={category} value={category}>
-                              {category}
+                          {categories.map((category:Category) => (
+                            <MenuItem key={category.categoryId} value={category.categoryId}>
+                              {category.categoryName}
                             </MenuItem>
                           ))}
                         </Select>
@@ -451,13 +542,20 @@ export default function AddCoursePage(): React.JSX.Element {
                       <FormControl fullWidth>
                         <InputLabel>Level</InputLabel>
                         <Select
-                          value={formData.level}
+                          value={formData.courseDifficultyFk}
                           label="Level"
-                          onChange={(e) => { setFormData(prev => ({ ...prev, level: e.target.value as 'Beginner' | 'Intermediate' | 'Advanced' })); }}
+                          onChange={(e) => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              courseDifficultyFk: e.target.value as 'Beginner' | 'Intermediate' | 'Advanced'| 'Beginner-Intermediate'|'Intermediate-Advanced',
+                            }));
+                          }}
                         >
-                          <MenuItem value="Beginner">Beginner</MenuItem>
-                          <MenuItem value="Intermediate">Intermediate</MenuItem>
-                          <MenuItem value="Advanced">Advanced</MenuItem>
+                     {levels.map((courseDifficulty:Level) => (
+                            <MenuItem key={courseDifficulty.courseDifficultyId} value={courseDifficulty.courseDifficultyId}>
+                              {courseDifficulty.courseDifficultyName}
+                            </MenuItem>
+                          ))}   
                         </Select>
                       </FormControl>
                     </Grid>
@@ -469,14 +567,8 @@ export default function AddCoursePage(): React.JSX.Element {
               <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                    <Typography variant="h6">
-                      Course Content
-                    </Typography>
-                    <Button
-                      variant="outlined"
-                      startIcon={<Plus size={16} />}
-                      onClick={handleAddContent}
-                    >
+                    <Typography variant="h6">Course Content</Typography>
+                    <Button variant="outlined" startIcon={<Plus size={16} />} onClick={handleAddContent}>
                       Add Content
                     </Button>
                   </Box>
@@ -488,8 +580,8 @@ export default function AddCoursePage(): React.JSX.Element {
                   ) : null}
 
                   <Stack spacing={2}>
-                    {formData.contents.map((content, index) => (
-                      <Card key={content.id} variant="outlined">
+                    {formData.courseContent.map((content, index) => (
+                      <Card key={content.contentSortOrder} variant="outlined">
                         <CardContent>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                             <Typography variant="subtitle2" color="primary">
@@ -498,7 +590,9 @@ export default function AddCoursePage(): React.JSX.Element {
                             <IconButton
                               size="small"
                               color="error"
-                              onClick={() => { handleRemoveContent(content.id); }}
+                              onClick={() => {
+                                handleRemoveContent(content.contentSortOrder);
+                              }}
                             >
                               <Trash size={16} />
                             </IconButton>
@@ -509,8 +603,10 @@ export default function AddCoursePage(): React.JSX.Element {
                                 fullWidth
                                 size="small"
                                 label="Content Title"
-                                value={content.title}
-                                onChange={(e) => { handleUpdateContent(content.id, 'title', e.target.value); }}
+                                value={content.contentTitle}
+                                onChange={(e) => {
+                                  handleUpdateContent(content.contentSortOrder, 'contentTitle', e.target.value);
+                                }}
                                 placeholder="e.g., Introduction to Components"
                               />
                             </Grid>
@@ -519,8 +615,10 @@ export default function AddCoursePage(): React.JSX.Element {
                                 fullWidth
                                 size="small"
                                 label="Duration"
-                                value={content.duration}
-                                onChange={(e) => { handleUpdateContent(content.id, 'duration', e.target.value); }}
+                                value={content.contentDuration}
+                                onChange={(e) => {
+                                  handleUpdateContent(content.contentSortOrder, 'contentDuration', e.target.value);
+                                }}
                                 placeholder="e.g., 45 min, 1.5 hours"
                                 InputProps={{
                                   startAdornment: (
@@ -538,8 +636,10 @@ export default function AddCoursePage(): React.JSX.Element {
                                 multiline
                                 rows={2}
                                 label="Content Description"
-                                value={content.description}
-                                onChange={(e) => { handleUpdateContent(content.id, 'description', e.target.value); }}
+                                value={content.contentDescription}
+                                onChange={(e) => {
+                                  handleUpdateContent(content.contentSortOrder, 'contentDescription', e.target.value);
+                                }}
                                 placeholder="Brief description of this content..."
                               />
                             </Grid>
@@ -547,7 +647,9 @@ export default function AddCoursePage(): React.JSX.Element {
                             {/* Sub-Contents Section */}
                             <Grid item xs={12}>
                               <Box sx={{ mt: 2 }}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                <Box
+                                  sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
+                                >
                                   <Typography variant="subtitle2" color="text.primary">
                                     Sub-Contents
                                   </Typography>
@@ -555,25 +657,36 @@ export default function AddCoursePage(): React.JSX.Element {
                                     size="small"
                                     variant="outlined"
                                     startIcon={<Plus size={14} />}
-                                    onClick={() => { handleAddSubContent(content.id); }}
+                                    onClick={() => {
+                                      handleAddSubContent(content.contentSortOrder);
+                                    }}
                                   >
                                     Add Sub-Content
                                   </Button>
                                 </Box>
 
-                                {content.subContents.length > 0 ? (
+                                {content.subContent.length > 0 ? (
                                   <Stack spacing={2}>
-                                    {content.subContents.map((subContent, subIndex) => (
-                                      <Card key={subContent.id} variant="outlined" sx={{ bgcolor: 'grey.50' }}>
+                                    {content.subContent.map((subContent, subIndex) => (
+                                      <Card key={subContent.subContentSortOrder} variant="outlined" sx={{ bgcolor: 'grey.50' }}>
                                         <CardContent sx={{ p: 2 }}>
-                                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                          <Box
+                                            sx={{
+                                              display: 'flex',
+                                              justifyContent: 'space-between',
+                                              alignItems: 'center',
+                                              mb: 2,
+                                            }}
+                                          >
                                             <Typography variant="caption" color="primary">
                                               Sub-Content {subIndex + 1}
                                             </Typography>
                                             <IconButton
                                               size="small"
                                               color="error"
-                                              onClick={() => { handleRemoveSubContent(content.id, subContent.id); }}
+                                              onClick={() => {
+                                                handleRemoveSubContent(content.contentSortOrder, subContent.subContentSortOrder);
+                                              }}
                                             >
                                               <Trash size={12} />
                                             </IconButton>
@@ -585,8 +698,15 @@ export default function AddCoursePage(): React.JSX.Element {
                                                 fullWidth
                                                 size="small"
                                                 label="Sub-Content Title"
-                                                value={subContent.title}
-                                                onChange={(e) => { handleUpdateSubContent(content.id, subContent.id, 'title', e.target.value); }}
+                                                value={subContent.subContentTitle}
+                                                onChange={(e) => {
+                                                  handleUpdateSubContent(
+                                                    content.contentSortOrder,
+                                                    subContent.subContentSortOrder,
+                                                    'subContentTitle',
+                                                    e.target.value
+                                                  );
+                                                }}
                                                 placeholder="e.g., Introduction Video"
                                               />
                                             </Grid>
@@ -596,7 +716,14 @@ export default function AddCoursePage(): React.JSX.Element {
                                                 <Select
                                                   value={subContent.type}
                                                   label="Content Type"
-                                                  onChange={(e) => { handleUpdateSubContent(content.id, subContent.id, 'type', e.target.value); }}
+                                                  onChange={(e) => {
+                                                    handleUpdateSubContent(
+                                                      content.contentSortOrder,
+                                                      subContent.subContentSortOrder,
+                                                      'type',
+                                                      e.target.value
+                                                    );
+                                                  }}
                                                 >
                                                   <MenuItem value="video">Video Only</MenuItem>
                                                   <MenuItem value="document">Document Only</MenuItem>
@@ -611,8 +738,15 @@ export default function AddCoursePage(): React.JSX.Element {
                                                 multiline
                                                 rows={2}
                                                 label="Sub-Content Description"
-                                                value={subContent.description}
-                                                onChange={(e) => { handleUpdateSubContent(content.id, subContent.id, 'description', e.target.value); }}
+                                                value={subContent.subContentDescription}
+                                                onChange={(e) => {
+                                                  handleUpdateSubContent(
+                                                    content.contentSortOrder,
+                                                    subContent.subContentSortOrder,
+                                                    'subContentDescription',
+                                                    e.target.value
+                                                  );
+                                                }}
                                                 placeholder="Brief description of this sub-content..."
                                               />
                                             </Grid>
@@ -620,24 +754,36 @@ export default function AddCoursePage(): React.JSX.Element {
                                             {/* File Upload Sections */}
                                             {(subContent.type === 'video' || subContent.type === 'both') && (
                                               <Grid item xs={12} sm={6}>
-                                                <Box sx={{ border: '2px dashed #ddd', borderRadius: 1, p: 2, textAlign: 'center' }}>
+                                                <Box
+                                                  sx={{
+                                                    border: '2px dashed #ddd',
+                                                    borderRadius: 1,
+                                                    p: 2,
+                                                    textAlign: 'center',
+                                                  }}
+                                                >
                                                   <input
                                                     accept="video/*"
                                                     style={{ display: 'none' }}
-                                                    id={`video-upload-${subContent.id}`}
+                                                    id={`video-upload-${subContent.subContentSortOrder}`}
                                                     type="file"
                                                     onChange={(e) => {
                                                       const file = e.target.files?.[0];
                                                       if (file) {
-                                                        handleFileUpload(content.id, subContent.id, 'video', file);
+                                                        handleFileUpload(content.contentSortOrder, subContent.subContentSortOrder, 'video', file);
                                                       }
                                                     }}
                                                   />
-                                                  <label htmlFor={`video-upload-${subContent.id}`}>
+                                                  <label htmlFor={`video-upload-${subContent.subContentSortOrder}`}>
                                                     <Box sx={{ cursor: 'pointer' }}>
-                                                      <VideoCamera size={32} style={{ marginBottom: 8, color: '#666' }} />
+                                                      <VideoCamera
+                                                        size={32}
+                                                        style={{ marginBottom: 8, color: '#666' }}
+                                                      />
                                                       <Typography variant="body2" color="text.secondary">
-                                                        {subContent.videoFile ? subContent.videoFile.name : 'Upload Video'}
+                                                        {subContent.videoFile
+                                                          ? subContent.videoFile.name
+                                                          : 'Upload Video'}
                                                       </Typography>
                                                       <Typography variant="caption" color="text.secondary">
                                                         MP4, AVI, MOV (Max 100MB)
@@ -650,24 +796,33 @@ export default function AddCoursePage(): React.JSX.Element {
 
                                             {(subContent.type === 'document' || subContent.type === 'both') && (
                                               <Grid item xs={12} sm={6}>
-                                                <Box sx={{ border: '2px dashed #ddd', borderRadius: 1, p: 2, textAlign: 'center' }}>
+                                                <Box
+                                                  sx={{
+                                                    border: '2px dashed #ddd',
+                                                    borderRadius: 1,
+                                                    p: 2,
+                                                    textAlign: 'center',
+                                                  }}
+                                                >
                                                   <input
                                                     accept=".pdf,.doc,.docx,.ppt,.pptx"
                                                     style={{ display: 'none' }}
-                                                    id={`document-upload-${subContent.id}`}
+                                                    id={`document-upload-${subContent.subContentSortOrder}`}
                                                     type="file"
                                                     onChange={(e) => {
                                                       const file = e.target.files?.[0];
                                                       if (file) {
-                                                        handleFileUpload(content.id, subContent.id, 'document', file);
+                                                        handleFileUpload(content.contentSortOrder, subContent.subContentSortOrder, 'document', file);
                                                       }
                                                     }}
                                                   />
-                                                  <label htmlFor={`document-upload-${subContent.id}`}>
+                                                  <label htmlFor={`document-upload-${subContent.subContentSortOrder}`}>
                                                     <Box sx={{ cursor: 'pointer' }}>
                                                       <FilePdf size={32} style={{ marginBottom: 8, color: '#666' }} />
                                                       <Typography variant="body2" color="text.secondary">
-                                                        {subContent.documentFile ? subContent.documentFile.name : 'Upload Document'}
+                                                        {subContent.documentFile
+                                                          ? subContent.documentFile.name
+                                                          : 'Upload Document'}
                                                       </Typography>
                                                       <Typography variant="caption" color="text.secondary">
                                                         PDF, DOC, PPT (Max 50MB)
@@ -683,9 +838,18 @@ export default function AddCoursePage(): React.JSX.Element {
                                     ))}
                                   </Stack>
                                 ) : (
-                                  <Box sx={{ textAlign: 'center', py: 2, color: 'text.secondary', border: '1px dashed #ddd', borderRadius: 1 }}>
+                                  <Box
+                                    sx={{
+                                      textAlign: 'center',
+                                      py: 2,
+                                      color: 'text.secondary',
+                                      border: '1px dashed #ddd',
+                                      borderRadius: 1,
+                                    }}
+                                  >
                                     <Typography variant="body2">
-                                      No sub-contents added yet. Click &ldquo;Add Sub-Content&rdquo; to add videos or documents.
+                                      No sub-contents added yet. Click &ldquo;Add Sub-Content&rdquo; to add videos or
+                                      documents.
                                     </Typography>
                                   </Box>
                                 )}
@@ -696,7 +860,7 @@ export default function AddCoursePage(): React.JSX.Element {
                       </Card>
                     ))}
 
-                    {formData.contents.length === 0 && (
+                    {formData.courseContent.length === 0 && (
                       <Box sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
                         <Books size={48} style={{ marginBottom: 16, opacity: 0.5 }} />
                         <Typography variant="body2">
@@ -719,7 +883,9 @@ export default function AddCoursePage(): React.JSX.Element {
                       <Chip
                         key={tag}
                         label={tag}
-                        onDelete={() => { handleRemoveTag(tag); }}
+                        onDelete={() => {
+                          handleRemoveTag(tag);
+                        }}
                         size="small"
                         variant="outlined"
                       />
@@ -730,8 +896,14 @@ export default function AddCoursePage(): React.JSX.Element {
                       size="small"
                       placeholder="Add a tag"
                       value={newTag}
-                      onChange={(e) => { setNewTag(e.target.value); }}
-                      onKeyPress={(e) => { if (e.key === 'Enter') { handleAddTag(); } }}
+                      onChange={(e) => {
+                        setNewTag(e.target.value);
+                      }}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          handleAddTag();
+                        }
+                      }}
                     />
                     <Button variant="outlined" onClick={handleAddTag}>
                       Add
@@ -752,7 +924,7 @@ export default function AddCoursePage(): React.JSX.Element {
                   </Typography>
                   <Box sx={{ textAlign: 'center' }}>
                     <Avatar
-                      src={formData.logo}
+                      src={formData.courseImage}
                       sx={{ width: 120, height: 120, mx: 'auto', mb: 2, bgcolor: 'primary.main' }}
                     >
                       <Books size={48} />
@@ -765,12 +937,7 @@ export default function AddCoursePage(): React.JSX.Element {
                       onChange={handleImageUpload}
                     />
                     <label htmlFor="course-image-upload">
-                      <Button
-                        variant="outlined"
-                        component="span"
-                        startIcon={<CloudArrowUp size={16} />}
-                        fullWidth
-                      >
+                      <Button variant="outlined" component="span" startIcon={<CloudArrowUp size={16} />} fullWidth>
                         Upload Image
                       </Button>
                     </label>
@@ -792,14 +959,16 @@ export default function AddCoursePage(): React.JSX.Element {
                           type="number"
                           label="Course Fee"
                           placeholder="e.g., 3000 (LKR 2000-6000 per hour typical)"
-                          value={formData.fee}
-                          onChange={(e) => { setFormData(prev => ({ ...prev, fee: parseFloat(e.target.value) || 0 })); }}
+                          value={formData.price}
+                          onChange={(e) => {
+                            setFormData((prev) => ({ ...prev, price: parseFloat(e.target.value) ?? 0 }));
+                          }}
                           error={Boolean(errors.fee)}
                           helperText={errors.fee}
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
-                                <CurrencyDollar size={16} />
+                                {/* <Currency size={16} /> */}
                               </InputAdornment>
                             ),
                           }}
@@ -810,14 +979,15 @@ export default function AddCoursePage(): React.JSX.Element {
                           <InputLabel>Currency</InputLabel>
                           <Select
                             value={formData.currency}
-                            label="Currency"
-                            onChange={(e) => { setFormData(prev => ({ ...prev, currency: e.target.value })); }}
+                            label="LKR"
+                            onChange={(e) => {
+                          setFormData((prev) => ({ ...prev, currency: e.target.value as string}));
+                        }}
                           >
-                            {CURRENCIES.map((currency) => (
-                              <MenuItem key={currency} value={currency}>
-                                {currency}
+                              <MenuItem value = 'LKR'>
+                               LKR
                               </MenuItem>
-                            ))}
+                           
                           </Select>
                         </FormControl>
                       </Grid>
@@ -826,21 +996,26 @@ export default function AddCoursePage(): React.JSX.Element {
                     <FormControl fullWidth>
                       <InputLabel>Languages</InputLabel>
                       <Select
-                        multiple
-                        value={formData.languages}
+                        value={formData.languageFk}
                         label="Languages"
-                        onChange={(e) => { setFormData(prev => ({ ...prev, languages: e.target.value as string[] })); }}
-                        renderValue={(selected) => (
-                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                            {selected.map((value) => (
-                              <Chip key={value} label={value} size="small" />
-                            ))}
-                          </Box>
-                        )}
+                        onChange={(e) => {
+                          setFormData((prev) => ({ ...prev, languageFk: e.target.value as string }));
+                        }}
+                        renderValue={(selected) => {
+                        const selectedLanguage = languages.find((lang) => lang.languageId === selected);
+                        return (
+                          <Chip
+                            key={selected}
+                            label={selectedLanguage ? selectedLanguage.languages : selected}
+                            size="small"
+                          />
+                        );
+                      }}
+
                       >
-                        {LANGUAGES.map((language) => (
-                          <MenuItem key={language} value={language}>
-                            {language}
+                        {languages.map((language:Language) => (
+                          <MenuItem key={language.languageId} value={language.languageId}>
+                            {language.languages}
                           </MenuItem>
                         ))}
                       </Select>
@@ -850,7 +1025,9 @@ export default function AddCoursePage(): React.JSX.Element {
                       control={
                         <Switch
                           checked={formData.isEnabled}
-                          onChange={(e) => { setFormData(prev => ({ ...prev, isEnabled: e.target.checked })); }}
+                          onChange={(e) => {
+                            setFormData((prev) => ({ ...prev, isEnabled: e.target.checked }));
+                          }}
                         />
                       }
                       label="Enable Course"
@@ -861,19 +1038,15 @@ export default function AddCoursePage(): React.JSX.Element {
 
               {/* Actions */}
               <Stack spacing={2}>
-                <Button
-                  variant="contained"
-                  size="large"
-                  onClick={handleSubmit}
-                  disabled={isSubmitting}
-                  fullWidth
-                >
-                  {isSubmitting ? 'Creating Course...' : 'Create Course'}
+                  <Button variant='outlined' type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? 'Creating...' : 'Create Course'}
                 </Button>
                 <Button
                   variant="outlined"
                   size="large"
-                  onClick={() => { router.back(); }}
+                  onClick={() => {
+                    router.back();
+                  }}
                   fullWidth
                 >
                   Cancel
@@ -883,6 +1056,7 @@ export default function AddCoursePage(): React.JSX.Element {
           </Grid>
         </Grid>
       </Stack>
+    </Container>
     </Container>
   );
 }

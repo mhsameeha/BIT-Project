@@ -86,6 +86,7 @@ export default function Page(): React.JSX.Element {
       }
 
         setPaginatedCourses(returnValue);
+         console.log('paginatedCourse', returnValue);
 
     };
     fetchData();
@@ -297,9 +298,9 @@ const currentPage = Math.min(page, totalPages);
               Previous
             </Button>
             <Button
-              onClick={() => setPage((prev) => (prev + 1 < Math.ceil(paginatedCourses?.courses?.length / pageSize) ? prev + 1 : prev))}
-              disabled={page >= Math.ceil(paginatedCourses?.courses?.length / pageSize)}
-              style={{ padding: '4px 12px', borderRadius: 4, border: '1px solid #ccc', background: page + 1 >= Math.ceil(paginatedCourses?.courses?.length / pageSize) ? 'not-allowed' : 'pointer' }}
+              onClick={() => setPage((prev) => (prev + 1 < Math.ceil((paginatedCourses?.courses??[]).length / pageSize) ? prev + 1 : prev))}
+              disabled={page >= Math.ceil((paginatedCourses?.courses??[]).length / pageSize)}
+              style={{ padding: '4px 12px', borderRadius: 4, border: '1px solid #ccc', background: page + 1 >= Math.ceil((paginatedCourses?.courses??[]).length / pageSize) ? 'not-allowed' : 'pointer' }}
             >
               Next
             </Button>

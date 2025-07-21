@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { v4 as uuidv4 } from 'uuid';
 import {
   Avatar,
   Box,
@@ -37,123 +38,210 @@ import {
   FilePdf,
 } from '@phosphor-icons/react/dist/ssr';
 
-import { getCourseById, updateCourse } from '../../../../../constants/courses';
+import { getAllCategories, getAllLanguages, getAllLevels, getCourseById, updateCourse } from '@/Services/courses';
+// import { CourseContent, SubContent, TutorCourse } from '@/types/course';
+import { CourseFormData, CourseContent, SubContent } from '@/types/course-form-data';
+import { Category } from '@/types/category';
+import { Language } from '@/types/language';
+import { Level } from '@/types/level';
+import { randomUUID } from 'crypto';
 
-interface SubContent {
-  id: string;
-  title: string;
-  description: string;
-  type: 'video' | 'document' | 'both';
-  videoFile?: File | null;
-  documentFile?: File | null;
-  videoUrl?: string; // For display purposes
-  documentUrl?: string; // For display purposes
-}
+// interface SubContent {
+//   id: string;
+//   title: string;
+//   description: string;
+//   type: 'video' | 'document' | 'both';
+//   videoFile?: File | null;
+//   documentFile?: File | null;
+//   videoUrl?: string; // For display purposes
+//   documentUrl?: string; // For display purposes
+// }
 
-interface CourseContent {
-  id: string;
-  title: string;
-  duration: string; // e.g., "45 min", "1.5 hours"
-  description: string;
-  subContents: SubContent[];
-}
+// interface CourseContent {
+//   id: string;
+//   title: string;
+//   duration: string; // e.g., "45 min", "1.5 hours"
+//   description: string;
+//   subContents: SubContent[];
+// }
 
-interface CourseFormData {
-  title: string;
-  description: string;
-  briefIntro: string;
-  category: string;
-  level: 'Beginner' | 'Intermediate' | 'Advanced';
-  fee: number;
-  currency: string;
-  isEnabled: boolean;
-  tags: string[];
-  languages: string[];
-  contents: CourseContent[];
-  logo: string;
-}
+// interface CourseFormData {
+//   title: string;
+//   description: string;
+//   introduction: string;
+//   categoryFk: string;
+//   courseDifficultyFk: 'Beginner' | 'Intermediate' | 'Advanced';
+//   price: number;
+//   currency: string;
+//   isEnabled: boolean;
+//   tags: string[];
+//   languageFk: string[];
+//   courseContents: CourseContent[];
+//   courseImage: string;
+// }
 
-const CATEGORIES = [
-  'Programming',
-  'Web Development',
-  'Mobile Development',
-  'Data Science',
-  'Machine Learning',
-  'Cybersecurity',
-  'Cloud Computing',
-  'DevOps',
-  'UI/UX Design',
-  'Business',
-  'Marketing',
-  'Other'
-];
+// const CATEGORIES = [
+//   'Programming',
+//   'Web Development',
+//   'Mobile Development',
+//   'Data Science',
+//   'Machine Learning',
+//   'Cybersecurity',
+//   'Cloud Computing',
+//   'DevOps',
+//   'UI/UX Design',
+//   'Business',
+//   'Marketing',
+//   'Other'
+// ];
 
-const CURRENCIES = ['LKR', 'USD', 'EUR', 'GBP', 'CAD', 'AUD', 'JPY', 'PKR'];
+const CURRENCIES = ['LKR'];
+// [ 'USD', 'EUR', 'GBP', 'CAD', 'AUD', 'JPY', 'PKR'];
 
-const LANGUAGES = [
-  'English',
-  'Spanish',
-  'French',
-  'German',
-  'Italian',
-  'Portuguese',
-  'Chinese',
-  'Japanese',
-  'Korean',
-  'Arabic',
-  'Hindi',
-  'Urdu',
-  'Other'
-];
+// const LANGUAGES = [
+//   'English',
+//   'Spanish',
+//   'French',
+//   'German',
+//   'Italian',
+//   'Portuguese',
+//   'Chinese',
+//   'Japanese',
+//   'Korean',
+//   'Arabic',
+//   'Hindi',
+//   'Urdu',
+//   'Other'
+// ];
 
 export default function EditCoursePage(): React.JSX.Element {
   const router = useRouter();
   const params = useParams();
-  const courseId = params.id as string;
+  const courseId = 'FB182982-E845-43B6-AC76-CF837B22AB66';;
   
   const [formData, setFormData] = React.useState<CourseFormData>({
+    courseId,
     title: '',
     description: '',
-    briefIntro: '',
-    category: '',
-    level: 'Beginner',
-    fee: 0,
+    introduction: '',
+    categoryFk: '',
+    courseDifficultyFk: 'Beginner',
+    price: 0,
     currency: 'LKR',
     isEnabled: true,
     tags: [],
-    languages: ['English'],
-    contents: [],
-    logo: ''
+    languageFk: 'English',
+    courseContent: [],
+    courseImage: '',
+    updatedDate: new Date(),
   });
 
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [newTag, setNewTag] = React.useState('');
   const [loading, setLoading] = React.useState(true);
+  const [course, setCourse] = React.useState<CourseFormData>();
+  const [categories, setCategories] = React.useState<Category[]>([])
+  const [languages, setLanguages] = React.useState<Language[]>([])
+  const [levels, setLevels] = React.useState<Level[]>([])
 
   // Load course data on mount
-  React.useEffect(() => {
-    if (courseId) {
-      const course = getCourseById(courseId);
-      if (course) {
-        setFormData({
-          title: course.title,
-          description: course.description,
-          briefIntro: course.briefIntro || '',
-          category: course.category,
-          level: course.level,
-          fee: course.fee,
-          currency: course.currency,
-          isEnabled: course.isEnabled,
-          tags: course.tags,
-          languages: course.languages,
-          contents: course.contents || [], // Load existing course content
-          logo: course.logo
-        });
-      }
-      setLoading(false);
+      React.useEffect(() => {
+        const fetchData = async () => {
+          const returnValue = await getAllCategories();
+          if ('error' in returnValue) {
+            // Optionally, handle error UI here
+            return;
+          }
+          setCategories(returnValue);
+        };
+         fetchData();
+      }, []);
+  
+  
+          React.useEffect(() => {
+        const fetchData = async () => {
+          const returnValue = await getAllLanguages();
+          if ('error' in returnValue) {
+            // Optionally, handle error UI here
+            return;
+          }
+          setLanguages(returnValue);
+        };
+         fetchData();
+      }, []);
+  
+              React.useEffect(() => {
+        const fetchData = async () => {
+          const returnValue = await getAllLevels();
+          if ('error' in returnValue) {
+            // Optionally, handle error UI here
+            return;
+          }
+          setLevels(returnValue);
+        };
+         fetchData();
+      }, []);
+
+React.useEffect(() => {
+  const fetchData = async () => {
+    const returnValue = await getCourseById(courseId);
+    if ('error' in returnValue) {
+      return;
     }
-  }, [courseId]);
+
+    setCourse(returnValue);
+
+    if (courseId && returnValue) {
+const incomingContents = returnValue.courseContent || [];
+
+const mappedContents: CourseContent[] = incomingContents.map((content, index) => {
+  const mappedSubContents: SubContent[] = (content.subContent || []).map((sub, subIndex) => ({
+    subContentId: sub.subContentId ?? `sub-temp-${subIndex}`,
+    subContentTitle: sub.subContentTitle ?? '',
+    subContentDescription: sub.subContentDescription ?? '',
+    type: sub.type ?? '',
+    videoFile: sub.videoFile ?? null,
+    documentFile: sub.documentFile ?? null,
+    subContentOrder: sub.subContentOrder,
+  }));
+
+  return {
+    contentId: content.contentId ?? `temp-${index}`,
+    contentTitle: content.contentTitle ?? '',
+    contentDuration: content.contentDuration ?? 0,
+    contentDescription: content.contentDescription ?? '',
+    contentSortOrder: content.contentSortOrder ?? 0,
+    subContent: mappedSubContents
+  };
+});
+
+      setFormData({
+        courseId:returnValue.courseId,
+        title: returnValue.title,
+        description: returnValue.description,
+        introduction: returnValue.introduction || '',
+        categoryFk: returnValue.categoryFk,
+        courseDifficultyFk: returnValue.courseDifficultyFk,
+        price: returnValue.price,
+        currency: returnValue.currency,
+        isEnabled: returnValue.isEnabled,
+        tags: returnValue.tags,
+        languageFk: returnValue.languageFk,
+        courseContent: mappedContents,
+        courseImage: returnValue.courseImage,
+        updatedDate: returnValue.updatedDate
+      });
+
+
+      console.log("up", returnValue)
+    }
+     setLoading(false);
+  };
+
+  fetchData();
+}, [courseId]);
+
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -162,30 +250,32 @@ export default function EditCoursePage(): React.JSX.Element {
       newErrors.title = 'Course title is required';
     }
 
-    if (!formData.briefIntro.trim()) {
-      newErrors.briefIntro = 'Brief introduction is required';
+    if (!formData.introduction.trim()) {
+      newErrors.introduction = 'Brief introduction is required';
     }
 
     if (!formData.description.trim()) {
       newErrors.description = 'Course description is required';
     }
 
-    if (!formData.category) {
-      newErrors.category = 'Category is required';
+    if (!formData.categoryFk) {
+      newErrors.categoryFk = 'Category is required';
     }
 
-    if (formData.fee <= 0) {
-      newErrors.fee = 'Course fee must be greater than 0 (typical range: LKR 2000-6000 per hour)';
+    if (formData.price <= 0) {
+      newErrors.price = 'Course fee must be greater than 0 (typical range: LKR 2000-6000 per hour)';
     }
 
-    if (formData.contents.length === 0) {
-      newErrors.contents = 'At least one content section is required';
+    if (formData.courseContent.length === 0) {
+      newErrors.courseContent = 'At least one content section is required';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
+  function isTempId(id: string | undefined) {
+    return !id || id.startsWith('temp') || id.startsWith('sub-temp');
+  }
   const handleSubmit = (): void => {
     if (!validateForm()) {
       return;
@@ -194,67 +284,82 @@ export default function EditCoursePage(): React.JSX.Element {
     setIsSubmitting(true);
 
     // Simulate API call
-    setTimeout(() => {
+    setTimeout(async () => {
       // Calculate totals based on contents
-      const totalLessons = formData.contents.reduce((sum, content) => sum + content.subContents.length, 0);
-      const totalDuration = formData.contents.length > 0 ? 
-        `${formData.contents.reduce((total, content) => {
-          const hours = parseFloat(content.duration.replace(/[^\d.]/g, '')) || 0;
+      const cleanedCourseContent = formData.courseContent.map(content => ({
+      ...content,
+      contentId: isTempId(content.contentId) ? uuidv4(): content.contentId,
+      subContent: content.subContent.map(sub => ({
+        ...sub,
+        subContentId: isTempId(sub.subContentId) ? uuidv4() : sub.subContentId
+      }))
+    }));
+
+
+      const totalLessons = formData.courseContent.reduce((sum, content) => sum + content.subContent.length, 0);
+      const totalDuration = formData.courseContent.length > 0 ? 
+        `${formData.courseContent.reduce((total, content) => {
+          const hours = parseFloat(content.contentDuration.replace(/[^\d.]/g, '')) || 0;
           return total + hours;
         }, 0).toFixed(1)} hours` : '0 hours';
 
       // Update course using helper function
-      const success = updateCourse(courseId, {
+      const success =  await updateCourse(courseId, {
+        courseId: courseId,
         title: formData.title,
         description: formData.description,
-        briefIntro: formData.briefIntro,
-        category: formData.category,
-        level: formData.level,
-        fee: formData.fee,
+        introduction: formData.introduction,
+        categoryFk: formData.categoryFk,
+        courseDifficultyFk: formData.courseDifficultyFk,
+        price: formData.price,
         currency: formData.currency,
         isEnabled: formData.isEnabled,
         tags: formData.tags,
-        languages: formData.languages,
-        logo: formData.logo,
-        contents: formData.contents,
-        totalLessons,
-        totalDuration,
-      });
+        languageFk: formData.languageFk,
+        courseImage: formData.courseImage,
+        courseContent: formData.courseContent,
+        updatedDate: new Date()
+    });
 
       setIsSubmitting(false);
-      
-      if (success) {
+      console.log('formd', formData);
+      if (!success.error) {
         router.push('/course-management');
       }
+      else {
+  console.error(success.error);
+}
     }, 2000);
   };
 
   const handleAddContent = (): void => {
     const newContent: CourseContent = {
-      id: `content-${Date.now()}`,
-      title: '',
-      duration: '',
-      description: '',
-      subContents: []
+      contentId: uuidv4(),
+      contentTitle: '',
+      contentDuration: '',
+      contentDescription: '',
+      contentSortOrder: 0,
+      subContent: []
     };
     setFormData(prev => ({
       ...prev,
-      contents: [...prev.contents, newContent]
+      courseContent: [...prev.courseContent, newContent]
     }));
   };
 
   const handleAddSubContent = (contentId: string): void => {
     const newSubContent: SubContent = {
-      id: `subcontent-${Date.now()}`,
-      title: '',
-      description: '',
-      type: 'video'
+      subContentId: uuidv4(),
+      subContentTitle: '',
+      subContentDescription: '',
+      type: 'video',
+      subContentOrder:0
     };
     setFormData(prev => ({
       ...prev,
-      contents: prev.contents.map(content =>
-        content.id === contentId
-          ? { ...content, subContents: [...content.subContents, newSubContent] }
+      courseContent: prev.courseContent.map(content =>
+        content.contentId === contentId
+          ? { ...content, subContent: [...content.subContent, newSubContent] }
           : content
       )
     }));
@@ -263,9 +368,9 @@ export default function EditCoursePage(): React.JSX.Element {
   const handleRemoveSubContent = (contentId: string, subContentId: string): void => {
     setFormData(prev => ({
       ...prev,
-      contents: prev.contents.map(content =>
-        content.id === contentId
-          ? { ...content, subContents: content.subContents.filter(sub => sub.id !== subContentId) }
+      courseContent: prev.courseContent.map(content =>
+        content.contentId === contentId
+          ? { ...content, subContent: content.subContent.filter(sub => sub.subContentId !== subContentId) }
           : content
       )
     }));
@@ -274,12 +379,12 @@ export default function EditCoursePage(): React.JSX.Element {
   const handleUpdateSubContent = (contentId: string, subContentId: string, field: keyof SubContent, value: string | File | null): void => {
     setFormData(prev => ({
       ...prev,
-      contents: prev.contents.map(content =>
-        content.id === contentId
+      courseContent: prev.courseContent.map(content =>
+        content.contentId === contentId
           ? {
               ...content,
-              subContents: content.subContents.map(sub =>
-                sub.id === subContentId ? { ...sub, [field]: value } : sub
+              subContent: content.subContent.map(sub =>
+                sub.subContentId === subContentId ? { ...sub, [field]: value } : sub
               )
             }
           : content
@@ -291,12 +396,12 @@ export default function EditCoursePage(): React.JSX.Element {
     const fileUrl = URL.createObjectURL(file);
     setFormData(prev => ({
       ...prev,
-      contents: prev.contents.map(content =>
-        content.id === contentId
+      courseContent: prev.courseContent.map(content =>
+        content.contentId === contentId
           ? {
               ...content,
-              subContents: content.subContents.map(sub =>
-                sub.id === subContentId
+              subContent: content.subContent.map(sub =>
+                sub.subContentId === subContentId
                   ? {
                       ...sub,
                       [fileType === 'video' ? 'videoFile' : 'documentFile']: file,
@@ -313,8 +418,8 @@ export default function EditCoursePage(): React.JSX.Element {
   const handleUpdateContent = (id: string, field: keyof CourseContent, value: string): void => {
     setFormData(prev => ({
       ...prev,
-      contents: prev.contents.map(content =>
-        content.id === id ? { ...content, [field]: value } : content
+      courseContent: prev.courseContent.map(content =>
+        content.contentId === id ? { ...content, [field]: value } : content
       )
     }));
   };
@@ -322,7 +427,7 @@ export default function EditCoursePage(): React.JSX.Element {
   const handleRemoveContent = (id: string): void => {
     setFormData(prev => ({
       ...prev,
-      contents: prev.contents.filter(content => content.id !== id)
+      courseContent: prev.courseContent.filter(content => content.contentId !== id)
     }));
   };
 
@@ -394,8 +499,8 @@ export default function EditCoursePage(): React.JSX.Element {
                     <TextField
                       fullWidth
                       label="Brief Introduction"
-                      value={formData.briefIntro}
-                      onChange={(e) => { setFormData(prev => ({ ...prev, briefIntro: e.target.value })); }}
+                      value={formData.introduction}
+                      onChange={(e) => { setFormData(prev => ({ ...prev, introduction: e.target.value })); }}
                       error={Boolean(errors.briefIntro)}
                       helperText={errors.briefIntro}
                       placeholder="A short, compelling summary of your course"
@@ -418,13 +523,13 @@ export default function EditCoursePage(): React.JSX.Element {
                     <FormControl fullWidth error={Boolean(errors.category)}>
                       <InputLabel>Category</InputLabel>
                       <Select
-                        value={formData.category}
+                        value={formData.categoryFk}
                         label="Category"
-                        onChange={(e) => { setFormData(prev => ({ ...prev, category: e.target.value })); }}
+                        onChange={(e) => { setFormData(prev => ({ ...prev, categoryFk: e.target.value })); }}
                       >
-                        {CATEGORIES.map((category) => (
-                          <MenuItem key={category} value={category}>
-                            {category}
+                        {categories.map((category:Category) => (
+                          <MenuItem key={category.categoryId} value={category.categoryId}>
+                            {category.categoryName}
                           </MenuItem>
                         ))}
                       </Select>
@@ -435,13 +540,15 @@ export default function EditCoursePage(): React.JSX.Element {
                     <FormControl fullWidth>
                       <InputLabel>Level</InputLabel>
                       <Select
-                        value={formData.level}
+                        value={formData.courseDifficultyFk}
                         label="Level"
-                        onChange={(e) => { setFormData(prev => ({ ...prev, level: e.target.value as 'Beginner' | 'Intermediate' | 'Advanced' })); }}
+                        onChange={(e) => { setFormData(prev => ({ ...prev, courseDifficultyFk: e.target.value as 'Beginner' | 'Intermediate' | 'Advanced' })); }}
                       >
-                        <MenuItem value="Beginner">Beginner</MenuItem>
-                        <MenuItem value="Intermediate">Intermediate</MenuItem>
-                        <MenuItem value="Advanced">Advanced</MenuItem>
+                        {levels.map((level:Level) => (
+                          <MenuItem value={level.courseDifficultyId} key={level.courseDifficultyId}>
+                            {level.courseDifficultyName}</MenuItem>
+                        ))}
+
                       </Select>
                     </FormControl>
                   </Grid>
@@ -472,8 +579,8 @@ export default function EditCoursePage(): React.JSX.Element {
                 ) : null}
 
                 <Stack spacing={2}>
-                  {formData.contents.map((content, index) => (
-                    <Card key={content.id} variant="outlined">
+                  {formData.courseContent.map((content, index) => (
+                    <Card key={content.contentId} variant="outlined">
                       <CardContent>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                           <Typography variant="subtitle2" color="primary">
@@ -482,7 +589,7 @@ export default function EditCoursePage(): React.JSX.Element {
                           <IconButton
                             size="small"
                             color="error"
-                            onClick={() => { handleRemoveContent(content.id); }}
+                            onClick={() => { handleRemoveContent(content.contentId); }}
                           >
                             <Trash size={16} />
                           </IconButton>
@@ -495,8 +602,8 @@ export default function EditCoursePage(): React.JSX.Element {
                               fullWidth
                               size="small"
                               label="Content Title"
-                              value={content.title}
-                              onChange={(e) => { handleUpdateContent(content.id, 'title', e.target.value); }}
+                              value={content.contentTitle}
+                              onChange={(e) => { handleUpdateContent(content.contentId, 'contentTitle', e.target.value); }}
                               placeholder="e.g., Introduction to Components"
                             />
                           </Grid>
@@ -505,8 +612,8 @@ export default function EditCoursePage(): React.JSX.Element {
                               fullWidth
                               size="small"
                               label="Duration"
-                              value={content.duration}
-                              onChange={(e) => { handleUpdateContent(content.id, 'duration', e.target.value); }}
+                              value={content.contentDuration}
+                              onChange={(e) => { handleUpdateContent(content.contentId, 'contentDuration', e.target.value); }}
                               placeholder="e.g., 45 min, 1.5 hours"
                               InputProps={{
                                 startAdornment: (
@@ -524,8 +631,8 @@ export default function EditCoursePage(): React.JSX.Element {
                               multiline
                               rows={2}
                               label="Content Description"
-                              value={content.description}
-                              onChange={(e) => { handleUpdateContent(content.id, 'description', e.target.value); }}
+                              value={content.contentDescription}
+                              onChange={(e) => { handleUpdateContent(content.contentId, 'contentDescription', e.target.value); }}
                               placeholder="Brief description of this content..."
                             />
                           </Grid>
@@ -541,16 +648,16 @@ export default function EditCoursePage(): React.JSX.Element {
                                   size="small"
                                   variant="outlined"
                                   startIcon={<Plus size={14} />}
-                                  onClick={() => { handleAddSubContent(content.id); }}
+                                  onClick={() => { handleAddSubContent(content.contentId); }}
                                 >
                                   Add Sub-Content
                                 </Button>
                               </Box>
 
-                              {content.subContents.length > 0 ? (
+                              {content.subContent.length > 0 ? (
                                 <Stack spacing={2}>
-                                  {content.subContents.map((subContent, subIndex) => (
-                                    <Card key={subContent.id} variant="outlined" sx={{ bgcolor: 'grey.50' }}>
+                                  {content.subContent.map((subContent, subIndex) => (
+                                    <Card key={subContent.subContentId} variant="outlined" sx={{ bgcolor: 'grey.50' }}>
                                       <CardContent sx={{ p: 2 }}>
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                                           <Typography variant="caption" color="primary">
@@ -559,7 +666,7 @@ export default function EditCoursePage(): React.JSX.Element {
                                           <IconButton
                                             size="small"
                                             color="error"
-                                            onClick={() => { handleRemoveSubContent(content.id, subContent.id); }}
+                                            onClick={() => { handleRemoveSubContent(content.contentId, subContent.subContentId); }}
                                           >
                                             <Trash size={12} />
                                           </IconButton>
@@ -571,8 +678,8 @@ export default function EditCoursePage(): React.JSX.Element {
                                               fullWidth
                                               size="small"
                                               label="Sub-Content Title"
-                                              value={subContent.title}
-                                              onChange={(e) => { handleUpdateSubContent(content.id, subContent.id, 'title', e.target.value); }}
+                                              value={subContent.subContentTitle}
+                                              onChange={(e) => { handleUpdateSubContent(content.contentId, subContent.subContentId, 'subContentTitle', e.target.value); }}
                                               placeholder="e.g., Introduction Video"
                                             />
                                           </Grid>
@@ -582,7 +689,7 @@ export default function EditCoursePage(): React.JSX.Element {
                                               <Select
                                                 value={subContent.type}
                                                 label="Content Type"
-                                                onChange={(e) => { handleUpdateSubContent(content.id, subContent.id, 'type', e.target.value); }}
+                                                onChange={(e) => { handleUpdateSubContent(content.contentId, subContent.subContentId, 'type', e.target.value); }}
                                               >
                                                 <MenuItem value="video">Video Only</MenuItem>
                                                 <MenuItem value="document">Document Only</MenuItem>
@@ -597,8 +704,8 @@ export default function EditCoursePage(): React.JSX.Element {
                                               multiline
                                               rows={2}
                                               label="Sub-Content Description"
-                                              value={subContent.description}
-                                              onChange={(e) => { handleUpdateSubContent(content.id, subContent.id, 'description', e.target.value); }}
+                                              value={subContent.subContentDescription}
+                                              onChange={(e) => { handleUpdateSubContent(content.contentId, subContent.subContentId, 'subContentDescription', e.target.value); }}
                                               placeholder="Brief description of this sub-content..."
                                             />
                                           </Grid>
@@ -610,16 +717,16 @@ export default function EditCoursePage(): React.JSX.Element {
                                                 <input
                                                   accept="video/*"
                                                   style={{ display: 'none' }}
-                                                  id={`video-upload-${subContent.id}`}
+                                                  id={`video-upload-${subContent.subContentId}`}
                                                   type="file"
                                                   onChange={(e) => {
                                                     const file = e.target.files?.[0];
                                                     if (file) {
-                                                      handleFileUpload(content.id, subContent.id, 'video', file);
+                                                      handleFileUpload(content.contentId, subContent.subContentId, 'video', file);
                                                     }
                                                   }}
                                                 />
-                                                <label htmlFor={`video-upload-${subContent.id}`}>
+                                                <label htmlFor={`video-upload-${subContent.subContentId}`}>
                                                   <Box sx={{ cursor: 'pointer' }}>
                                                     <VideoCamera size={32} style={{ marginBottom: 8, color: '#666' }} />
                                                     <Typography variant="body2" color="text.secondary">
@@ -640,16 +747,16 @@ export default function EditCoursePage(): React.JSX.Element {
                                                 <input
                                                   accept=".pdf,.doc,.docx,.ppt,.pptx"
                                                   style={{ display: 'none' }}
-                                                  id={`document-upload-${subContent.id}`}
+                                                  id={`document-upload-${subContent.subContentId}`}
                                                   type="file"
                                                   onChange={(e) => {
                                                     const file = e.target.files?.[0];
                                                     if (file) {
-                                                      handleFileUpload(content.id, subContent.id, 'document', file);
+                                                      handleFileUpload(content.contentId, subContent.subContentId, 'document', file);
                                                     }
                                                   }}
                                                 />
-                                                <label htmlFor={`document-upload-${subContent.id}`}>
+                                                <label htmlFor={`document-upload-${subContent.subContentId}`}>
                                                   <Box sx={{ cursor: 'pointer' }}>
                                                     <FilePdf size={32} style={{ marginBottom: 8, color: '#666' }} />
                                                     <Typography variant="body2" color="text.secondary">
@@ -682,7 +789,7 @@ export default function EditCoursePage(): React.JSX.Element {
                     </Card>
                   ))}
 
-                  {formData.contents.length === 0 && (
+                  {formData.courseContent.length === 0 && (
                     <Box sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
                       <Books size={48} style={{ marginBottom: 16, opacity: 0.5 }} />
                       <Typography variant="body2">
@@ -701,7 +808,7 @@ export default function EditCoursePage(): React.JSX.Element {
                   Tags
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
-                  {formData.tags.map((tag) => (
+                  {formData.tags?.map((tag) => (
                     <Chip
                       key={tag}
                       label={tag}
@@ -741,7 +848,7 @@ export default function EditCoursePage(): React.JSX.Element {
                 </Typography>
                 <Box sx={{ mb: 2 }}>
                   <Avatar
-                    src={formData.logo}
+                    src={formData.courseImage}
                     sx={{ width: 120, height: 120, bgcolor: 'primary.main', mx: 'auto' }}
                   >
                     <Books size={48} />
@@ -771,8 +878,8 @@ export default function EditCoursePage(): React.JSX.Element {
                         type="number"
                         label="Course Fee"
                         placeholder="e.g., 3000 (LKR 2000-6000 per hour typical)"
-                        value={formData.fee}
-                        onChange={(e) => { setFormData(prev => ({ ...prev, fee: parseFloat(e.target.value) || 0 })); }}
+                        value={formData.price}
+                        onChange={(e) => { setFormData(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 })); }}
                         error={Boolean(errors.fee)}
                         helperText={errors.fee}
                         InputProps={{
@@ -805,21 +912,23 @@ export default function EditCoursePage(): React.JSX.Element {
                   <FormControl fullWidth>
                     <InputLabel>Languages</InputLabel>
                     <Select
-                      multiple
-                      value={formData.languages}
+                      value={formData.languageFk}
                       label="Languages"
-                      onChange={(e) => { setFormData(prev => ({ ...prev, languages: e.target.value as string[] })); }}
-                      renderValue={(selected) => (
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                          {selected.map((value) => (
-                            <Chip key={value} label={value} size="small" />
-                          ))}
-                        </Box>
-                      )}
+                      onChange={(e) => { setFormData(prev => ({ ...prev, languageFk: e.target.value })); }}
+                       renderValue={(selected) => {
+                       const selectedLanguage = languages.find((lang) => lang.languageId === selected);
+                                           return (
+                                             <Chip
+                                               key={selected}
+                                               label={selectedLanguage ? selectedLanguage.languages : selected}
+                                               size="small"
+                                             />
+                                           );
+                                         }}
                     >
-                      {LANGUAGES.map((language) => (
-                        <MenuItem key={language} value={language}>
-                          {language}
+                      {languages.map((language:Language) => (
+                        <MenuItem key={language.languageId} value={language.languageId}>
+                          {language.languages}
                         </MenuItem>
                       ))}
                     </Select>

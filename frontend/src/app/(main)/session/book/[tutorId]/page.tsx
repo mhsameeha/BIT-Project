@@ -1,8 +1,10 @@
 'use client';
 
 import * as React from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import {
+  Alert,
+  Avatar,
   Box,
   Button,
   Card,
@@ -15,17 +17,15 @@ import {
   Link,
   Paper,
   Rating,
+  Skeleton,
   Stack,
   Typography,
-  Avatar,
-  Alert,
-  Skeleton,
 } from '@mui/material';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { ArrowLeft, Calendar, Clock, CreditCard, User } from '@phosphor-icons/react/dist/ssr';
 import dayjs, { type Dayjs } from 'dayjs';
-import { ArrowLeft, Clock, User, Calendar, CreditCard } from '@phosphor-icons/react/dist/ssr';
 
 import { TUTORS_DATA, type TutorData } from '../../../../../constants/tutors';
 import { paths } from '../../../../../paths';
@@ -42,13 +42,13 @@ const convertTo24Hour = (timeStr: string): string => {
   const [time, period] = timeStr.split(' ');
   const [hours] = time.split(':');
   let hour24 = parseInt(hours, 10);
-  
+
   if (period === 'PM' && hour24 !== 12) {
     hour24 += 12;
   } else if (period === 'AM' && hour24 === 12) {
     hour24 = 0;
   }
-  
+
   return `${hour24.toString().padStart(2, '0')}:00`;
 };
 
@@ -58,18 +58,16 @@ const getTimeSlotRange = (timeSlot: string): string => {
   const [hours] = time24.split(':');
   const startHour = parseInt(hours, 10);
   const endHour = startHour + 1;
-  
+
   const formatHour = (hour: number): string => {
     if (hour === 0) return '12:00 AM';
     if (hour < 12) return `${hour}:00 AM`;
     if (hour === 12) return '12:00 PM';
     return `${hour - 12}:00 PM`;
   };
-  
+
   return `${formatHour(startHour)} - ${formatHour(endHour)}`;
 };
-
-
 
 export default function SessionBookingPage(): React.JSX.Element {
   const router = useRouter();
@@ -109,14 +107,14 @@ export default function SessionBookingPage(): React.JSX.Element {
     if (tutor && booking.selectedTimeSlots.length > 0) {
       const duration = booking.selectedTimeSlots.length;
       const totalCost = tutor.hourlyRate * duration;
-      
-      setBooking(prev => ({
+
+      setBooking((prev) => ({
         ...prev,
         duration,
         totalCost,
       }));
     } else {
-      setBooking(prev => ({
+      setBooking((prev) => ({
         ...prev,
         duration: 0,
         totalCost: 0,
@@ -129,7 +127,7 @@ export default function SessionBookingPage(): React.JSX.Element {
   };
 
   const handleDateChange = (newDate: Dayjs | null): void => {
-    setBooking(prev => ({
+    setBooking((prev) => ({
       ...prev,
       date: newDate,
       selectedTimeSlots: [], // Reset time slots when date changes
@@ -137,19 +135,19 @@ export default function SessionBookingPage(): React.JSX.Element {
   };
 
   const handleTimeSlotToggle = (timeSlot: string): void => {
-    setBooking(prev => {
+    setBooking((prev) => {
       const currentSlots = prev.selectedTimeSlots;
       const isSelected = currentSlots.includes(timeSlot);
-      
+
       let newSlots: string[];
       if (isSelected) {
         // Remove the slot
-        newSlots = currentSlots.filter(slot => slot !== timeSlot);
+        newSlots = currentSlots.filter((slot) => slot !== timeSlot);
       } else {
         // Add the slot
         newSlots = [...currentSlots, timeSlot];
       }
-      
+
       return {
         ...prev,
         selectedTimeSlots: newSlots,
@@ -161,31 +159,31 @@ export default function SessionBookingPage(): React.JSX.Element {
     if (!booking.date || !tutor) return [];
 
     const selectedDay = booking.date.format('dddd');
-    const availability = tutor.availability.find(avail => avail.day === selectedDay);
-    
+    const availability = tutor.availability.find((avail) => avail.day === selectedDay);
+
     if (!availability) return [];
 
     const selectedDateStr = booking.date.format('YYYY-MM-DD');
     const bookedSlotsForDate = bookedSessions
-      .filter(session => session.date === selectedDateStr)
-      .map(session => session.timeSlot);
+      .filter((session) => session.date === selectedDateStr)
+      .map((session) => session.timeSlot);
 
-    return availability.timeSlots.filter(slot => !bookedSlotsForDate.includes(slot));
+    return availability.timeSlots.filter((slot) => !bookedSlotsForDate.includes(slot));
   };
 
   const shouldDisableDate = (date: Dayjs): boolean => {
     const today = dayjs();
     const dayName = date.format('dddd');
-    
+
     // Disable past dates
     if (date.isBefore(today, 'day')) return true;
-    
+
     // Disable dates more than 30 days in the future
     if (date.isAfter(today.add(30, 'day'))) return true;
-    
+
     // Disable days when tutor is not available
     if (!tutor) return true;
-    return !tutor.availability.some(avail => avail.day === dayName);
+    return !tutor.availability.some((avail) => avail.day === dayName);
   };
 
   const canProceedToPayment = (): boolean => {
@@ -194,12 +192,14 @@ export default function SessionBookingPage(): React.JSX.Element {
 
   const handleProceedToPayment = (): void => {
     if (!canProceedToPayment()) return;
-    
+
     const timeRange = getSelectedTimeRange();
-    
+
     // In real app, this would navigate to payment page with booking details
     // eslint-disable-next-line no-alert -- This is a demo placeholder for payment flow
-    alert(`Proceeding to payment for session with ${tutor?.name} on ${booking.date?.format('MMMM DD, YYYY')} at ${timeRange} for ${booking.duration} hour(s). Total: ${tutor?.currency} ${booking.totalCost.toLocaleString()}`);
+    alert(
+      `Proceeding to payment for session with ${tutor?.name} on ${booking.date?.format('MMMM DD, YYYY')} at ${timeRange} for ${booking.duration} hour(s). Total: ${tutor?.currency} ${booking.totalCost.toLocaleString()}`
+    );
   };
 
   const getSelectedTimeRange = (): string => {
@@ -207,14 +207,11 @@ export default function SessionBookingPage(): React.JSX.Element {
     if (booking.selectedTimeSlots.length === 1) {
       return getTimeSlotRange(booking.selectedTimeSlots[0]);
     }
-    
+
     // For multiple slots, show them as individual ranges
-    const sortedSlots = booking.selectedTimeSlots
-      .sort((a, b) => convertTo24Hour(a).localeCompare(convertTo24Hour(b)));
-    
-    return sortedSlots
-      .map(slot => getTimeSlotRange(slot))
-      .join(', ');
+    const sortedSlots = booking.selectedTimeSlots.sort((a, b) => convertTo24Hour(a).localeCompare(convertTo24Hour(b)));
+
+    return sortedSlots.map((slot) => getTimeSlotRange(slot)).join(', ');
   };
 
   if (loading) {
@@ -238,9 +235,7 @@ export default function SessionBookingPage(): React.JSX.Element {
   if (!tutor) {
     return (
       <Container maxWidth="lg" sx={{ py: 3 }}>
-        <Alert severity="error">
-          Tutor not found. Please go back and select a valid tutor.
-        </Alert>
+        <Alert severity="error">Tutor not found. Please go back and select a valid tutor.</Alert>
         <Button
           startIcon={<ArrowLeft />}
           onClick={() => {
@@ -280,10 +275,7 @@ export default function SessionBookingPage(): React.JSX.Element {
           <Card>
             <CardContent>
               <Stack direction="row" spacing={2} alignItems="center">
-                <Avatar
-                  src={tutor.avatar}
-                  sx={{ width: 80, height: 80 }}
-                />
+                <Avatar src={tutor.avatar} sx={{ width: 80, height: 80 }} />
                 <Stack spacing={1} flex={1}>
                   <Link
                     component="button"
@@ -368,7 +360,7 @@ export default function SessionBookingPage(): React.JSX.Element {
                           {availableTimeSlots.length > 0 ? (
                             availableTimeSlots.map((timeSlot) => {
                               const isSelected = booking.selectedTimeSlots.includes(timeSlot);
-                              
+
                               return (
                                 <Button
                                   key={timeSlot}
@@ -377,8 +369,8 @@ export default function SessionBookingPage(): React.JSX.Element {
                                     handleTimeSlotToggle(timeSlot);
                                   }}
                                   startIcon={<Clock />}
-                                  sx={{ 
-                                    justifyContent: 'flex-start'
+                                  sx={{
+                                    justifyContent: 'flex-start',
                                   }}
                                 >
                                   {getTimeSlotRange(timeSlot)}
@@ -392,9 +384,7 @@ export default function SessionBookingPage(): React.JSX.Element {
                           )}
                         </Stack>
                       ) : (
-                        <Alert severity="info">
-                          Please select a date to see available time slots
-                        </Alert>
+                        <Alert severity="info">Please select a date to see available time slots</Alert>
                       )}
                     </Grid>
                   </Grid>
@@ -405,11 +395,7 @@ export default function SessionBookingPage(): React.JSX.Element {
             {/* Booking Summary */}
             <Grid item xs={12} md={4}>
               <Card>
-                <CardHeader
-                  avatar={<User />}
-                  title="Booking Summary"
-                  subheader="Review your session details"
-                />
+                <CardHeader avatar={<User />} title="Booking Summary" subheader="Review your session details" />
                 <CardContent>
                   <Stack spacing={2}>
                     <Divider />
@@ -417,7 +403,7 @@ export default function SessionBookingPage(): React.JSX.Element {
                     {/* Booking Details */}
                     <Stack spacing={1}>
                       <Typography variant="subtitle2">Session Details:</Typography>
-                      
+
                       <Box>
                         <Typography variant="body2" color="text.secondary">
                           Date:
@@ -431,9 +417,7 @@ export default function SessionBookingPage(): React.JSX.Element {
                         <Typography variant="body2" color="text.secondary">
                           Time:
                         </Typography>
-                        <Typography variant="body1">
-                          {getSelectedTimeRange()}
-                        </Typography>
+                        <Typography variant="body1">{getSelectedTimeRange()}</Typography>
                       </Box>
 
                       <Box>
@@ -441,11 +425,11 @@ export default function SessionBookingPage(): React.JSX.Element {
                           Duration:
                         </Typography>
                         <Typography variant="body1">
-                          {booking.duration > 0 ? `${booking.duration} hour${booking.duration !== 1 ? 's' : ''}` : 'Not selected'}
+                          {booking.duration > 0
+                            ? `${booking.duration} hour${booking.duration !== 1 ? 's' : ''}`
+                            : 'Not selected'}
                         </Typography>
                       </Box>
-
-                      
                     </Stack>
 
                     <Divider />
@@ -453,20 +437,16 @@ export default function SessionBookingPage(): React.JSX.Element {
                     {/* Cost Breakdown */}
                     <Stack spacing={1}>
                       <Typography variant="subtitle2">Cost Breakdown:</Typography>
-                      
+
                       <Stack direction="row" justifyContent="space-between">
-                        <Typography variant="body2">
-                          Hourly Rate:
-                        </Typography>
+                        <Typography variant="body2">Hourly Rate:</Typography>
                         <Typography variant="body2">
                           {tutor.currency} {tutor.hourlyRate.toLocaleString()}
                         </Typography>
                       </Stack>
 
                       <Stack direction="row" justifyContent="space-between">
-                        <Typography variant="body2">
-                          Duration:
-                        </Typography>
+                        <Typography variant="body2">Duration:</Typography>
                         <Typography variant="body2">
                           {booking.duration} hour{booking.duration !== 1 ? 's' : ''}
                         </Typography>
@@ -475,9 +455,7 @@ export default function SessionBookingPage(): React.JSX.Element {
                       <Divider />
 
                       <Stack direction="row" justifyContent="space-between">
-                        <Typography variant="h6">
-                          Total:
-                        </Typography>
+                        <Typography variant="h6">Total:</Typography>
                         <Typography variant="h6" color="primary">
                           {tutor.currency} {booking.totalCost.toLocaleString()}
                         </Typography>

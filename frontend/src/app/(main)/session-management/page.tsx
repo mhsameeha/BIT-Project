@@ -8,6 +8,7 @@ import {
   Button,
   Card,
   CardContent,
+  Checkbox,
   Chip,
   Container,
   Dialog,
@@ -15,64 +16,46 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
+  FormControlLabel,
+  FormGroup,
   Grid,
+  IconButton,
+  Paper,
   Stack,
+  Switch,
   Tab,
-  Tabs,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
-  TableRow,
   TablePagination,
+  TableRow,
+  Tabs,
   TextField,
-  Typography,
-  IconButton,
   Tooltip,
-  Paper,
-  FormControlLabel,
-  Checkbox,
-  Switch,
-  FormGroup,
+  Typography,
 } from '@mui/material';
-import {
-  CheckCircle,
-  XCircle,
-  Eye,
-  Calendar,
-  Plus,
-  Trash,
-} from '@phosphor-icons/react/dist/ssr';
-import dayjs from 'dayjs';
+import { Calendar, CheckCircle, Eye, Plus, Trash, XCircle } from '@phosphor-icons/react/dist/ssr';
+import dayjs, { Dayjs } from 'dayjs';
 
 import {
-  getSessionRequestsByTutor,
-  getPendingSessionRequests,
-  getConfirmedSessions,
-  getRejectedSessions,
   getCompletedSessions,
+  getConfirmedSessions,
+  getPendingSessionRequests,
+  getRejectedSessions,
+  getSessionRequestsByTutor,
   updateSessionStatus,
 } from '../../../constants/sessions';
-import { SessionStatus, type SessionRequest } from '../../../types/session';
+import { Session, SessionStatus, type SessionRequest } from '../../../types/session';
+import { joinRoom } from '@/components/main/session/jitsi-meet';
+import { RefObject, useMemo, useRef } from 'react';
+import { getSessionsByTutor } from '@/Services/sessions';
+import { TutorAvailabilitySettings, TimeSlot, DayAvailability } from '@/types/tutor-availability';
+import { AddAvailability } from '@/Services/tutor-availability';
 
 // Types for availability management
-interface TimeSlot {
-  start: string;
-  end: string;
-}
 
-interface DayAvailability {
-  day: string;
-  isAvailable: boolean;
-  allDay: boolean;
-  timeSlots: TimeSlot[];
-}
-
-interface TutorAvailabilitySettings {
-  weeklySchedule: DayAvailability[];
-  disabledDates: string[]; // ISO date strings
-}
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -131,14 +114,16 @@ function SessionTable({
             <TableCell>Cost</TableCell>
             <TableCell>Status</TableCell>
             <TableCell>Actions</TableCell>
+            <TableCell>Session Link</TableCell>
+
           </TableRow>
         </TableHead>
         <TableBody>
           {sessions.length > 0 ? (
             sessions.map((session) => (
-              <SessionRow 
-                key={session.sessionId} 
-                session={session} 
+              <SessionRow
+                key={session.sessionId}
+                session={session}
                 onViewSession={onViewSession}
                 onActionClick={onActionClick}
               />
@@ -146,7 +131,9 @@ function SessionTable({
           ) : (
             <TableRow>
               <TableCell colSpan={7}>
-                <Alert severity="info" sx={{ m: 2 }}>{emptyMessage}</Alert>
+                <Alert severity="info" sx={{ m: 2 }}>
+                  {emptyMessage}
+                </Alert>
               </TableCell>
             </TableRow>
           )}
@@ -172,21 +159,41 @@ interface AvailabilityManagementProps {
 function AvailabilityManagement({ tutorId: _tutorId }: AvailabilityManagementProps): React.JSX.Element {
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   const timeSlotOptions = [
-    '00:00', '01:00', '02:00', '03:00', '04:00', '05:00',
-    '06:00', '07:00', '08:00', '09:00', '10:00', '11:00',
-    '12:00', '13:00', '14:00', '15:00', '16:00', '17:00',
-    '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'
+    '00:00',
+    '01:00',
+    '02:00',
+    '03:00',
+    '04:00',
+    '05:00',
+    '06:00',
+    '07:00',
+    '08:00',
+    '09:00',
+    '10:00',
+    '11:00',
+    '12:00',
+    '13:00',
+    '14:00',
+    '15:00',
+    '16:00',
+    '17:00',
+    '18:00',
+    '19:00',
+    '20:00',
+    '21:00',
+    '22:00',
+    '23:00',
   ];
 
   // Initialize default availability
   const [availability, setAvailability] = React.useState<TutorAvailabilitySettings>({
-    weeklySchedule: daysOfWeek.map(day => ({
+    weeklySchedule: daysOfWeek.map((day) => ({
       day,
       isAvailable: false,
       allDay: false,
-      timeSlots: []
+      timeSlots: [],
     })),
-    disabledDates: []
+    disabledDates: [],
   });
 
   const [newDisabledDate, setNewDisabledDate] = React.useState('');
@@ -195,35 +202,35 @@ function AvailabilityManagement({ tutorId: _tutorId }: AvailabilityManagementPro
   const [selectedDayIndex, setSelectedDayIndex] = React.useState<number | null>(null);
 
   const handleDayAvailabilityChange = (dayIndex: number, isAvailable: boolean): void => {
-    setAvailability(prev => ({
+    setAvailability((prev) => ({
       ...prev,
       weeklySchedule: prev.weeklySchedule.map((day, index) =>
         index === dayIndex ? { ...day, isAvailable, timeSlots: isAvailable ? day.timeSlots : [] } : day
-      )
+      ),
     }));
   };
 
   const handleAllDayChange = (dayIndex: number, allDay: boolean): void => {
-    setAvailability(prev => ({
+    setAvailability((prev) => ({
       ...prev,
       weeklySchedule: prev.weeklySchedule.map((day, index) =>
         index === dayIndex ? { ...day, allDay, timeSlots: allDay ? [] : day.timeSlots } : day
-      )
+      ),
     }));
   };
 
   const handleTimeSlotChange = (dayIndex: number, timeSlot: string, checked: boolean): void => {
-    setAvailability(prev => ({
+    setAvailability((prev) => ({
       ...prev,
       weeklySchedule: prev.weeklySchedule.map((day, index) => {
         if (index === dayIndex) {
           const timeSlots = checked
-            ? [...day.timeSlots, { start: timeSlot, end: timeSlot }]
-            : day.timeSlots.filter(slot => slot.start !== timeSlot);
+            ? [...day.timeSlots, { starttime: timeSlot, endtime: timeSlot }]
+            : day.timeSlots.filter((slot) => slot.starttime !== timeSlot);
           return { ...day, timeSlots };
         }
         return day;
-      })
+      }),
     }));
   };
 
@@ -246,15 +253,15 @@ function AvailabilityManagement({ tutorId: _tutorId }: AvailabilityManagementPro
   const formatTimeSlot = (time: string): string => {
     const hour = parseInt(time.split(':')[0]);
     const nextHour = (hour + 1) % 24;
-    
+
     // Format start time
     const startPeriod = hour >= 12 ? 'PM' : 'AM';
     const startDisplayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    
+
     // Format end time
     const endPeriod = nextHour >= 12 ? 'PM' : 'AM';
     const endDisplayHour = nextHour === 0 ? 12 : nextHour > 12 ? nextHour - 12 : nextHour;
-    
+
     // If both times are in the same period, show period only once at the end
     if (startPeriod === endPeriod) {
       return `${startDisplayHour}:00 - ${endDisplayHour}:00 ${endPeriod}`;
@@ -264,18 +271,18 @@ function AvailabilityManagement({ tutorId: _tutorId }: AvailabilityManagementPro
 
   const addDisabledDate = (): void => {
     if (newDisabledDate && !availability.disabledDates.includes(newDisabledDate)) {
-      setAvailability(prev => ({
+      setAvailability((prev) => ({
         ...prev,
-        disabledDates: [...prev.disabledDates, newDisabledDate]
+        disabledDates: [...prev.disabledDates, newDisabledDate],
       }));
       setNewDisabledDate('');
     }
   };
 
   const removeDisabledDate = (dateToRemove: string): void => {
-    setAvailability(prev => ({
+    setAvailability((prev) => ({
       ...prev,
-      disabledDates: prev.disabledDates.filter(date => date !== dateToRemove)
+      disabledDates: prev.disabledDates.filter((date) => date !== dateToRemove),
     }));
   };
 
@@ -285,7 +292,15 @@ function AvailabilityManagement({ tutorId: _tutorId }: AvailabilityManagementPro
     // In a real app, this would save to the backend
     // For now, just show success state
     setSaveSuccess(true);
-    setTimeout(() => {
+    setTimeout(async () => {
+      const tutorAvailability = await AddAvailability(
+      {
+         disabledDates:availability.disabledDates,
+          weeklySchedule:availability.weeklySchedule
+        
+        }
+        
+      )
       setSaveSuccess(false);
     }, 3000); // Hide after 3 seconds
   };
@@ -316,11 +331,7 @@ function AvailabilityManagement({ tutorId: _tutorId }: AvailabilityManagementPro
               </Button>
             </Box>
 
-            {saveSuccess ? (
-              <Alert severity="success">
-                Availability settings saved successfully!
-              </Alert>
-            ) : null}
+            {saveSuccess ? <Alert severity="success">Availability settings saved successfully!</Alert> : null}
 
             {expandedCard ? (
               <>
@@ -349,7 +360,6 @@ function AvailabilityManagement({ tutorId: _tutorId }: AvailabilityManagementPro
 
                               {daySchedule.isAvailable ? (
                                 <>
-
                                   {!daySchedule.allDay && (
                                     <Box>
                                       <Button
@@ -360,12 +370,11 @@ function AvailabilityManagement({ tutorId: _tutorId }: AvailabilityManagementPro
                                         }}
                                         startIcon={<Calendar size={16} />}
                                       >
-                                        {daySchedule.timeSlots.length > 0 
+                                        {daySchedule.timeSlots.length > 0
                                           ? `${daySchedule.timeSlots.length} time slots selected`
-                                          : 'Add Available Time Slots'
-                                        }
+                                          : 'Add Available Time Slots'}
                                       </Button>
-                                      
+
                                       {/* Display selected time slots */}
                                       {daySchedule.timeSlots.length > 0 && (
                                         <Box sx={{ mt: 1 }}>
@@ -373,7 +382,9 @@ function AvailabilityManagement({ tutorId: _tutorId }: AvailabilityManagementPro
                                             Selected time slots:
                                           </Typography>
                                           <Typography variant="body2" sx={{ fontSize: '0.8rem', lineHeight: 1.2 }}>
-                                            {daySchedule.timeSlots.map((timeSlot) => formatTimeSlot(timeSlot.start)).join(', ')}
+                                            {daySchedule.timeSlots
+                                              .map((timeSlot) => formatTimeSlot(timeSlot.starttime))
+                                              .join(', ')}
                                           </Typography>
                                         </Box>
                                       )}
@@ -392,7 +403,7 @@ function AvailabilityManagement({ tutorId: _tutorId }: AvailabilityManagementPro
                 {/* Disabled Dates */}
                 <Box>
                   <Typography variant="subtitle1" gutterBottom>
-                   Unavailable Dates
+                    Unavailable Dates
                   </Typography>
                   <Stack spacing={2}>
                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
@@ -441,11 +452,7 @@ function AvailabilityManagement({ tutorId: _tutorId }: AvailabilityManagementPro
 
                 {/* Save Button */}
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <Button
-                    variant="contained"
-                    onClick={saveAvailability}
-                    color="primary"
-                  >
+                  <Button variant="contained" onClick={saveAvailability} color="primary">
                     Save Availability Settings
                   </Button>
                 </Box>
@@ -454,18 +461,11 @@ function AvailabilityManagement({ tutorId: _tutorId }: AvailabilityManagementPro
           </Stack>
         </CardContent>
       </Card>
-      
+
       {/* Time Slot Selection Dialog */}
       {timeSlotDialogOpen && selectedDayIndex !== null ? (
-        <Dialog
-          open={timeSlotDialogOpen}
-          onClose={closeTimeSlotDialog}
-          maxWidth="md"
-          fullWidth
-        >
-          <DialogTitle>
-            Set Available Time Slots - {availability.weeklySchedule[selectedDayIndex].day}
-          </DialogTitle>
+        <Dialog open={timeSlotDialogOpen} onClose={closeTimeSlotDialog} maxWidth="md" fullWidth>
+          <DialogTitle>Set Available Time Slots - {availability.weeklySchedule[selectedDayIndex].day}</DialogTitle>
           <DialogContent>
             <Stack spacing={3} sx={{ mt: 1 }}>
               <FormControlLabel
@@ -485,7 +485,7 @@ function AvailabilityManagement({ tutorId: _tutorId }: AvailabilityManagementPro
                   <Typography variant="subtitle2" gutterBottom>
                     Select Available Time Slots:
                   </Typography>
-                  
+
                   {/* AM Time Slots */}
                   <Box sx={{ mb: 3 }}>
                     <Typography variant="body2" color="primary.main" fontWeight="medium" gutterBottom>
@@ -493,25 +493,29 @@ function AvailabilityManagement({ tutorId: _tutorId }: AvailabilityManagementPro
                     </Typography>
                     <FormGroup>
                       <Grid container spacing={1}>
-                        {timeSlotOptions.filter(slot => {
-                          const hour = parseInt(slot.split(':')[0]);
-                          return hour >= 0 && hour < 12;
-                        }).map((timeSlot) => (
-                          <Grid item xs={6} sm={4} md={3} key={timeSlot}>
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  size="small"
-                                  checked={availability.weeklySchedule[selectedDayIndex].timeSlots.some((slot: TimeSlot) => slot.start === timeSlot)}
-                                  onChange={(e) => {
-                                    handleTimeSlotChange(selectedDayIndex, timeSlot, e.target.checked);
-                                  }}
-                                />
-                              }
-                              label={formatTimeSlot(timeSlot)}
-                            />
-                          </Grid>
-                        ))}
+                        {timeSlotOptions
+                          .filter((slot) => {
+                            const hour = parseInt(slot.split(':')[0]);
+                            return hour >= 0 && hour < 12;
+                          })
+                          .map((timeSlot) => (
+                            <Grid item xs={6} sm={4} md={3} key={timeSlot}>
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    size="small"
+                                    checked={availability.weeklySchedule[selectedDayIndex].timeSlots.some(
+                                      (slot: TimeSlot) => slot.starttime === timeSlot
+                                    )}
+                                    onChange={(e) => {
+                                      handleTimeSlotChange(selectedDayIndex, timeSlot, e.target.checked);
+                                    }}
+                                  />
+                                }
+                                label={formatTimeSlot(timeSlot)}
+                              />
+                            </Grid>
+                          ))}
                       </Grid>
                     </FormGroup>
                   </Box>
@@ -523,25 +527,29 @@ function AvailabilityManagement({ tutorId: _tutorId }: AvailabilityManagementPro
                     </Typography>
                     <FormGroup>
                       <Grid container spacing={1}>
-                        {timeSlotOptions.filter(slot => {
-                          const hour = parseInt(slot.split(':')[0]);
-                          return hour >= 12;
-                        }).map((timeSlot) => (
-                          <Grid item xs={6} sm={4} md={3} key={timeSlot}>
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  size="small"
-                                  checked={availability.weeklySchedule[selectedDayIndex].timeSlots.some((slot: TimeSlot) => slot.start === timeSlot)}
-                                  onChange={(e) => {
-                                    handleTimeSlotChange(selectedDayIndex, timeSlot, e.target.checked);
-                                  }}
-                                />
-                              }
-                              label={formatTimeSlot(timeSlot)}
-                            />
-                          </Grid>
-                        ))}
+                        {timeSlotOptions
+                          .filter((slot) => {
+                            const hour = parseInt(slot.split(':')[0]);
+                            return hour >= 12;
+                          })
+                          .map((timeSlot) => (
+                            <Grid item xs={6} sm={4} md={3} key={timeSlot}>
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    size="small"
+                                    checked={availability.weeklySchedule[selectedDayIndex].timeSlots.some(
+                                      (slot: TimeSlot) => slot.starttime === timeSlot
+                                    )}
+                                    onChange={(e) => {
+                                      handleTimeSlotChange(selectedDayIndex, timeSlot, e.target.checked);
+                                    }}
+                                  />
+                                }
+                                label={formatTimeSlot(timeSlot)}
+                              />
+                            </Grid>
+                          ))}
                       </Grid>
                     </FormGroup>
                   </Box>
@@ -551,8 +559,8 @@ function AvailabilityManagement({ tutorId: _tutorId }: AvailabilityManagementPro
           </DialogContent>
           <DialogActions>
             <Button onClick={closeTimeSlotDialog}>Close</Button>
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               onClick={() => {
                 closeTimeSlotDialog();
                 // Could add additional save logic here if needed
@@ -568,14 +576,69 @@ function AvailabilityManagement({ tutorId: _tutorId }: AvailabilityManagementPro
   );
 }
 
+  
+
+interface JoinSessionProps {
+  session: {
+    status: string;
+    roomName: "string";
+    time: Dayjs;
+  };
+  userName: "string";
+}
+
+
+
+export const JoinSession = ({ session, userName }: JoinSessionProps) => {
+  const jitsiContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleJoin = () => {
+    if (session.status === "Confirmed" && jitsiContainerRef.current) {
+      joinRoom(jitsiContainerRef.current, session.roomName, userName);
+    }
+  };
+
+  return (
+    <div>
+              <Button
+        variant="contained"
+        disabled={session.status !== "Confirmed" || session.time.isAfter(dayjs())}
+        onClick={handleJoin}
+      >
+        Go to Session
+      </Button>
+
+      <div
+        ref={jitsiContainerRef}
+        style={{
+          display: "none",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          zIndex: 1000,
+          backgroundColor: "#000",
+        }}
+      />
+    </div>
+  );
+};
+
+
+
+
+
 interface SessionRowProps {
-  session: SessionRequest;
-  onViewSession: (session: SessionRequest) => void;
-  onActionClick: (session: SessionRequest, action: 'approve' | 'reject') => void;
+  session: Session;
+  onViewSession: (session: Session) => void;
+  onActionClick: (session: Session, action: 'approve' | 'reject') => void;
 }
 
 function SessionRow({ session, onViewSession, onActionClick }: SessionRowProps): React.JSX.Element {
-  const getStatusColor = (status: string): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
+  const getStatusColor = (
+    status: string
+  ): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
     switch (status) {
       case SessionStatus.Pending:
         return 'warning';
@@ -590,12 +653,13 @@ function SessionRow({ session, onViewSession, onActionClick }: SessionRowProps):
     }
   };
 
+
   return (
     <TableRow hover>
       {/* Student Info */}
       <TableCell>
         <Stack direction="row" spacing={2} alignItems="center">
-          <Avatar src={session.studentAvatar} sx={{ width: 40, height: 40 }}>
+          <Avatar src={session.learnerProfPic} sx={{ width: 40, height: 40 }}>
             {session.learnerName.charAt(0)}
           </Avatar>
           <Box>
@@ -603,7 +667,7 @@ function SessionRow({ session, onViewSession, onActionClick }: SessionRowProps):
               {session.learnerName}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {session.studentEmail}
+              {session.learnerEmail}
             </Typography>
           </Box>
         </Stack>
@@ -619,37 +683,28 @@ function SessionRow({ session, onViewSession, onActionClick }: SessionRowProps):
       {/* Date & Time */}
       <TableCell>
         <Stack spacing={0.5}>
-          <Typography variant="body2">
-            {dayjs(session.sessionDate).format('MMM DD, YYYY')}
-          </Typography>
+          <Typography variant="body2">{dayjs(session.startTime).format('MMM DD, YYYY')}</Typography>
           <Typography variant="body2" color="text.secondary">
-            {session.sessionTime}
+            {dayjs(session.startTime).format('HH:mm a')}{" - "}{dayjs(session.endTime).format('HH:mm a')}
           </Typography>
         </Stack>
       </TableCell>
 
       {/* Duration */}
       <TableCell>
-        <Typography variant="body2">
-          {session.duration}h
-        </Typography>
+        <Typography variant="body2">{session.duration}</Typography>
       </TableCell>
 
       {/* Cost */}
       <TableCell>
         <Typography variant="body2" fontWeight="medium">
-          {session.currency} {session.totalCost.toLocaleString()}
+          {session.currency} {session.cost}
         </Typography>
       </TableCell>
 
       {/* Status */}
       <TableCell>
-        <Chip
-          label={session.status}
-          color={getStatusColor(session.status)}
-          size="small"
-          variant="filled"
-        />
+        <Chip label={session.sessionStatus} color={getStatusColor(session.sessionStatus)} size="small" variant="filled" />
       </TableCell>
 
       {/* Actions */}
@@ -665,8 +720,8 @@ function SessionRow({ session, onViewSession, onActionClick }: SessionRowProps):
               <Eye size={18} />
             </IconButton>
           </Tooltip>
-          
-          {session.status === SessionStatus.Pending && (
+
+          {session.sessionStatus === SessionStatus.Pending && (
             <>
               <Tooltip title="Approve">
                 <IconButton
@@ -694,6 +749,18 @@ function SessionRow({ session, onViewSession, onActionClick }: SessionRowProps):
           )}
         </Stack>
       </TableCell>
+          {/* Go to Session */}
+      <TableCell>
+               <JoinSession session={{
+              status: session.sessionStatus,
+              roomName: 'string',
+              time: dayjs(session.startTime)
+            }} userName={'string'} />
+
+
+ 
+      </TableCell>
+
     </TableRow>
   );
 }
@@ -701,24 +768,31 @@ function SessionRow({ session, onViewSession, onActionClick }: SessionRowProps):
 export default function SessionManagementPage(): React.JSX.Element {
   // Mock current tutor ID - in real app, this would come from authentication
   const currentTutorId = 'TUTOR-001';
-  
+
   const [tabValue, setTabValue] = React.useState(0);
-  const [sessions, setSessions] = React.useState<SessionRequest[]>([]);
+  const [sessions, setSessions] = React.useState<Session[]>([]);
   const [selectedSession, setSelectedSession] = React.useState<SessionRequest | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = React.useState(false);
   const [actionDialogOpen, setActionDialogOpen] = React.useState(false);
   const [actionType, setActionType] = React.useState<'approve' | 'reject'>('approve');
   const [rejectionReason, setRejectionReason] = React.useState('');
-  
+
   // Pagination state
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
-  React.useEffect(() => {
-    // Load sessions for current tutor
-    const tutorSessions = getSessionRequestsByTutor(currentTutorId);
-    setSessions(tutorSessions);
-  }, [currentTutorId]);
+    React.useEffect(() => {
+      const fetchData = async () => {
+        const tutorSessions = await getSessionsByTutor();
+        if ('error' in tutorSessions) {
+          // Optionally, handle error UI here
+          return;
+        }
+        setSessions(tutorSessions);
+        console.log("sess",tutorSessions)
+      };
+       fetchData();
+    }, []);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number): void => {
     setTabValue(newValue);
@@ -764,48 +838,70 @@ export default function SessionManagementPage(): React.JSX.Element {
     const reason = actionType === 'reject' ? rejectionReason : undefined;
 
     const success = updateSessionStatus(selectedSession.sessionId, newStatus, reason);
-    
+
     if (success) {
       // Refresh sessions
       const updatedSessions = getSessionRequestsByTutor(currentTutorId);
       setSessions(updatedSessions);
-      
+
       handleCloseActionDialog();
     }
   };
+  const handleFilter = (status: string) => {
+  const filtered = sessions.filter(session => session.sessionStatus === status);
+  return filtered;
+};
 
-  const getFilteredSessions = (): SessionRequest[] => {
-    let filtered = sessions;
+const sessionCounts = (status:string) => {
+  const count = sessions.filter(s => s.sessionStatus === status).length;
+  return count
+};
 
+
+
+  const filteredSessions = useMemo(() => {
+    let filtered: Session[] = [];
     switch (tabValue) {
-      case 0: // All
+      case 0:
+        filtered = sessions; // All
         break;
       case 1: // Pending
-        filtered = getPendingSessionRequests(currentTutorId);
+        filtered = handleFilter("Pending");
+
         break;
       case 2: // Confirmed
-        filtered = getConfirmedSessions(currentTutorId);
+        filtered = handleFilter("Confirmed");
         break;
       case 3: // Rejected
-        filtered = getRejectedSessions(currentTutorId);
+        filtered = handleFilter("Rejected");
+
         break;
       case 4: // Completed
-        filtered = getCompletedSessions(currentTutorId);
+        filtered = handleFilter("Completed");
+
         break;
       default:
         break;
     }
 
     return filtered;
-  };
+  }, [sessions, tabValue]);
 
-  const getPaginatedSessions = (allSessions: SessionRequest[]): SessionRequest[] => {
-    const startIndex = page * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage;
-    return allSessions.slice(startIndex, endIndex);
-  };
 
-  const getStatusColor = (status: string): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
+  // const getPaginatedSessions = (allSessions: SessionRequest[]): SessionRequest[] => {
+  //   const startIndex = page * rowsPerPage;
+  //   const endIndex = startIndex + rowsPerPage;
+  //   return allSessions.slice(startIndex, endIndex);
+  // };
+
+  const paginatedSessions = useMemo(() => {
+  const startIndex = page * rowsPerPage;
+  return filteredSessions.slice(startIndex, startIndex + rowsPerPage);
+}, [filteredSessions, page, rowsPerPage]);
+
+  const getStatusColor = (
+    status: string
+  ): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
     switch (status) {
       case SessionStatus.Pending:
         return 'warning';
@@ -820,12 +916,11 @@ export default function SessionManagementPage(): React.JSX.Element {
     }
   };
 
-  const filteredSessions = getFilteredSessions();
-  const paginatedSessions = getPaginatedSessions(filteredSessions);
-  const pendingCount = getPendingSessionRequests(currentTutorId).length;
-  const confirmedCount = getConfirmedSessions(currentTutorId).length;
-  const rejectedCount = getRejectedSessions(currentTutorId).length;
-  const completedCount = getCompletedSessions(currentTutorId).length;
+
+  const pendingCount = sessionCounts("Pending");
+  const confirmedCount = sessionCounts("Confirmed");
+  const rejectedCount = sessionCounts("Rejected");
+  const completedCount = sessionCounts("Completed");
 
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
@@ -897,7 +992,7 @@ export default function SessionManagementPage(): React.JSX.Element {
 
         {/* Tabs and Filters */}
         <Card>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider', px: '8px'}}>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider', px: '8px' }}>
             <Tabs value={tabValue} onChange={handleTabChange}>
               <Tab label={`All (${sessions.length})`} />
               <Tab label={`Pending (${pendingCount})`} />
@@ -986,12 +1081,7 @@ export default function SessionManagementPage(): React.JSX.Element {
         </Card>
 
         {/* View Session Dialog */}
-        <Dialog
-          open={viewDialogOpen}
-          onClose={handleCloseViewDialog}
-          maxWidth="md"
-          fullWidth
-        >
+        <Dialog open={viewDialogOpen} onClose={handleCloseViewDialog} maxWidth="md" fullWidth>
           <DialogTitle>Session Details</DialogTitle>
           <DialogContent>
             {selectedSession ? (
@@ -1002,7 +1092,7 @@ export default function SessionManagementPage(): React.JSX.Element {
                     Student Information
                   </Typography>
                   <Stack direction="row" spacing={2} alignItems="center">
-                    <Avatar src={selectedSession.studentAvatar} sx={{ width: 60, height: 60 }}>
+                    <Avatar src={selectedSession.learnerProfPic} sx={{ width: 60, height: 60 }}>
                       {selectedSession.learnerName.charAt(0)}
                     </Avatar>
                     <Box>
@@ -1010,7 +1100,7 @@ export default function SessionManagementPage(): React.JSX.Element {
                         {selectedSession.learnerName}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {selectedSession.studentEmail}
+                        {selectedSession.learnerEmail}
                       </Typography>
                     </Box>
                   </Stack>
@@ -1037,7 +1127,7 @@ export default function SessionManagementPage(): React.JSX.Element {
                         Date:
                       </Typography>
                       <Typography variant="body1" fontWeight="medium">
-                        {dayjs(selectedSession.sessionDate).format('MMMM DD, YYYY')}
+                        {dayjs(selectedSession.startTime).format('MMMM DD, YYYY')}
                       </Typography>
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -1045,7 +1135,7 @@ export default function SessionManagementPage(): React.JSX.Element {
                         Time:
                       </Typography>
                       <Typography variant="body1" fontWeight="medium">
-                        {selectedSession.sessionTime}
+                        {dayjs(selectedSession.startTime).format('HH:mm a')}
                       </Typography>
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -1061,7 +1151,7 @@ export default function SessionManagementPage(): React.JSX.Element {
                         Total Cost:
                       </Typography>
                       <Typography variant="body1" fontWeight="medium">
-                        {selectedSession.currency} {selectedSession.totalCost.toLocaleString()}
+                        {selectedSession.currency} {selectedSession.cost.toLocaleString()}
                       </Typography>
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -1069,8 +1159,8 @@ export default function SessionManagementPage(): React.JSX.Element {
                         Status:
                       </Typography>
                       <Chip
-                        label={selectedSession.status}
-                        color={getStatusColor(selectedSession.status)}
+                        label={selectedSession.sessionStatus}
+                        color={getStatusColor(selectedSession.sessionStatus)}
                         size="small"
                       />
                     </Grid>
@@ -1084,9 +1174,7 @@ export default function SessionManagementPage(): React.JSX.Element {
                       <Typography variant="h6" gutterBottom>
                         Student Message
                       </Typography>
-                      <Typography variant="body1">
-                        {selectedSession.requestMessage}
-                      </Typography>
+                      <Typography variant="body1">{selectedSession.requestMessage}</Typography>
                     </Box>
                   </>
                 ) : null}
@@ -1098,9 +1186,7 @@ export default function SessionManagementPage(): React.JSX.Element {
                       <Typography variant="h6" gutterBottom>
                         Rejection Reason
                       </Typography>
-                      <Typography variant="body1">
-                        {selectedSession.rejectionReason}
-                      </Typography>
+                      <Typography variant="body1">{selectedSession.rejectionReason}</Typography>
                     </Box>
                   </>
                 ) : null}
@@ -1113,28 +1199,18 @@ export default function SessionManagementPage(): React.JSX.Element {
         </Dialog>
 
         {/* Action Confirmation Dialog */}
-        <Dialog
-          open={actionDialogOpen}
-          onClose={handleCloseActionDialog}
-          maxWidth="sm"
-          fullWidth
-        >
-          <DialogTitle>
-            {actionType === 'approve' ? 'Approve Session' : 'Reject Session'}
-          </DialogTitle>
+        <Dialog open={actionDialogOpen} onClose={handleCloseActionDialog} maxWidth="sm" fullWidth>
+          <DialogTitle>{actionType === 'approve' ? 'Approve Session' : 'Reject Session'}</DialogTitle>
           <DialogContent>
             <Stack spacing={2} sx={{ mt: 1 }}>
-              <Typography>
-                Are you sure you want to {actionType} this session request?
-              </Typography>
-              
+              <Typography>Are you sure you want to {actionType} this session request?</Typography>
+
               {selectedSession ? (
                 <Box sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                  <Typography variant="subtitle2">
-                    {selectedSession.sessionName}
-                  </Typography>
+                  <Typography variant="subtitle2">{selectedSession.sessionName}</Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {selectedSession.learnerName} • {dayjs(selectedSession.sessionDate).format('MMM DD, YYYY')} • {selectedSession.sessionTime}
+                    {selectedSession.learnerName} • {dayjs(selectedSession.startTime).format('MMM DD, YYYY')} •{' '}
+                    {dayjs(selectedSession.startTime).format('HH:mm a')}
                   </Typography>
                 </Box>
               ) : null}

@@ -1,4 +1,5 @@
 'use client';
+
 import axios from 'axios';
 import { API_BASE_URL } from '@/config';
 import type { User } from '@/types/user';
@@ -67,12 +68,13 @@ class AuthClient {
     const decoded = decodeJWT(token);
     if (!decoded) return null;
     return {
-      id : decoded ['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || '',
-      email: decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || '',
-      name: decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || '',
-      role: decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || '',
+      id : decoded ["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] || "",
+      email: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] || "",    
+      name: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || "",
+      role: decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || "",
     };
   }
+
 
   async signUp(params: SignUpParams): Promise<{ error?: string }> {
     try {
@@ -82,67 +84,62 @@ class AuthClient {
         dob: params.dob,
         email: params.email,
         password: params.password,
-        role:params.role
+        role: params.role,
       });
 
+      // Make API request
 
-    // Make API request
+      // We do not handle the API, so we'll just generate a token and store it in localStorage.
+      const token = generateToken();
+      localStorage.setItem('custom-auth-token', token);
 
-    // We do not handle the API, so we'll just generate a token and store it in localStorage.
-    const token = generateToken();
-    localStorage.setItem('custom-auth-token', token);
-
-    return {};
-  } catch (error: any) {
-    console.error('SignUp error:', error);
-    return { error: error?.response?.data || 'Sign up failed' };
+      return {};
+    } catch (error: any) {
+      console.error('SignUp error:', error);
+      return { error: error?.response?.data || 'Sign up failed' };
+    }
   }
-}
 
   async signInWithOAuth(_: SignInWithOAuthParams): Promise<{ error?: string }> {
     return { error: 'Social authentication not implemented' };
   }
 
+
   async signInWithPassword(params: SignInWithPasswordParams): Promise<{ error?: string }> {
     const { email, password } = params;
-
+  
     //Sign In API request
     try {
-      const response = await fetch(`${API_BASE_URL}/User/Signin`, {
+      const response = await fetch(`${API_BASE_URL}/api/User/SignIn`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(params),
       });
-        const {token} = await response.json()
-      if (!response.ok || token.toLowerCase().includes("invalid")  ) {
+        const {token} = await response.json();
 
+      if (!response.ok || token.toLowerCase().includes('invalid')) {
         return { error: token || 'Invalid credentials' };
       }
-  
-
 
       localStorage.setItem('custom-auth-token', token);
-  
+
       return {};
     }
     catch (error) {
       console.error('Sign-in error:', error);
       return { error: 'Something went wrong while signing in' };
     }
- 
-  }
-
-  
+  } 
 
   async resetPassword(_: ResetPasswordParams): Promise<{ error?: string }> {
     return { error: 'Password reset not implemented' };
-  }
+  };
 
   async updatePassword(_: ResetPasswordParams): Promise<{ error?: string }> {
     return { error: 'Update reset not implemented' };
-  }
+  };
 
   async getUser(): Promise<{ data?: User | null; error?: string }> {
     // Make API request
@@ -162,6 +159,7 @@ class AuthClient {
 
     return {};
   }
+
 }
 
 export const authClient = new AuthClient();
