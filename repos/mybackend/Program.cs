@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using BusinessService.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Text.Json;
 namespace mybackend
 {
     public class Program
@@ -14,7 +15,11 @@ namespace mybackend
 
             // Add services to the container.
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                             .AddJsonOptions(options =>
+                                {
+                                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                                 });
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -35,7 +40,7 @@ namespace mybackend
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-            .AddJwtBearer(options =>
+            .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -60,6 +65,8 @@ namespace mybackend
             app.UseHttpsRedirection();
 
             app.UseCors("AllowAll");
+
+            app.UseRouting();
 
             app.UseAuthentication();
             app.UseAuthorization();

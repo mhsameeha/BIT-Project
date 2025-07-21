@@ -21,7 +21,7 @@ namespace BusinessService.Services
         public List<EnrollmentDto> GetEnrolledCourses(Guid learnerid)
         {
             var result = (from enrollement in _context.Enrollments
-                          join course in _context.Courses on enrollement.CourseFk equals course.CourseId
+                          join course in _context.Courses on enrollement.CourseId equals course.CourseId
                           where enrollement.LearnerFk == learnerid
                           select new EnrollmentDto
                           {

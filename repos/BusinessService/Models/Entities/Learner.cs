@@ -12,7 +12,7 @@ public class Learner
         public Guid LearnerId { get; set; }
         [Column("learnerProfPic")]
         public byte[]? LearnerProfPic { get; set; }
-        [Column("UserFk")]
+        [Column("userFk")]
         public Guid UserFk { get; set; }
     }
 

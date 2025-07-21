@@ -20,7 +20,7 @@ namespace BusinessService.Models.DTOs
         public DateTime? StartTime { get; set; }
         public DateTime? EndTime { get; set; }
 
-        public decimal TutorRate { get; set; }
+        public decimal? TutorRate { get; set; }
 
   
 

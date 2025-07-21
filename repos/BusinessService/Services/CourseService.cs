@@ -1,8 +1,13 @@
-﻿using BusinessService.Data;
+﻿using System.Globalization;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Security.Claims;
+using BusinessService.Data;
 using BusinessService.Interfaces;
 using BusinessService.Models.DTOs;
 using BusinessService.Models.Entities;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace BusinessService.Services
 {
@@ -15,51 +20,288 @@ namespace BusinessService.Services
             _context = context;
         }
 
-        public (Course, CourseContent) AddCourse(CourseDetailDto newCourse)
+        public string AddCourse(CourseDto newCourse, string email)
         {
-            var course = new Course
+            var tutor = (from u in _context.Users
+                        join t in _context.Tutors on u.UserId equals t.UserFk
+                        where u.Email == email
+                        select new
+                        {
+                            Id = t.TutorId
+                        }).FirstOrDefault();
+            if (tutor != null) 
+
+           {
+                Guid courseId = Guid.NewGuid();
+              
+
+                var course = new Course
+                {
+                    CourseId = courseId,
+                    TutorFk = tutor.Id,
+                    Title = newCourse.Title,
+                    Description = newCourse.Description,
+                    Introduction = newCourse.Introduction,
+                    CategoryFk = newCourse.CategoryFk,
+                    CourseDifficultyFk = newCourse.CourseDifficultyFk,
+                    Price = newCourse.Price,
+                    IsEnabled = true,
+                    LanguageFk = newCourse.LanguageFk,
+                    CourseImage = newCourse.CourseImage,
+                    Tags = newCourse.Tags, // or store separately
+                    CreatedDate = newCourse.CreatedDate,
+                    UpdatedDate = newCourse.UpdatedDate,
+                };
+
+                var courseContents = newCourse.CourseContent.Select((content, index) =>
+                      { var cid = Guid.NewGuid(); // Generate a new Guid for each content
+
+                          return new CourseContent
+                          {
+                              ContentId = cid,
+                              CourseId = courseId,
+                              ContentTitle = content.ContentTitle,
+                              ContentDescription = content.ContentDescription,
+                              ContentDuration = content.ContentDuration,
+                              ContentSortOrder = index + 1,
+                              IsActive = true,
+                              CreatedDate = newCourse.CreatedDate,
+                              UpdatedDate = newCourse.UpdatedDate,
+
+
+                              SubContent = content.SubContent.Select((sub, index) => new SubContent
+                              {
+                                  SubContentId = Guid.NewGuid(),
+                                  ContentId = cid,
+                                  SubContentTitle = sub.SubContentTitle,
+                                  SubContentDescription = sub.SubContentDescription,
+                                  Type = sub.Type
+                              }).ToList()
+
+                          };
+            }).ToList();
+
+                //course.CourseContent = courseContents;
+
+                _context.Courses.Add(course);
+                _context.CourseContents.AddRange(courseContents);
+                _context.SubContents.AddRange(courseContents.SelectMany(cc => cc.SubContent));
+                _context.SaveChanges();
+
+                return "success";
+
+            }
+
+            return "fail";
+        }
+
+        public string UpdateCourse(UpdateCourseDto updatedCourse, string email, Guid courseId)
+        {
+                var tutor = (from u in _context.Users
+                             join t in _context.Tutors on u.UserId equals t.UserFk
+                             where u.Email == email
+                             select new
+                             {
+                                 Id = t.TutorId
+                             }).FirstOrDefault();
+            if (tutor == null) return "fail";
+
+            var existingCourse = _context.Courses
+                .Include(c => c.CourseContent)
+                .ThenInclude(cc => cc.SubContent)
+                .FirstOrDefault(c => c.CourseId == courseId);
+
+            if (existingCourse == null) return "fail";
+
+            var existingCourseContentIds = existingCourse.CourseContent.Select(cc => cc.ContentId).ToList();
+            var updatedCourseContentIds = updatedCourse.CourseContent.Select(cc => cc.ContentId).ToList();
+
+            existingCourse.Title = updatedCourse.Title;
+            existingCourse.Description = updatedCourse.Description;
+            existingCourse.Introduction = updatedCourse.Introduction;
+            existingCourse.Price = updatedCourse.Price;
+            existingCourse.Currency = updatedCourse.Currency;
+            existingCourse.IsEnabled = updatedCourse.IsEnabled;
+            existingCourse.Tags = updatedCourse.Tags;
+            existingCourse.LanguageFk = updatedCourse.LanguageFk;
+            existingCourse.CourseImage = updatedCourse.CourseImage;
+            existingCourse.UpdatedDate = DateTime.UtcNow;
+
+            var contentsToRemove = existingCourse.CourseContent
+                .Where(cc => !updatedCourseContentIds.Contains(cc.ContentId))
+                .ToList();
+            _context.CourseContents.RemoveRange(contentsToRemove);
+
+            var indexMain = 0;
+            var index = 0;
+
+            foreach (var contentDto in updatedCourse.CourseContent)
             {
-                CourseId = Guid.NewGuid(),
-                TutorFk = newCourse.TutorFk, //should come from the frontend
-                Price = newCourse.Price,
-                Title = newCourse.Title,
-                Introduction = newCourse.Introduction,
-                Description = newCourse.Description,
-                CourseDifficultyFk = _context.CourseDifficulties.FirstOrDefault(d => d.CourseDifficultyName == newCourse.CourseDifficulty).CourseDifficultyId,
-                CategoryFk = _context.Categories.FirstOrDefault(c => c.CategoryName == newCourse.CategoryName).CategoryId,
-                CreatedDate = DateTime.Now,
-                UpdatedDate = DateTime.Now,
-                IsEnabled = true,
-                //CourseImage = newCourse.CourseImage != null
-                //                                ? Convert.ToBase64String(newCourse.CourseImage)
-                //                                : null,
-                CourseImage = null,
-                LanguageFk = _context.Languages.FirstOrDefault(l=>l.Languages==newCourse.Language).LanguageId,
+                indexMain++;
+                var subIndex = 0;
+                // Existing content - update
+                if (contentDto.ContentId != Guid.Empty &&
+                    existingCourseContentIds.Contains(contentDto.ContentId))
+                {
+                    var existingContent = existingCourse.CourseContent
+                        .First(cc => cc.ContentId == contentDto.ContentId);
 
-            };
+                    existingContent.ContentTitle = contentDto.ContentTitle;
+                    // ... update other properties
 
-            _context.Add(course);
-            _context.SaveChanges();
+                    // Handle subcontents
+                    var existingSubIds = existingContent.SubContent.Select(sc => sc.SubContentId).ToList();
+                    var updatedSubIds = contentDto.SubContent.Select(sc => sc.SubContentId)
+                                                             .ToList();
 
-            var courseContent = new CourseContent
+                    // Remove deleted subcontent
+
+                    var subsToRemove = existingContent.SubContent
+                                        .Where(sc => !updatedSubIds.Contains(sc.SubContentId))
+                                        .ToList();
+                    _context.SubContents.RemoveRange(subsToRemove);
+
+                   
+
+                    foreach (var subDto in contentDto.SubContent)
+                    {
+                      
+                        // Existing subcontent - update
+                        if (subDto.SubContentId != Guid.Empty &&
+                            existingSubIds.Contains(subDto.SubContentId))
+                        {
+                            var existingSub = existingContent.SubContent
+                                .First(sc => sc.SubContentId == subDto.SubContentId);
+
+                            existingSub.SubContentTitle = subDto.SubContentTitle;
+                            existingSub.SubContentDescription = subDto.SubContentDescription;
+                            existingSub.Type = subDto.Type;
+                            existingSub.SubContentOrder = subDto.SubContentOrder;
+                           
+                        }
+                        // New subcontent - add
+                        else if (subDto.SubContentId == null || !existingSubIds.Contains(subDto.SubContentId))
+                        {
+                            existingContent.SubContent.Add(new SubContent
+                            {
+                                SubContentId = Guid.NewGuid(),
+                                SubContentTitle = subDto.SubContentTitle,
+                                SubContentDescription = subDto.SubContentDescription,   
+                                Type = subDto.Type,
+                                SubContentOrder = subDto.SubContentOrder,
+                                ContentId = contentDto.ContentId
+                                // Assuming you want to set order based on index
+                                // ... other properties
+                            });
+
+                            _context.SubContents.AddRange(existingContent.SubContent);
+                        }
+                    }
+                }
+            
+            //New content -add
+                else
             {
-                ContentId = Guid.NewGuid(),
-                CourseFk = course.CourseId,
-                Title = newCourse.ContentTitle,
-                Description = newCourse.Description,
-                Duration = newCourse.Duration,
-                SortOrder = newCourse.SortOrder,
-                IsActive = true,
-                CreatedDate = DateTime.Now,
-                UpdatedDate = DateTime.Now,
-                SubContent = newCourse.SubContent,
-                Tags = newCourse.Tags.ToString(),
+                    var contentId = Guid.NewGuid();
+                    var newContent = new CourseContent
+                    {
+                        ContentId = contentId,
+                        CourseId = existingCourse.CourseId,
+                        ContentTitle = contentDto.ContentTitle,
+                        ContentDescription = contentDto.ContentDescription,
+                        ContentDuration = contentDto.ContentDuration,
+                        ContentSortOrder = contentDto.ContentSortOrder,
+                        IsActive = true,
+                        CreatedDate = DateTime.UtcNow,
+                        UpdatedDate = DateTime.UtcNow,
 
+
+                        // ... other properties
+                        SubContent = contentDto.SubContent.Select(sub => new SubContent
+                        {
+                            SubContentId = Guid.NewGuid(),
+                            SubContentTitle = sub.SubContentTitle,
+                            SubContentDescription = sub.SubContentDescription,
+                            Type = sub.Type,
+                            SubContentOrder = sub.SubContentOrder,
+                            ContentId = contentId,
+
+
+                            // ... other properties
+                        }).ToList()
+                    };
+                _context.CourseContents.Add(newContent);
+                    _context.SubContents.AddRange(newContent.SubContent);
+
+
+                }
+            }
+
+        _context.SaveChanges();
+                return "success";
+            }
+
+        public UpdateCourseDto GetCoursebyId(Guid Id)
+        {
+           // var findCourse = _context.Courses
+           //.Include(c => c.CourseContent)
+           //.FirstOrDefault(x => x.CourseId == Id);
+
+            var findCourse = _context.Courses
+                            .Where(c => c.CourseId == Id)
+                            .Include(c => c.CourseContent)
+                             .ThenInclude(cc => cc.SubContent)
+                            .FirstOrDefault();
+
+            if (findCourse == null)
+            {
+                return null;
+            }
+
+
+            return new UpdateCourseDto
+            {
+                Title = findCourse.Title,
+                Description = findCourse.Description,
+                Introduction = findCourse.Introduction,
+                CategoryFk = findCourse.CategoryFk,
+                CourseDifficultyFk = findCourse.CourseDifficultyFk,
+                Price = findCourse.Price,
+                IsEnabled = findCourse.IsEnabled,
+                LanguageFk = findCourse.LanguageFk,
+                CourseImage = findCourse.CourseImage,
+                Tags = findCourse.Tags, // or store separately
+                UpdatedDate = findCourse.UpdatedDate,
+
+
+                CourseContent = findCourse.CourseContent
+                                .OrderBy(sc => sc.ContentSortOrder)
+                                .Select((content, index) =>
+                {
+                    var cid = Guid.NewGuid(); // Generate a new Guid for each content
+
+                    return new UpdateCourseContentDto
+                    {
+                        ContentId = content.ContentId,
+                        CourseFk = content.CourseId,
+                        ContentTitle = content.ContentTitle,
+                        ContentDescription = content.ContentDescription,
+                        ContentDuration = content.ContentDuration,
+                        ContentSortOrder = content.ContentSortOrder,
+
+
+                        SubContent = content.SubContent.Select((sub, index) => new UpdateSubContentDto
+                        {
+                            SubContentId = sub.SubContentId,
+                            ContentFk = sub.ContentId,
+                            SubContentTitle = sub.SubContentTitle,
+                            SubContentDescription = sub.SubContentDescription,
+                            Type = sub.Type
+                        }).ToList()
+
+                    };
+                }).ToList()
             };
-            _context.Add(courseContent);
-            _context.SaveChanges();
-
-            return (course, courseContent);
         }
 
         public List<Category> GetCourseCategories()
@@ -80,6 +322,14 @@ namespace BusinessService.Services
             return difficulties;
         }
 
+        public List<Language> GetCourseLanguages()
+        {
+            var languages = _context.Languages
+          .OrderBy(l => l.Languages)
+          .ToList();
+            return languages;
+        }
+
         public async Task<PaginatedCoursesDto> GetCoursesAsync(int page, int items)
         {
 
@@ -95,24 +345,24 @@ namespace BusinessService.Services
                      var duration = _context.CourseContents  
                                         .Select(c => new
                                         {
-                                            c.CourseFk,
-                                            c.Duration
+                                            c.CourseId,
+                                            c.ContentDuration
                                         })
                                         .AsEnumerable() // Switches to in-memory LINQ
-                                        .GroupBy(c => c.CourseFk)
+                                        .GroupBy(c => c.CourseId)
                                         .Select(g => new
                                         {
                                             CourseId = g.Key,
                                             TotalDuration = TimeSpan.FromTicks(
                                                 g.Sum(c =>
-                                                    TimeSpan.TryParse(c.Duration, out var ts) ? ts.Ticks : 0
+                                                    TimeSpan.TryParse(c.ContentDuration, out var ts) ? ts.Ticks : 0
                                                 )
                                             ).ToString(@"hh\:mm\:ss")
                                         })
                                         .ToList();
 
             var enrolledStudents = await _context.Enrollments
-                                       .GroupBy(r => r.CourseFk)
+                                       .GroupBy(r => r.CourseId)
                                        .Select(g => new
                                        {
                                            CourseId = g.Key,
@@ -149,9 +399,7 @@ namespace BusinessService.Services
                 Introduction = c.Introduction,
                 Rating = ratings.FirstOrDefault(r => r.CourseId == c.CourseId)?.AverageRating ?? 0,
                 ReviewCount = ratings.FirstOrDefault(r => r.CourseId == c.CourseId)?.reviewCount ?? 0,
-
                 Duration = duration.FirstOrDefault(r => r.CourseId == c.CourseId)?.TotalDuration ?? "0",
-
                 EnrolledStudents = enrolledStudents.FirstOrDefault(r => r.CourseId == c.CourseId)?.StudentEnrolled ?? 0,
 
             }).ToList();
@@ -172,10 +420,21 @@ namespace BusinessService.Services
         }
 
 
-        //public void DeleteCourse(int id)
-        //{
-        //    var removeCourse = courseSet.FirstOrDefault(x => x.Key == id);
-        //    courseSet.Remove(removeCourse);
-        //}
+
+        public void DeleteCourse(Guid id)
+        {
+            var removeCourse = _context.Courses.FirstOrDefault(x => x.CourseId == id);
+
+            if (removeCourse != null)
+            {
+                removeCourse.IsDeleted = true;
+                _context.SaveChanges();
+            }
+        }
+
+        public CourseManagementCardDto GetCourseManagementCardDetails(string email)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using BusinessService.Data;
 using BusinessService.Models.DTOs;
 using BusinessService.Models.Entities;
+using Microsoft.AspNetCore.Authorization;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -20,7 +21,7 @@ namespace mybackend.Controllers
             _context = context;
         }
         // GET: api/<CourseController>
-        [HttpGet("Courses")]
+        [HttpGet("Courses/{page}")]
         public Task<PaginatedCoursesDto> GetCoursesAsync(int page = 1, int items = 10)
         {
             ICourseService courseService = new CourseService(_context);
@@ -44,33 +45,56 @@ namespace mybackend.Controllers
 
 
         [HttpPost("AddCourse")]
-        public IActionResult AddNewCourse([FromBody] CourseDetailDto newCourse)
+        public IActionResult AddNewCourse([FromBody] CourseDto newCourse)
+
         {
+            //var email = "prof.chen@educonnect.com";
+            var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
             ICourseService courseService = new CourseService(_context);
-            var (course, courseContent) = courseService.AddCourse(newCourse);
-            return Ok(new {course,courseContent});
+            var course = courseService.AddCourse(newCourse, email);
+            return Ok(new {course});
         }
 
-        // POST api/<CourseController>
-        //[HttpPost]
-        //public void Post([FromBody] string value)
-        //{
-        //}
 
-        // PUT api/<CourseController>/5
-        //[HttpPut("{id}")]
-        //public void Put(int id, [FromBody] string value)
-        //{
-        //    ICourseService courseService = new CourseService();
-        //    courseService.addCourse(id,value);
-        //}
+        [HttpGet("Languages")]
+        public List<Language> GetCourseLanguages()
+        {
+            ICourseService courseService = new CourseService(_context);
+            return courseService.GetCourseLanguages();
+        }
 
-        // DELETE api/<CourseController>/5
-        //[HttpDelete("{id}")]
-        //public void Delete(int id)
-        //{
-        //    ICourseService courseService = new CourseService();
-        //    courseService.DeleteCourse(id);
-        //}
+        [HttpGet ("CourseById/{courseId}")]
+
+        public IActionResult GetCourseById(Guid courseId)
+
+        {
+            var email = "prof.chen@educonnect.com";
+            ICourseService courseService = new CourseService(_context);
+            var course = courseService.GetCoursebyId(courseId);
+            return Ok(course);
+        }
+
+        [HttpPut("UpdateCourse/{courseId}")]
+
+        public IActionResult UpdateCourse([FromBody] UpdateCourseDto course, Guid courseId)
+        {
+            var email = "prof.chen@educonnect.com";
+            ICourseService courseService = new CourseService(_context);
+            var result = courseService.UpdateCourse( course,email,courseId);
+            return Ok();
+
+        }
+
+        [HttpPut("DeleteCourse/{Id}")]
+
+        public IActionResult DeleteCourse(Guid Id)
+        {
+            ICourseService courseService = new CourseService (_context);
+            courseService.DeleteCourse(Id);
+            return Ok();
+
+        }
+
+
     }
 }

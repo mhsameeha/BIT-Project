@@ -1,8 +1,10 @@
-﻿using BusinessService.Data;
+﻿using System.Security.Claims;
+using BusinessService.Data;
 using BusinessService.Interfaces;
 using BusinessService.Models.DTOs;
 using BusinessService.Models.Entities;
 using BusinessService.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,9 +14,11 @@ namespace mybackend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    //[Authorize]
     public class TutorController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+
         public TutorController(ApplicationDbContext context)
         {
             _context = context;
@@ -29,27 +33,35 @@ namespace mybackend.Controllers
         }
 
         // GET api/<TutorController>/5
-        [HttpGet("{id}")]
-        public List<SessionDto> TutorSessions(Guid id)
-        {
-            ITutorService TutorService = new TutorService(_context);
-            var result = TutorService.UpcomingSessions(id);
-            return result;
-        }
 
         // POST api/<TutorController>
-        [HttpGet ("tutorCourses")]
-        public Task<PaginatedCoursesDto> GetTutorCourses(Guid id, int page = 1, int items = 5 )
+        [HttpGet ("tutorCourses/{page}")]
+        public Task<PaginatedCoursesDto> GetCoursesByTutor( int page = 1, int items = 5 )
         {
+            var email = "prof.chen@educonnect.com";
+            //var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
             ITutorService tutorService = new TutorService(_context);
-            var course = tutorService.TutorCourses(id, page, items);
+            var course = tutorService.GetCoursesByTutor( email, page, items);
             return course;
+        }
+        [HttpGet("TutorProfileData")]
+        public IActionResult GetTutorProfileData()
+        {
+            var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+            ITutorService TutorService = new TutorService(_context);
+            var result = TutorService.GetTutorProfileData(email);
+            return Ok (result);
         }
 
         // PUT api/<TutorController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpGet("UpcomingSessions")]
+        public IActionResult GetUpcomingSessions()
         {
+            var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+
+            ITutorService TutorService = new TutorService(_context);
+            var result = TutorService.UpcomingSessions(email);
+            return Ok(result);
         }
 
         // DELETE api/<TutorController>/5

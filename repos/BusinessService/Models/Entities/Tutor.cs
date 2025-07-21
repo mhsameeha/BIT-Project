@@ -19,7 +19,7 @@ namespace BusinessService.Models.Entities
         [Column("tutorDescription")]
         public string? TutorDescription { get; set; }
         [Column("tutorRate")]
-        public decimal TutorRate { get; set; }
+        public decimal? TutorRate { get; set; }
         [Column("status")]
         public string? Status { get; set; }
         [Column("approvedDate")]
@@ -35,7 +35,9 @@ namespace BusinessService.Models.Entities
         [Column("userFk")]
         public Guid UserFk { get; set; }
         [Column("language")]
-        public string? Language {get; set;}
+        public string[]? Language {get; set;}
+
+        public ICollection<Session> Session { get; set; }
 
 
     }

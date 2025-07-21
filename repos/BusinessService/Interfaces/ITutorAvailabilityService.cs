@@ -4,13 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BusinessService.Models.DTOs;
-using BusinessService.Models.Entities;
 
 namespace BusinessService.Interfaces
 {
-    public interface ISessionService
+    public interface ITutorAvailabilityService
     {
-        public List<SessionByTutorDto> SessionsByTutor(string email);
-       
+
+        public string SaveTutorAvailabilty(TutorAvailabilitySettingsDto tutorAvailability, string email);
     }
 }

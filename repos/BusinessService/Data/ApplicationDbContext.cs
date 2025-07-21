@@ -23,13 +23,17 @@ namespace BusinessService.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<Course> Courses { get; set; }
         public DbSet<CourseContent> CourseContents { get; set; }
+        public DbSet<SubContent> SubContents { get; set; }
+
 
         public DbSet<CourseDifficulty> CourseDifficulties { get; set; }
 
         public DbSet<Language> Languages { get; set; }
         public DbSet<CourseReview> CourseReviews { get; set; }
-        public DbSet<Timeslot> Timeslots { get; set; }
-        public DbSet <TutorAvailability> TutorAvailabilities { get; set; }
+        public DbSet<TutorTimeSlot> TutorTimeslots { get; set; }
+        public DbSet <TutorWeeklyAvailability> TutorWeeklyAvailabilities { get; set; }
+
+        public DbSet <TutorDisabledDate> TutorDisabledDates { get; set; }
         public DbSet <Speciality> Specialities { get; set; }
         public DbSet<TutorSpeciality> TutorSpecialities { get; set; }
         public DbSet<Payment> Payments { get; set; }

@@ -14,11 +14,51 @@ namespace BusinessService.Services
     {
         private readonly ApplicationDbContext _context;
 
-        SessionService(ApplicationDbContext context)
+        public SessionService(ApplicationDbContext context)
         {
             _context = context;
         }
 
-      
+        public List<SessionByTutorDto> SessionsByTutor(string email)
+        {
+            var tutors = (from u in _context.Users
+                          join t in _context.Tutors on u.UserId equals t.UserFk
+                          where u.Email == email
+                          select new
+                          {
+                              Id = t.TutorId
+                          }).FirstOrDefault();
+
+            if (tutors == null)
+            {
+                return null;
+            }
+
+            var result = (from session in _context.Sessions
+                          join learner in _context.Learners on session.LearnerFk equals learner.LearnerId
+                          join user in _context.Users on learner.UserFk equals user.UserId
+                          join tutor in _context.Tutors on session.TutorFk equals tutor.TutorId
+                          where session.TutorFk == tutors.Id
+                          select new SessionByTutorDto
+                          {
+                              SessionId = session.SessionId,
+                              StartTime = session.StartTime,
+                              EndTime = session.EndTime,
+                              SessionName = session.SessionName,
+                              Cost = session.SessionFee,
+                              Duration = session.EndTime - session.StartTime,
+                              //LearnerProfPic = learner.LearnerProfPic != null
+                              //                  ? Convert.ToBase64String(learner.LearnerProfPic)
+                              //                  : null,
+                              LearnerName = user.FirstName + " " + user.LastName,
+                              LearnerEmail = user.Email,
+                              SessionStatus = session.SessionStatus,
+                              IsPaid = session.IsPaid,
+                              RequestMessage = session.RequestMessage,
+                              RejectionReason = session.RejectionReason
+
+                          }).ToList();
+            return result;
+        }
     }
 }

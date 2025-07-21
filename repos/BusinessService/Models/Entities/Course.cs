@@ -5,9 +5,11 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BusinessService.Models.DTOs;
 
 namespace BusinessService.Models.Entities
 {
+    [Table("Courses")]
     public class Course
     {
         [Key]
@@ -17,7 +19,7 @@ namespace BusinessService.Models.Entities
         [Column("tutorFk")]
         public Guid TutorFk { get; set; }
         [Column("price")]
-        public decimal? Price { get; set; }
+        public decimal Price { get; set; }
         [Column("title")]
         public string? Title { get; set; }
         [Column("introduction")]
@@ -35,10 +37,19 @@ namespace BusinessService.Models.Entities
         [Column("publishedDate")]
         public DateTime? PublishedDate { get; set; }
         [Column("isEnabled")]
-        public bool IsEnabled { get; set; } = false;
+        public bool? IsEnabled { get; set; } = false;
         [Column("courseImage")]
         public byte[]? CourseImage {  get; set; }
         [Column("languageFk")]
-        public Guid LanguageFk { get; set; }
+        public Guid? LanguageFk { get; set; }
+        [Column("tags")]
+        public List<string>? Tags { get; set; }
+        [Column("isDeleted")]
+        public bool? IsDeleted { get; set; } = false;
+
+        [Column("currency")]
+        public string? Currency { get; set; }
+        public ICollection<CourseContent> CourseContent { get; set; } = new List<CourseContent>();
+        public ICollection<Enrollment> Enrollment { get; set; }
     }
 }

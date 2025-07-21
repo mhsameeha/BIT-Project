@@ -14,7 +14,7 @@ namespace BusinessService.Models.Entities
         [Column("sessionId")]
         public Guid SessionId { get; set; }
         [Column("sessionName")]
-        public string? SessionName { get; set; }
+        public string SessionName { get; set; }
         [Column("sessionLink")]
         public string? SessionLink { get; set; }
         [Column("learnerFk")]
@@ -22,15 +22,25 @@ namespace BusinessService.Models.Entities
         [Column("tutorFk")]
         public Guid? TutorFk { get; set; }
         [Column("startTime")]
-        public DateTime? StartTime { get; set; }
+        public DateTime StartTime { get; set; }
         [Column("endTime")]
-        public DateTime? EndTime { get; set; }
+        public DateTime EndTime { get; set; }
         [Column("additionalInfo")]
         public string? AdditionalInfo { get; set; }
         [Column("sessionStatus")]
-        public string? SessionStatus { get; set; }
+        public string SessionStatus { get; set; }
         [Column("sessionStatusInfo")]
         public string? SessionStatusInfo { get; set; }
+        [Column("sessionFee")]
+
+        public decimal SessionFee { get; set; }
+        [Column("isPaid")]
+        public bool? IsPaid { get; set; }
+        [Column("requestMessage")]
+        public string? RequestMessage { get; set; }
+        [Column("rejectionReason")]
+        public string? RejectionReason { get; set; }
+
     }
 
 }

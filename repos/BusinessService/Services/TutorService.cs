@@ -8,6 +8,8 @@ using BusinessService.Interfaces;
 using BusinessService.Models.DTOs;
 using BusinessService.Models.Entities;
 using Microsoft.EntityFrameworkCore;
+using static System.Collections.Specialized.BitVector32;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace BusinessService.Services
 {
@@ -34,8 +36,116 @@ namespace BusinessService.Services
             return result;
         }
 
-        public async Task<PaginatedCoursesDto> TutorCourses(Guid tutorId, int page, int items)
+        public List<NewStudentsDto> GetNewStudents(string email)
         {
+
+            var tutor = (from u in _context.Users
+                          join t in _context.Tutors on u.UserId equals t.UserFk
+                          where u.Email == email
+                          select new
+                          {
+                              Id = t.TutorId
+                          }).FirstOrDefault();
+
+            if (tutor == null)
+            {
+                return null;
+
+            }
+            var oneWeekAgo = DateTime.Now.AddDays(-7);
+
+            var newStudents = (from c in _context.Courses
+                               join e in _context.Enrollments on c.CourseId equals e.CourseId
+                               join l in _context.Learners on e.LearnerFk equals l.LearnerId
+                               join u in _context.Users on l.UserFk equals u.UserId
+                               where c.TutorFk == tutor.Id && e.EnrolledDate >= oneWeekAgo
+                               select new NewStudentsDto
+                               {
+                                   LearnerId = l.LearnerId,
+                                   CourseTitle = c.Title,
+                                   LearnerName = u.FirstName + ' ' + u.LastName,
+                                   enrolledDay = EF.Functions.DateDiffDay(e.EnrolledDate, DateTime.UtcNow),
+                                   LearnerProfPic = l.LearnerProfPic
+                               }).ToList();
+
+            return newStudents;
+        }
+
+        public TutorProfileDataDto GetTutorProfileData(string email)
+        {
+            var tutor = (from u in _context.Users
+                         join t in _context.Tutors on u.UserId equals t.UserFk
+                         where u.Email == email
+                         select new
+                         {
+                             Id = t.TutorId
+                         }).FirstOrDefault();
+
+            if (tutor == null)
+            {
+                return null;
+            }
+       
+                var sessionIncome = _context.Sessions
+               .Where(x => x.TutorFk == tutor.Id)
+               .Sum(x => x.SessionFee);
+            var oneMonthAgo = DateTime.Now.AddDays(-30);
+
+            var monthlySessionIncome = _context.Sessions
+            .Where(x => x.TutorFk == tutor.Id && x.EndTime >= oneMonthAgo && x.SessionStatus == "Completed")
+            .Sum(x => x.SessionFee);
+            var oneWeekAgo = DateTime.Now.AddDays(-7);
+
+            var query = _context.Courses.Where(c => c.CourseId != Guid.Empty);
+            Console.WriteLine(query.ToQueryString());
+
+
+            var newStudents = _context.Courses
+                .Where(c => c.TutorFk == tutor.Id)
+                .SelectMany(c => c.Enrollment)
+                .Count(e => e.EnrolledDate >= oneWeekAgo);
+      
+
+
+
+            var monthlyCourseIncome = _context.Courses
+                .Where(c => c.TutorFk == tutor.Id)
+                .SelectMany(c => c.Enrollment
+                    .Where(e => e.EnrolledDate >= oneMonthAgo)
+                    .Select(e => c.Price))
+                .Sum();
+
+
+
+            var courseIncome = _context.Courses
+               .Where(x => x.TutorFk == tutor.Id)
+               .Select(c => c.Price * c.Enrollment.Count)
+               .Sum();
+       
+                var monthlyIncome = monthlyCourseIncome + monthlySessionIncome;
+
+                return new TutorProfileDataDto
+                {
+                    MonthylCourseIncome = courseIncome,
+                    MonthlySessionIncome = sessionIncome,
+                    NewStudents = newStudents,
+                    MonthlyIncome = monthlyIncome
+                };
+
+
+
+
+            }
+        
+
+        public async Task<PaginatedCoursesDto> GetCoursesByTutor(string email, int page, int items)
+        {
+            var currentTutor = await (from u in _context.Users
+                         join t in _context.Tutors on u.UserId equals t.UserFk
+                         where u.Email == email
+                         select t.TutorId)
+                         .FirstOrDefaultAsync();
+
             var ratings = await _context.CourseReviews
                                          .GroupBy(r => r.CourseFk)
                                          .Select(g => new
@@ -48,26 +158,26 @@ namespace BusinessService.Services
             var duration = _context.CourseContents
                                .Select(c => new
                                {
-                                   c.CourseFk,
-                                   c.Duration
+                                   c.CourseId,
+                                   c.ContentDuration
                               
                                 
                                })
                                .AsEnumerable() // Switches to in-memory LINQ
-                               .GroupBy(c => c.CourseFk)
+                               .GroupBy(c => c.CourseId)
                                .Select(g => new
                                {
                                    CourseId = g.Key,
                                    TotalDuration = TimeSpan.FromTicks(
                                        g.Sum(c =>
-                                           TimeSpan.TryParse(c.Duration, out var ts) ? ts.Ticks : 0
+                                           TimeSpan.TryParse(c.ContentDuration, out var ts) ? ts.Ticks : 0
                                        )
                                    ).ToString(@"hh\:mm\:ss")
                                })
                                .ToList();
 
             var enrolledStudents = await _context.Enrollments
-                                       .GroupBy(r => r.CourseFk)
+                                       .GroupBy(r => r.CourseId)
                                        .Select(g => new
                                        {
                                            CourseId = g.Key,
@@ -82,7 +192,7 @@ namespace BusinessService.Services
                            join difficulty in _context.CourseDifficulties on course.CourseDifficultyFk equals difficulty.CourseDifficultyId
                            join tutor in _context.Tutors on course.TutorFk equals tutor.TutorId
                            join user in _context.Users on tutor.UserFk equals user.UserId //innerJoin
-                           where tutorId == tutor.TutorId
+                           where tutor.TutorId == currentTutor                        
                            select new
                            {
                                CourseId = course.CourseId,
@@ -127,13 +237,26 @@ namespace BusinessService.Services
             };
         }
 
-        public List<SessionDto> UpcomingSessions(Guid tutorId)
+        public List<SessionDto> UpcomingSessions(string email)
         {
+            var tutors = (from u in _context.Users
+                         join t in _context.Tutors on u.UserId equals t.UserFk
+                         where u.Email == email
+                         select new
+                         {
+                             Id = t.TutorId
+                         }).FirstOrDefault();
+
+            if (tutors == null)
+            {
+                return null;
+            }
+
             var result = (from session in _context.Sessions
                           join learner in _context.Learners on session.LearnerFk equals learner.LearnerId
                           join user in _context.Users on learner.UserFk equals user.UserId
                           join tutor in _context.Tutors on session.TutorFk equals tutor.TutorId
-                          where session.TutorFk == tutorId && session.SessionStatus == "Scheduled"
+                          where session.TutorFk == tutors.Id && session.SessionStatus == "Scheduled"
                           select new SessionDto
                           {
                             

@@ -13,12 +13,13 @@ namespace BusinessService.Models.Entities
         [Key]
         [Column("enrollmentId")]
         public Guid EnrollmentId { get; set; }
+
         [Column("courseFk")]
-        public Guid? CourseFk { get; set; }
+        public Guid? CourseId { get; set; }
         [Column("learnerFk")]
         public Guid? LearnerFk { get; set; }
         [Column("isPaid")]
-        public bool IsPaid { get; set; } = false;
+        public bool? IsPaid { get; set; } = false;
         [Column("enrolledDate")]
         public DateTime? EnrolledDate { get; set; }
         [Column("enrollmentStatus")]

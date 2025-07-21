@@ -12,26 +12,28 @@ namespace BusinessService.Models.Entities
     {
         [Key]
         [Column("contentId")]
-        public Guid ContentId { get; set; }
+        public Guid? ContentId { get; set; } = Guid.NewGuid();
+
         [Column("courseFk")]
-        public Guid CourseFk { get; set; }
-        [Column("title")]
-        public string? Title { get; set; }
-        [Column("description")]
-        public string? Description { get; set; }
-        [Column("duration")]
-        public string? Duration { get; set; }
-        [Column("sortOrder")]
-        public int SortOrder { get; set; }
+        public Guid CourseId { get; set; }
+        [Column("contentTitle")]
+        public required string ContentTitle { get; set; }
+        [Column("contentDescription")]
+        public string? ContentDescription { get; set; }
+        [Column("contentDuration")]
+        public string? ContentDuration { get; set; }
+        [Column("contentSortOrder")]
+        public int ContentSortOrder { get; set; }
         [Column("isActive")]
         public bool IsActive { get; set; }
         [Column("createdDate")]
-        public DateTime CreatedDate { get; set; }
+        public DateTime? CreatedDate { get; set; }
         [Column("updatedDate")]
-        public DateTime UpdatedDate { get; set; }
+        public DateTime? UpdatedDate { get; set; }
         [Column("subContent")]
-        public string? SubContent { get; set; }
-        [Column("tags")]
-        public string? Tags { get; set; }
+        public ICollection<SubContent> SubContent { get; set; } = new List<SubContent>();
+
+
+
     }
 }
