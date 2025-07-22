@@ -95,28 +95,6 @@ namespace BusinessService.Services
         {
             var user = _context.Users.SingleOrDefault(x => x.Email == currentUser.Email);
             Guid roleId = Guid.Empty; // Initialize with empty GUID
-            if (user!=null){
-                switch (user.Role.ToLower())
-                {
-                    case "tutor":
-                        var tutor = _context.Tutors
-                            .FirstOrDefault(t => t.UserFk == user.UserId);
-                        roleId = tutor?.TutorId ?? Guid.Empty;
-                        break;
-
-                    case "learner":
-                        var learner = _context.Learners
-                            .FirstOrDefault(l => l.UserFk == user.UserId);
-                        roleId = learner?.LearnerId ?? Guid.Empty;
-                        break;
-
-                    case "admin":
-                        var admin = _context.Admins
-                            .FirstOrDefault(a => a.UserFk == user.UserId);
-                        roleId = admin?.AdminId ?? Guid.Empty;
-                        break;
-                }
-            }
 
             if (user != null && BCrypt.Net.BCrypt.Verify(currentUser.Password, user.Password))
             {
@@ -124,10 +102,11 @@ namespace BusinessService.Services
             {
                 new Claim (ClaimTypes.Email, currentUser.Email),
 
-                new Claim (ClaimTypes.NameIdentifier, roleId.ToString()),
+                new Claim (ClaimTypes.NameIdentifier, user.UserId.ToString()),
 
                 new Claim(ClaimTypes.Name, user.FirstName + " " + user.LastName),
-                new Claim (ClaimTypes.Role, user.Role.ToString())
+
+                new Claim(ClaimTypes.Role, user.Role),
 
             };
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("my-secret-is-this-tree-this" +

@@ -9,9 +9,13 @@ namespace BusinessService.Models.DTOs
 {
     public class UpdateCourseDto
     {
+        public Guid CourseId { get; set; }
         public string? Title { get; set; }
         public Guid? CourseDifficultyFk { get; set; }
+
+        public string? CourseDifficultyName { get; set; }
         public Guid? CategoryFk { get; set; }
+        public  string? CategoryName { get; set; }
         public decimal Price { get; set; }
         public string? Introduction { get; set; }
         public string? Description { get; set; }
@@ -20,6 +24,7 @@ namespace BusinessService.Models.DTOs
         public byte[]? CourseImage { get; set; }
         //aggregate functions
         public Guid? LanguageFk { get; set; }
+        public string? Languages { get; set; }
         public bool? IsEnabled { get; set; }
         public List<string>? Tags { get; set; }
         public DateTime? CreatedDate { get; set; }

@@ -19,7 +19,7 @@ namespace BusinessService.Models.Entities
         [Column("learnerFk")]
         public Guid? LearnerFk { get; set; }
         [Column("isPaid")]
-        public bool? IsPaid { get; set; } = false;
+        public bool IsPaid { get; set; } = false;
         [Column("enrolledDate")]
         public DateTime? EnrolledDate { get; set; }
         [Column("enrollmentStatus")]

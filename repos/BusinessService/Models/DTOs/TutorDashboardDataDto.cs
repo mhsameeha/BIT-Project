@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BusinessService.Models.DTOs
 {
-    public class TutorProfileDataDto
+    public class TutorDashboardDataDto
     {
         public decimal MonthylCourseIncome { get; set; }
         public decimal MonthlySessionIncome { get; set; }

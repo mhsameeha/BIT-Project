@@ -27,7 +27,7 @@ public class User
         [Column("password")]
         public string? Password { get; set; }
         [Column("role")]
-        public string? Role { get; set; }
+        public string Role { get; set; }
         [Column("createdDate")]
         public DateTime? CreatedDate { get; set; }
         [Column("updatedDate")]
@@ -36,6 +36,8 @@ public class User
         public bool? IsActive { get; set; } = true;
         [Column("isDeleted")]
         public bool? IsDeleted { get; set; }
+
+
 
     }
 

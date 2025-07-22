@@ -18,7 +18,7 @@ namespace BusinessService.Models.DTOs
         public string? TutorName { get; set; }
 
         public Guid TutorFk { get; set; }
-        public  string? CourseDifficulty { get; set; }
+        public  string? CourseDifficultyName { get; set; }
         public string? CategoryName { get; set; }
         public decimal? Price { get; set; }
 

@@ -27,7 +27,7 @@ namespace BusinessService.Models.Entities
         [Column("approvalRequestDate")]
         public DateTime? ApprovalRequestDate { get; set; }
         [Column("tutorProfPic")]
-        public string? TutorProfPic { get; set; }
+        public byte[]? TutorProfPic { get; set; }
         [Column("experience")]
         public string? Experience { get; set; }
         [Column("education")]
@@ -38,6 +38,9 @@ namespace BusinessService.Models.Entities
         public string[]? Language {get; set;}
 
         public ICollection<Session> Session { get; set; }
+
+        [ForeignKey("UserFk")]
+        public User User { get; set; }
 
 
     }

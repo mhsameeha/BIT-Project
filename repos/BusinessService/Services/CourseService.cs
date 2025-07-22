@@ -38,7 +38,7 @@ namespace BusinessService.Services
                 var course = new Course
                 {
                     CourseId = courseId,
-                    TutorFk = tutor.Id,
+                    TutorId = tutor.Id,
                     Title = newCourse.Title,
                     Description = newCourse.Description,
                     Introduction = newCourse.Introduction,
@@ -261,14 +261,18 @@ namespace BusinessService.Services
 
             return new UpdateCourseDto
             {
+                CourseId = findCourse.CourseId,
                 Title = findCourse.Title,
                 Description = findCourse.Description,
                 Introduction = findCourse.Introduction,
                 CategoryFk = findCourse.CategoryFk,
+                CategoryName = _context.Categories.FirstOrDefault(x => x.CategoryId == findCourse.CategoryFk)?.CategoryName,
                 CourseDifficultyFk = findCourse.CourseDifficultyFk,
+                CourseDifficultyName = _context.CourseDifficulties.FirstOrDefault(x => x.CourseDifficultyId == findCourse.CourseDifficultyFk)?.CourseDifficultyName,
                 Price = findCourse.Price,
                 IsEnabled = findCourse.IsEnabled,
                 LanguageFk = findCourse.LanguageFk,
+                Languages = _context.Languages.FirstOrDefault(x => x.LanguageId == findCourse.LanguageFk)?.Languages,
                 CourseImage = findCourse.CourseImage,
                 Tags = findCourse.Tags, // or store separately
                 UpdatedDate = findCourse.UpdatedDate,
@@ -330,7 +334,7 @@ namespace BusinessService.Services
             return languages;
         }
 
-        public async Task<PaginatedCoursesDto> GetCoursesAsync(int page, int items)
+        public async Task<PaginatedCoursesDto> GetAllCourses(int page, int items)
         {
 
                     var ratings = await _context.CourseReviews
@@ -374,15 +378,16 @@ namespace BusinessService.Services
             var courses = (from course in _context.Courses
                           join category in _context.Categories on course.CategoryFk equals category.CategoryId
                           join difficulty in _context.CourseDifficulties on course.CourseDifficultyFk equals difficulty.CourseDifficultyId
-                          join tutor in _context.Tutors on course.TutorFk equals tutor.TutorId
+                          join tutor in _context.Tutors on course.TutorId equals tutor.TutorId
                           join user in _context.Users on tutor.UserFk equals user.UserId //innerJoin
+                          where (course.IsEnabled== true && course.IsDeleted == false)
                           select new 
                           {
                               CourseId = course.CourseId,
                               Title = course.Title,
                               TutorName = user.FirstName + ' ' + user.LastName,
                               Price = course.Price,
-                              CourseDifficulty = difficulty.CourseDifficultyName,
+                              CourseDifficultyName = difficulty.CourseDifficultyName,
                               UpdatedDate = course.UpdatedDate,
                               CategoryName = category.CategoryName,
                               Introduction = course.Introduction
@@ -393,7 +398,7 @@ namespace BusinessService.Services
                 Title = c.Title,
                 TutorName = c.TutorName,
                 Price = c.Price,
-                CourseDifficulty = c.CourseDifficulty,
+                CourseDifficultyName = c.CourseDifficultyName,
                 CategoryName = c.CategoryName,
                 UpdatedDate = c.UpdatedDate,
                 Introduction = c.Introduction,

@@ -9,7 +9,7 @@ namespace BusinessService.Interfaces
 
         public Task<PaginatedCoursesDto> GetCoursesByTutor(string email, int page, int pageSize );
 
-        public TutorProfileDataDto GetTutorProfileData(string email);
+        public TutorDashboardDataDto GetTutorDashboardData(string email);
 
         public List<NewStudentsDto> GetNewStudents(string email);
 

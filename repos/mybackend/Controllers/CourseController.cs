@@ -21,11 +21,11 @@ namespace mybackend.Controllers
             _context = context;
         }
         // GET: api/<CourseController>
-        [HttpGet("Courses/{page}")]
-        public Task<PaginatedCoursesDto> GetCoursesAsync(int page = 1, int items = 10)
+        [HttpGet("GetAllCourses/{page}")]
+        public Task<PaginatedCoursesDto> GetAllCourses(int page = 1, int items = 10)
         {
             ICourseService courseService = new CourseService(_context);
-            var course = courseService.GetCoursesAsync(page, items);
+            var course = courseService.GetAllCourses(page, items);
             return course;
         }
 
@@ -85,7 +85,7 @@ namespace mybackend.Controllers
 
         }
 
-        [HttpPut("DeleteCourse/{Id}")]
+        [HttpDelete("DeleteCourse/{Id}")]
 
         public IActionResult DeleteCourse(Guid Id)
         {

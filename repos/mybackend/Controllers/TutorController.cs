@@ -44,12 +44,12 @@ namespace mybackend.Controllers
             var course = tutorService.GetCoursesByTutor( email, page, items);
             return course;
         }
-        [HttpGet("TutorProfileData")]
-        public IActionResult GetTutorProfileData()
+        [HttpGet("TutorDashboardData")]
+        public IActionResult GetTutorDashboardData()
         {
             var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
             ITutorService TutorService = new TutorService(_context);
-            var result = TutorService.GetTutorProfileData(email);
+            var result = TutorService.GetTutorDashboardData(email);
             return Ok (result);
         }
 

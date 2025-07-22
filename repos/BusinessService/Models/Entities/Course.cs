@@ -17,7 +17,7 @@ namespace BusinessService.Models.Entities
         public Guid CourseId { get; set; }
 
         [Column("tutorFk")]
-        public Guid TutorFk { get; set; }
+        public Guid TutorId { get; set; }
         [Column("price")]
         public decimal Price { get; set; }
         [Column("title")]

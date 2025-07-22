@@ -58,7 +58,7 @@ namespace BusinessService.Services
                                join e in _context.Enrollments on c.CourseId equals e.CourseId
                                join l in _context.Learners on e.LearnerFk equals l.LearnerId
                                join u in _context.Users on l.UserFk equals u.UserId
-                               where c.TutorFk == tutor.Id && e.EnrolledDate >= oneWeekAgo
+                               where c.TutorId == tutor.Id && e.EnrolledDate >= oneWeekAgo
                                select new NewStudentsDto
                                {
                                    LearnerId = l.LearnerId,
@@ -71,7 +71,7 @@ namespace BusinessService.Services
             return newStudents;
         }
 
-        public TutorProfileDataDto GetTutorProfileData(string email)
+        public TutorDashboardDataDto GetTutorDashboardData(string email)
         {
             var tutor = (from u in _context.Users
                          join t in _context.Tutors on u.UserId equals t.UserFk
@@ -101,7 +101,7 @@ namespace BusinessService.Services
 
 
             var newStudents = _context.Courses
-                .Where(c => c.TutorFk == tutor.Id)
+                .Where(c => c.TutorId == tutor.Id)
                 .SelectMany(c => c.Enrollment)
                 .Count(e => e.EnrolledDate >= oneWeekAgo);
       
@@ -109,7 +109,7 @@ namespace BusinessService.Services
 
 
             var monthlyCourseIncome = _context.Courses
-                .Where(c => c.TutorFk == tutor.Id)
+                .Where(c => c.TutorId == tutor.Id)
                 .SelectMany(c => c.Enrollment
                     .Where(e => e.EnrolledDate >= oneMonthAgo)
                     .Select(e => c.Price))
@@ -118,13 +118,13 @@ namespace BusinessService.Services
 
 
             var courseIncome = _context.Courses
-               .Where(x => x.TutorFk == tutor.Id)
+               .Where(x => x.TutorId == tutor.Id)
                .Select(c => c.Price * c.Enrollment.Count)
                .Sum();
        
                 var monthlyIncome = monthlyCourseIncome + monthlySessionIncome;
 
-                return new TutorProfileDataDto
+                return new TutorDashboardDataDto
                 {
                     MonthylCourseIncome = courseIncome,
                     MonthlySessionIncome = sessionIncome,
@@ -190,9 +190,9 @@ namespace BusinessService.Services
             var courses = (from course in _context.Courses
                            join category in _context.Categories on course.CategoryFk equals category.CategoryId
                            join difficulty in _context.CourseDifficulties on course.CourseDifficultyFk equals difficulty.CourseDifficultyId
-                           join tutor in _context.Tutors on course.TutorFk equals tutor.TutorId
+                           join tutor in _context.Tutors on course.TutorId equals tutor.TutorId
                            join user in _context.Users on tutor.UserFk equals user.UserId //innerJoin
-                           where tutor.TutorId == currentTutor                        
+                           where (tutor.TutorId == currentTutor  && course.IsDeleted==false )                      
                            select new
                            {
                                CourseId = course.CourseId,
@@ -202,6 +202,7 @@ namespace BusinessService.Services
                                CourseDifficulty = difficulty.CourseDifficultyName,
                                UpdatedDate = course.UpdatedDate,
                                CategoryName = category.CategoryName,
+                               TutorId = course.TutorId,
                                Introduction = course.Introduction
                            }).ToList();
             var result = courses.Select(c => new CourseDetailDto
@@ -209,8 +210,9 @@ namespace BusinessService.Services
                 CourseId = c.CourseId,
                 Title = c.Title,
                 TutorName = c.TutorName,
+                TutorFk = c.TutorId,
                 Price = c.Price,
-                CourseDifficulty = c.CourseDifficulty,
+                CourseDifficultyName = c.CourseDifficulty,
                 CategoryName = c.CategoryName,
                 UpdatedDate = c.UpdatedDate,
                 Introduction = c.Introduction,
