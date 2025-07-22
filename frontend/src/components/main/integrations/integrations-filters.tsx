@@ -16,19 +16,12 @@ export interface CompaniesFiltersProps {
   selectedCategories?: string[];
 }
 
-const categories = [
-  'Programming',
-  'Mathematics',
-  'Graphic Designing',
-  'Data Science',
-  'AI',
-  'Cloud Computing'
-];
+const categories = ['Programming', 'Mathematics', 'Graphic Designing', 'Data Science', 'AI', 'Cloud Computing'];
 
-export function CompaniesFilters({ 
-  onSearchChange, 
-  onCategoryChange, 
-  selectedCategories = [] 
+export function CompaniesFilters({
+  onSearchChange,
+  onCategoryChange,
+  selectedCategories = [],
 }: CompaniesFiltersProps): React.JSX.Element {
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     onSearchChange?.(event.target.value);
@@ -54,7 +47,7 @@ export function CompaniesFilters({
           }
           sx={{ maxWidth: '600px' }}
         />
-        
+
         <FormControl sx={{ minWidth: 250 }}>
           <InputLabel>Categories</InputLabel>
           <Select

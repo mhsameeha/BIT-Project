@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Box, CircularProgress } from '@mui/material';
 
@@ -8,7 +8,23 @@ import { Box, CircularProgress } from '@mui/material';
 interface ChartProps {
   options: Record<string, unknown>;
   series: { name?: string; data: number[] }[] | number[];
-  type: 'area' | 'line' | 'bar' | 'pie' | 'donut' | 'radialBar' | 'scatter' | 'bubble' | 'heatmap' | 'candlestick' | 'boxPlot' | 'radar' | 'polarArea' | 'rangeBar' | 'rangeArea' | 'treemap';
+  type:
+    | 'area'
+    | 'line'
+    | 'bar'
+    | 'pie'
+    | 'donut'
+    | 'radialBar'
+    | 'scatter'
+    | 'bubble'
+    | 'heatmap'
+    | 'candlestick'
+    | 'boxPlot'
+    | 'radar'
+    | 'polarArea'
+    | 'rangeBar'
+    | 'rangeArea'
+    | 'treemap';
   height?: number | string;
   width?: number | string;
 }
@@ -30,13 +46,10 @@ function ChartLoading(): React.JSX.Element {
 }
 
 // Dynamically import ApexCharts with proper error handling
-const ApexChart = dynamic(
-  () => import('react-apexcharts'),
-  { 
-    ssr: false, 
-    loading: () => <ChartLoading />
-  }
-);
+const ApexChart = dynamic(() => import('react-apexcharts'), {
+  ssr: false,
+  loading: () => <ChartLoading />,
+});
 
 // Chart wrapper component with error handling
 export function Chart({ options, series, type, height = 300, width = '100%' }: ChartProps): React.JSX.Element {
@@ -53,16 +66,16 @@ export function Chart({ options, series, type, height = 300, width = '100%' }: C
 
   if (hasError) {
     return (
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          height, 
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height,
           bgcolor: 'grey.100',
           borderRadius: 1,
           border: '1px dashed',
-          borderColor: 'grey.300'
+          borderColor: 'grey.300',
         }}
       >
         <span>Chart failed to load</span>
@@ -73,26 +86,19 @@ export function Chart({ options, series, type, height = 300, width = '100%' }: C
   try {
     return (
       <Box sx={{ width: '100%' }}>
-        <ApexChart
-          options={options}
-          series={series}
-          type={type}
-          height={height}
-          width={width}
-          onError={handleError}
-        />
+        <ApexChart options={options} series={series} type={type} height={height} width={width} onError={handleError} />
       </Box>
     );
   } catch {
     return (
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          height, 
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height,
           bgcolor: 'grey.100',
-          borderRadius: 1 
+          borderRadius: 1,
         }}
       >
         <span>Chart unavailable</span>

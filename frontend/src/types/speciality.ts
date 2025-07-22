@@ -1,4 +1,4 @@
-export type Speciality = {
-    specialityId : string,
-    specialityName : string
-}
+export type Speciality =   {
+  specialityId: string;
+  specialityName: string;
+};

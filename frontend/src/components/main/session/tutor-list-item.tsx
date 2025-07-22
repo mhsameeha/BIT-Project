@@ -1,6 +1,8 @@
 'use client';
 
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
+import type { TutorData } from '@/constants/tutors';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -8,17 +10,14 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Chip from '@mui/material/Chip';
 import Link from '@mui/material/Link';
+import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Rating from '@mui/material/Rating';
 import { Clock as ClockIcon } from '@phosphor-icons/react/dist/ssr/Clock';
+import { CurrencyCircleDollar as CurrencyIcon } from '@phosphor-icons/react/dist/ssr/CurrencyCircleDollar';
 import { GraduationCap as GraduationCapIcon } from '@phosphor-icons/react/dist/ssr/GraduationCap';
 import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
-import { CurrencyCircleDollar as CurrencyIcon } from '@phosphor-icons/react/dist/ssr/CurrencyCircleDollar';
 
-import { useRouter } from 'next/navigation';
-
-import type { TutorData } from '@/constants/tutors';
 import { paths } from '@/paths';
 
 export interface TutorListItemProps {
@@ -41,12 +40,8 @@ export function TutorListItem({ tutor }: TutorListItemProps): React.JSX.Element 
       <CardContent sx={{ p: 3 }}>
         <Box sx={{ display: 'flex', gap: 3 }}>
           {/* Avatar */}
-          <Avatar
-            src={tutor.avatar}
-            sx={{ width: 80, height: 80 }}
-            variant="rounded"
-          />
-          
+          <Avatar src={tutor.avatar} sx={{ width: 80, height: 80 }} variant="rounded" />
+
           {/* Main Content */}
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Stack spacing={2}>
@@ -73,7 +68,7 @@ export function TutorListItem({ tutor }: TutorListItemProps): React.JSX.Element 
                   <Typography color="text.secondary" variant="body2" sx={{ mb: 1 }}>
                     {tutor.title}
                   </Typography>
-                  
+
                   {/* Rating and Stats */}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, flexWrap: 'wrap' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -85,14 +80,14 @@ export function TutorListItem({ tutor }: TutorListItemProps): React.JSX.Element 
                         ({tutor.reviewCount} reviews)
                       </Typography>
                     </Box>
-                    
+
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <UsersIcon size={16} />
                       <Typography color="text.secondary" variant="body2">
                         {tutor.sessionsCompleted} sessions
                       </Typography>
                     </Box>
-                    
+
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <CurrencyIcon size={16} />
                       <Typography variant="body2" sx={{ fontWeight: 500 }}>
@@ -101,15 +96,15 @@ export function TutorListItem({ tutor }: TutorListItemProps): React.JSX.Element 
                     </Box>
                   </Box>
                 </Box>
-                
+
                 {/* Action Buttons */}
                 <Stack direction="row" spacing={1}>
                   <Button variant="outlined" size="small" onClick={handleViewProfile}>
                     View Profile
                   </Button>
-                  <Button 
-                    variant="contained" 
-                    size="small" 
+                  <Button
+                    variant="contained"
+                    size="small"
                     onClick={handleScheduleSession}
                     disabled={!tutor.isAvailable}
                   >
@@ -117,12 +112,12 @@ export function TutorListItem({ tutor }: TutorListItemProps): React.JSX.Element 
                   </Button>
                 </Stack>
               </Box>
-              
+
               {/* Description */}
               <Typography color="text.secondary" variant="body2" sx={{ lineHeight: 1.6 }}>
                 {tutor.description}
               </Typography>
-              
+
               {/* Specialties */}
               <Box>
                 <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
@@ -130,28 +125,26 @@ export function TutorListItem({ tutor }: TutorListItemProps): React.JSX.Element 
                 </Typography>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                   {tutor.specialties.slice(0, 4).map((specialty) => (
-                    <Chip 
-                      key={specialty} 
-                      label={specialty} 
-                      size="small" 
-                      variant="outlined"
-                    />
+                    <Chip key={specialty} label={specialty} size="small" variant="outlined" />
                   ))}
                   {tutor.specialties.length > 4 && (
-                    <Chip 
-                      label={`+${tutor.specialties.length - 4} more`} 
-                      size="small" 
+                    <Chip
+                      label={`+${tutor.specialties.length - 4} more`}
+                      size="small"
                       variant="outlined"
                       color="primary"
                     />
                   )}
                 </Box>
               </Box>
-              
+
               {/* Education & Languages */}
               <Box sx={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                 <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 500, mb: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}
+                  >
                     <GraduationCapIcon size={16} />
                     Education:
                   </Typography>
@@ -164,7 +157,7 @@ export function TutorListItem({ tutor }: TutorListItemProps): React.JSX.Element 
                     </Typography>
                   )}
                 </Box>
-                
+
                 <Box>
                   <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
                     Languages:
@@ -174,17 +167,20 @@ export function TutorListItem({ tutor }: TutorListItemProps): React.JSX.Element 
                   </Typography>
                 </Box>
               </Box>
-              
+
               {/* Availability */}
               {tutor.isAvailable ? (
                 <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 500, mb: 0.5, display: 'flex', alignItems: 'center', gap: 0.5 }}
+                  >
                     <ClockIcon size={16} />
                     Next Available:
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                     {tutor.availability.slice(0, 3).map((availability) => (
-                      <Chip 
+                      <Chip
                         key={availability.day}
                         label={`${availability.day} - ${availability.timeSlots[0]}`}
                         size="small"

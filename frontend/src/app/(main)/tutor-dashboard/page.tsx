@@ -1,41 +1,44 @@
 'use client';
 
 import React, { useState } from 'react';
+import { TUTOR_COURSES_DATA } from '@/constants/courses';
+import { getCompletedSessions, getConfirmedSessions } from '@/constants/sessions';
 import {
+  Event as EventIcon,
+  AttachMoney as MoneyIcon,
+  School as SchoolIcon,
+  TrendingUp as TrendingUpIcon,
+} from '@mui/icons-material';
+import {
+  Avatar,
   Box,
   Card,
   CardContent,
   CardHeader,
-  Container,
-  Grid,
-  Stack,
-  Typography,
   Chip,
-  Avatar,
+  Container,
+  FormControl,
+  Grid,
+  LinearProgress,
+  MenuItem,
+  Select,
+  Stack,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  LinearProgress,
-  FormControl,
-  Select,
-  MenuItem,
+  Typography,
   type SelectChangeEvent,
 } from '@mui/material';
-import { 
-  TrendingUp as TrendingUpIcon, 
-  School as SchoolIcon, 
-  Event as EventIcon, 
-  AttachMoney as MoneyIcon 
-} from '@mui/icons-material';
 import dayjs, { extend } from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
+import { Session, SessionStatus } from '@/types/session';
 import { Chart } from '@/components/core/chart';
-import { getConfirmedSessions, getCompletedSessions } from '@/constants/sessions';
-import { TUTOR_COURSES_DATA } from '@/constants/courses';
+import { getTutorDashboardData, getUpcomingSessions } from '@/Services/tutor';
+import { TutorProfileData } from '@/types/tutor-profile-data';
 
 // Initialize dayjs plugin
 extend(relativeTime);
@@ -48,7 +51,7 @@ const NEWLY_ENROLLED_STUDENTS = [
     avatar: '/assets/avatar-1.png',
     enrolledDate: dayjs().subtract(2, 'day').toDate(),
     course: 'Python Programming Fundamentals',
-    email: 'kasuni.perera@email.com'
+    email: 'kasuni.perera@email.com',
   },
   {
     id: 'STUDENT-008',
@@ -56,7 +59,7 @@ const NEWLY_ENROLLED_STUDENTS = [
     avatar: '/assets/avatar-2.png',
     enrolledDate: dayjs().subtract(1, 'day').toDate(),
     course: 'Advanced Python & Data Science',
-    email: 'dinesh.silva@email.com'
+    email: 'dinesh.silva@email.com',
   },
   {
     id: 'STUDENT-009',
@@ -64,30 +67,30 @@ const NEWLY_ENROLLED_STUDENTS = [
     avatar: '/assets/avatar-3.png',
     enrolledDate: dayjs().toDate(),
     course: 'Web Development with Python',
-    email: 'achini.fernando@email.com'
-  }
+    email: 'achini.fernando@email.com',
+  },
 ];
 
 // Helper function to calculate monthly income
 const calculateMonthlyIncome = (tutorId: string): { total: number; sessions: number; courses: number } => {
   const currentMonth = dayjs().month();
   const currentYear = dayjs().year();
-  
+
   // Get completed sessions for current month
-  const completedSessions = getCompletedSessions(tutorId).filter(session => 
-    dayjs(session.sessionDate).month() === currentMonth && 
-    dayjs(session.sessionDate).year() === currentYear
+  const completedSessions = getCompletedSessions(tutorId).filter(
+    (session) =>
+      dayjs(session.startTime).month() === currentMonth && dayjs(session.startTime).year() === currentYear
   );
-  
-  const sessionIncome = completedSessions.reduce((total, session) => total + session.totalCost, 0);
-  
+
+  const sessionIncome = completedSessions.reduce((total, session) => total + session.tutorRate, 0);
+
   // Mock course enrollments income for the month
   const courseIncome = 45000; // This would be calculated from actual enrollments
-  
+
   return {
     total: sessionIncome + courseIncome,
     sessions: sessionIncome,
-    courses: courseIncome
+    courses: courseIncome,
   };
 };
 
@@ -96,14 +99,14 @@ const getIncomeChartData = (timeRange: number): { months: string[]; sessionData:
   const months = [];
   const sessionData = [];
   const courseData = [];
-  
+
   for (let i = timeRange - 1; i >= 0; i--) {
     const month = dayjs().subtract(i, 'month');
     months.push(month.format('MMM YYYY'));
     sessionData.push(Math.floor(Math.random() * 30000) + 15000);
     courseData.push(Math.floor(Math.random() * 50000) + 20000);
   }
-  
+
   return { months, sessionData, courseData };
 };
 
@@ -111,13 +114,13 @@ const getIncomeChartData = (timeRange: number): { months: string[]; sessionData:
 const getStudentEnrollmentData = (timeRange: number): { months: string[]; enrollmentData: number[] } => {
   const months = [];
   const enrollmentData = [];
-  
+
   for (let i = timeRange - 1; i >= 0; i--) {
     const month = dayjs().subtract(i, 'month');
     months.push(month.format('MMM YYYY'));
     enrollmentData.push(Math.floor(Math.random() * 25) + 10); // 10-35 students per month
   }
-  
+
   return { months, enrollmentData };
 };
 
@@ -125,13 +128,13 @@ const getStudentEnrollmentData = (timeRange: number): { months: string[]; enroll
 const getTotalIncomeData = (timeRange: number): { months: string[]; totalIncomeData: number[] } => {
   const months = [];
   const totalIncomeData = [];
-  
+
   for (let i = timeRange - 1; i >= 0; i--) {
     const month = dayjs().subtract(i, 'month');
     months.push(month.format('MMM YYYY'));
     totalIncomeData.push(Math.floor(Math.random() * 100000) + 50000); // 50k-150k LKR per month
   }
-  
+
   return { months, totalIncomeData };
 };
 
@@ -139,26 +142,64 @@ const getTotalIncomeData = (timeRange: number): { months: string[]; totalIncomeD
 const getSessionsCountData = (timeRange: number): { months: string[]; sessionsData: number[] } => {
   const months = [];
   const sessionsData = [];
-  
+
   for (let i = timeRange - 1; i >= 0; i--) {
     const month = dayjs().subtract(i, 'month');
     months.push(month.format('MMM YYYY'));
     // Use fixed data to ensure it works
     sessionsData.push(Math.floor(Math.random() * 20) + 5); // 5-25 sessions per month
   }
-  
+
   return { months, sessionsData };
 };
 
 export default function TutorDashboardPage(): React.JSX.Element {
   const tutorId = 'TUTOR-001'; // This would come from authentication context
   const [timeRange, setTimeRange] = useState<number>(6); // Default to 6 months
-  
-  const monthlyIncome = calculateMonthlyIncome(tutorId);
-  const upcomingSessions = getConfirmedSessions(tutorId).filter(session => 
-    dayjs(session.sessionDate).isAfter(dayjs())
-  ).slice(0, 5);
 
+  const monthlyIncome = calculateMonthlyIncome(tutorId);
+  // const upcomingSessions = getConfirmedSessions(tutorId).filter(session =>
+  //   dayjs(session.sessionDate).isAfter(dayjs())
+  // ).slice(0, 5);
+  const [upcomingSessions, setUpcomingSessions] = React.useState<Session[]>([]);
+  const [tutorProfileData, setTutorProfileData] = React.useState<TutorProfileData>();
+
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      const returnValue = await getUpcomingSessions();
+      console.log('returnValue', returnValue);
+
+      if ('error' in returnValue) {
+        console.error(returnValue.error);
+        const errorMessage = returnValue;
+
+        // Optionally, handle error UI here
+        return { error: errorMessage || 'Invalid Request' };
+      }
+      setUpcomingSessions(returnValue);
+      console.log(returnValue);
+    };
+
+    fetchData();
+
+    //initial load
+  }, []);
+
+    React.useEffect(() => {
+        const fetchData = async () => {
+          const returnValue = await getTutorDashboardData();
+          if ('error' in returnValue) {
+            // Optionally, handle error UI here
+            return;
+          }
+          console.log('tutordata', returnValue)
+          setTutorProfileData(returnValue);
+
+        };
+         fetchData();
+      }, []);
+  
   // Handle time range change
   const handleTimeRangeChange = (event: SelectChangeEvent<number>): void => {
     setTimeRange(event.target.value as number);
@@ -169,7 +210,7 @@ export default function TutorDashboardPage(): React.JSX.Element {
   const { months: enrollmentMonths, enrollmentData } = getStudentEnrollmentData(timeRange);
   const { months: incomeMonths, totalIncomeData } = getTotalIncomeData(timeRange);
   const { months: sessionMonths, sessionsData } = getSessionsCountData(timeRange);
-  
+
   const incomeChartOptions = {
     chart: {
       type: 'area' as const,
@@ -208,11 +249,11 @@ export default function TutorDashboardPage(): React.JSX.Element {
   const incomeChartSeries = [
     {
       name: 'Session Income',
-      data: sessionData,
+      data: tutorProfileData?.monthlySessionIncome,
     },
     {
       name: 'Course Income',
-      data: courseData,
+      data: tutorProfileData?.monthlyCourseIncome,
     },
   ];
 
@@ -358,9 +399,7 @@ export default function TutorDashboardPage(): React.JSX.Element {
                   <Typography variant="h6" color="text.secondary">
                     New Students
                   </Typography>
-                  <Typography variant="h4">
-                    {NEWLY_ENROLLED_STUDENTS.length}
-                  </Typography>
+                  <Typography variant="h4">{NEWLY_ENROLLED_STUDENTS.length}</Typography>
                   <Typography variant="body2" color="success.main">
                     This week
                   </Typography>
@@ -388,9 +427,7 @@ export default function TutorDashboardPage(): React.JSX.Element {
                   <Typography variant="h6" color="text.secondary">
                     Monthly Income
                   </Typography>
-                  <Typography variant="h4">
-                    LKR {monthlyIncome.total.toLocaleString()}
-                  </Typography>
+                  <Typography variant="h4">LKR {monthlyIncome.total.toLocaleString()}</Typography>
                   <Typography variant="body2" color="success.main">
                     +12% from last month
                   </Typography>
@@ -418,9 +455,7 @@ export default function TutorDashboardPage(): React.JSX.Element {
                   <Typography variant="h6" color="text.secondary">
                     Session Income
                   </Typography>
-                  <Typography variant="h4">
-                    LKR {monthlyIncome.sessions.toLocaleString()}
-                  </Typography>
+                  <Typography variant="h4">LKR {monthlyIncome.sessions.toLocaleString()}</Typography>
                   <Typography variant="body2" color="text.secondary">
                     This month
                   </Typography>
@@ -448,9 +483,7 @@ export default function TutorDashboardPage(): React.JSX.Element {
                   <Typography variant="h6" color="text.secondary">
                     Course Income
                   </Typography>
-                  <Typography variant="h4">
-                    LKR {monthlyIncome.courses.toLocaleString()}
-                  </Typography>
+                  <Typography variant="h4">LKR {monthlyIncome.courses.toLocaleString()}</Typography>
                   <Typography variant="body2" color="text.secondary">
                     This month
                   </Typography>
@@ -463,15 +496,9 @@ export default function TutorDashboardPage(): React.JSX.Element {
 
       {/* Time Range Selector */}
       <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h5">
-          Analytics Overview
-        </Typography>
+        <Typography variant="h5">Analytics Overview</Typography>
         <FormControl size="small" sx={{ minWidth: 180 }}>
-          <Select
-            value={timeRange}
-            onChange={handleTimeRangeChange}
-            displayEmpty
-          >
+          <Select value={timeRange} onChange={handleTimeRangeChange} displayEmpty>
             <MenuItem value={12}>Last 12 months</MenuItem>
             <MenuItem value={6}>Last 6 months</MenuItem>
             <MenuItem value={3}>Last 3 months</MenuItem>
@@ -485,12 +512,7 @@ export default function TutorDashboardPage(): React.JSX.Element {
           <Card>
             <CardHeader title={`Monthly Income Overview (Last ${timeRange} months)`} />
             <CardContent>
-              <Chart
-                height={300}
-                options={incomeChartOptions}
-                series={incomeChartSeries}
-                type="area"
-              />
+              <Chart height={300} options={incomeChartOptions} series={incomeChartSeries} type="area" />
             </CardContent>
           </Card>
         </Grid>
@@ -500,12 +522,7 @@ export default function TutorDashboardPage(): React.JSX.Element {
           <Card>
             <CardHeader title={`Sessions Conducted (Last ${timeRange} months)`} />
             <CardContent>
-              <Chart
-                height={300}
-                options={enrollmentChartOptions}
-                series={enrollmentChartSeries}
-                type="bar"
-              />
+              <Chart height={300} options={enrollmentChartOptions} series={enrollmentChartSeries} type="bar" />
             </CardContent>
           </Card>
         </Grid>
@@ -515,12 +532,7 @@ export default function TutorDashboardPage(): React.JSX.Element {
           <Card>
             <CardHeader title={`Student Enrollments (Last ${timeRange} months)`} />
             <CardContent>
-              <Chart
-                height={300}
-                options={studentBarChartOptions}
-                series={studentBarChartSeries}
-                type="bar"
-              />
+              <Chart height={300} options={studentBarChartOptions} series={studentBarChartSeries} type="bar" />
             </CardContent>
           </Card>
         </Grid>
@@ -530,12 +542,7 @@ export default function TutorDashboardPage(): React.JSX.Element {
           <Card>
             <CardHeader title={`Total Income (Last ${timeRange} months)`} />
             <CardContent>
-              <Chart
-                height={300}
-                options={incomeBarChartOptions}
-                series={incomeBarChartSeries}
-                type="bar"
-              />
+              <Chart height={300} options={incomeBarChartOptions} series={incomeBarChartSeries} type="bar" />
             </CardContent>
           </Card>
         </Grid>
@@ -543,8 +550,8 @@ export default function TutorDashboardPage(): React.JSX.Element {
         {/* Newly Enrolled Students */}
         <Grid item xs={12} md={6}>
           <Card>
-            <CardHeader 
-              title="Newly Enrolled Students" 
+            <CardHeader
+              title="Newly Enrolled Students"
               subheader={`${NEWLY_ENROLLED_STUDENTS.length} new students this week`}
             />
             <CardContent>
@@ -564,9 +571,7 @@ export default function TutorDashboardPage(): React.JSX.Element {
                   >
                     <Avatar src={student.avatar} alt={student.name} />
                     <Box sx={{ flexGrow: 1 }}>
-                      <Typography variant="subtitle2">
-                        {student.name}
-                      </Typography>
+                      <Typography variant="subtitle2">{student.name}</Typography>
                       <Typography variant="body2" color="text.secondary">
                         {student.course}
                       </Typography>
@@ -574,12 +579,7 @@ export default function TutorDashboardPage(): React.JSX.Element {
                         Enrolled {dayjs(student.enrolledDate).fromNow()}
                       </Typography>
                     </Box>
-                    <Chip
-                      label="New"
-                      color="success"
-                      size="small"
-                      variant="outlined"
-                    />
+                    <Chip label="New" color="success" size="small" variant="outlined" />
                   </Stack>
                 ))}
               </Stack>
@@ -590,10 +590,7 @@ export default function TutorDashboardPage(): React.JSX.Element {
         {/* Upcoming Sessions */}
         <Grid item xs={12} md={6}>
           <Card>
-            <CardHeader 
-              title="Upcoming Sessions" 
-              subheader={`${upcomingSessions.length} sessions scheduled`}
-            />
+            <CardHeader title="Upcoming Sessions" subheader={`${upcomingSessions.length} sessions scheduled`} />
             <CardContent>
               <TableContainer>
                 <Table size="small">
@@ -606,18 +603,16 @@ export default function TutorDashboardPage(): React.JSX.Element {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {upcomingSessions.map((session) => (
+                    {upcomingSessions.map((session: Session) => (
                       <TableRow key={session.sessionId}>
                         <TableCell>
                           <Stack direction="row" spacing={1} alignItems="center">
-                            <Avatar 
-                              src={session.studentAvatar} 
+                            <Avatar
+                              src={`data:image/png;base64,${session.learnerProfPic}`}
                               alt={session.learnerName}
                               sx={{ width: 32, height: 32 }}
                             />
-                            <Typography variant="body2">
-                              {session.learnerName}
-                            </Typography>
+                            <Typography variant="body2">{session.learnerName}</Typography>
                           </Stack>
                         </TableCell>
                         <TableCell>
@@ -626,16 +621,14 @@ export default function TutorDashboardPage(): React.JSX.Element {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2">
-                            {dayjs(session.sessionDate).format('MMM DD')}
-                          </Typography>
+                          <Typography variant="body2">{dayjs(session.startTime).format('MMM DD')}</Typography>
                           <Typography variant="caption" color="text.secondary">
-                            {session.sessionTime}
+                            {dayjs(session.startTime).format('HH:mm a')} -{dayjs(session.endTime).format('HH:mm a')}
                           </Typography>
                         </TableCell>
                         <TableCell align="right">
                           <Typography variant="body2" fontWeight="medium">
-                            LKR {session.totalCost.toLocaleString()}
+                            LKR {session.tutorRate.toLocaleString()}
                           </Typography>
                         </TableCell>
                       </TableRow>
@@ -674,23 +667,19 @@ export default function TutorDashboardPage(): React.JSX.Element {
                     {TUTOR_COURSES_DATA.slice(0, 5).map((course) => {
                       const enrolledStudents = Math.floor(Math.random() * 20) + 5;
                       const completionRate = Math.floor(Math.random() * 40) + 60;
-                      const monthlyRevenue = enrolledStudents * course.fee * 0.1;
-                      const totalRevenue = enrolledStudents * course.fee;
-                      
+                      const monthlyRevenue = enrolledStudents * course.price * 0.1;
+                      const totalRevenue = enrolledStudents * course.price;
+
                       return (
-                        <TableRow key={course.id}>
+                        <TableRow key={course.courseId}>
                           <TableCell>
-                            <Typography variant="subtitle2">
-                              {course.title}
-                            </Typography>
+                            <Typography variant="subtitle2">{course.title}</Typography>
                             <Typography variant="body2" color="text.secondary">
-                              {course.category}
+                              {course.categoryName}
                             </Typography>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2">
-                              {enrolledStudents} students
-                            </Typography>
+                            <Typography variant="body2">{enrolledStudents} students</Typography>
                           </TableCell>
                           <TableCell>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -705,9 +694,7 @@ export default function TutorDashboardPage(): React.JSX.Element {
                             </Box>
                           </TableCell>
                           <TableCell align="right">
-                            <Typography variant="body2">
-                              LKR {monthlyRevenue.toLocaleString()}
-                            </Typography>
+                            <Typography variant="body2">LKR {monthlyRevenue.toLocaleString()}</Typography>
                           </TableCell>
                           <TableCell align="right">
                             <Typography variant="body2" fontWeight="medium">

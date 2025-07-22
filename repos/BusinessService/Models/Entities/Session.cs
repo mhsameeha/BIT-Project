@@ -20,7 +20,7 @@ namespace BusinessService.Models.Entities
         [Column("learnerFk")]
         public Guid? LearnerFk { get; set; }
         [Column("tutorFk")]
-        public Guid? TutorFk { get; set; }
+        public Guid? TutorId { get; set; }
         [Column("startTime")]
         public DateTime StartTime { get; set; }
         [Column("endTime")]

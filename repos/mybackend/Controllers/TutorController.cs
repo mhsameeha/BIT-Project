@@ -53,6 +53,16 @@ namespace mybackend.Controllers
             return Ok (result);
         }
 
+        [HttpGet("TutorAccountDetails")]
+        public IActionResult GetTutorAccountDetails()
+        {
+            var email = "prof.chen@educonnect.com";
+            //var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+            ITutorService TutorService = new TutorService(_context);
+            var result = TutorService.GetTutorAccountDetails(email);
+            return Ok(result);
+        }
+
         // PUT api/<TutorController>/5
         [HttpGet("UpcomingSessions")]
         public IActionResult GetUpcomingSessions()

@@ -1,8 +1,9 @@
 'use client';
 
 import axios from 'axios';
-import { API_BASE_URL } from '@/config';
 import type { User } from '@/types/user';
+import dayjs from 'dayjs';
+import { API_BASE_URL } from '@/config';
 
 function generateToken(): string {
   const arr = new Uint8Array(12);
@@ -25,6 +26,16 @@ export interface SignUpParams {
   email: string;
   password: string;
   role: string;
+}
+
+export interface TutorSignUpParams extends SignUpParams {
+tutorDescription:string;
+tutorRate :number;
+status:string;
+approvalRequestDate:Date;
+experience:string[];
+education:string[];
+language:string[];
 }
 
 export interface SignInWithOAuthParams {
@@ -78,13 +89,44 @@ class AuthClient {
 
   async signUp(params: SignUpParams): Promise<{ error?: string }> {
     try {
-      const response = await axios.post(`${API_BASE_URL}/User/signup`, {
+      const response = await axios.post(`${API_BASE_URL}/User/LearnerSignUp`, {
         firstName: params.firstName,
         lastName: params.lastName,
         dob: params.dob,
         email: params.email,
         password: params.password,
         role: params.role,
+      });
+
+      // Make API request
+
+      // We do not handle the API, so we'll just generate a token and store it in localStorage.
+      const token = generateToken();
+      localStorage.setItem('custom-auth-token', token);
+
+      return {};
+    } catch (error: any) {
+      console.error('SignUp error:', error);
+      return { error: error?.response?.data || 'Sign up failed' };
+    }
+  }
+
+    async tutorSignUp(params: TutorSignUpParams): Promise<{ error?: string }> {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/User/TutorSignUp`, {
+        firstName: params.firstName,
+        lastName: params.lastName,
+        dob: params.dob,
+        email: params.email,
+        password: params.password,
+        role: params.role,
+        tutorDescription: params.tutorDescription,
+        tutorRate :params.tutorRate,
+        status:params.status,
+        approvalRequestDate: dayjs().toDate(),
+        experience:params.experience,
+        education:params.education,
+        language:params.language
       });
 
       // Make API request
@@ -110,7 +152,7 @@ class AuthClient {
   
     //Sign In API request
     try {
-      const response = await fetch(`${API_BASE_URL}/api/User/SignIn`, {
+      const response = await fetch(`${API_BASE_URL}/User/SignIn`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

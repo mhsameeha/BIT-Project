@@ -10,12 +10,12 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
+import Stack from '@mui/material/Stack';
 import type { SxProps } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 import { ArrowRight as ArrowRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowRight';
 import { DotsThreeVertical as DotsThreeVerticalIcon } from '@phosphor-icons/react/dist/ssr/DotsThreeVertical';
 import dayjs from 'dayjs';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
 
 export interface Product {
   id: string;
@@ -32,11 +32,11 @@ export interface TutorListProps {
 export function TutorList({ products = [], sx }: TutorListProps): React.JSX.Element {
   return (
     <Card sx={sx}>
-        <Stack spacing={1}>
-   <Typography color="text.secondary" variant="overline">
-                Tutors 
-              </Typography> 
-              </Stack>
+      <Stack spacing={1}>
+        <Typography color="text.secondary" variant="overline">
+          Tutors
+        </Typography>
+      </Stack>
       <Divider />
       <List>
         {products.map((product, index) => (

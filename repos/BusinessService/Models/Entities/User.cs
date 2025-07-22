@@ -36,7 +36,7 @@ public class User
         public bool? IsActive { get; set; } = true;
         [Column("isDeleted")]
         public bool? IsDeleted { get; set; }
-
+        public Tutor Tutor { get; set; }
 
 
     }

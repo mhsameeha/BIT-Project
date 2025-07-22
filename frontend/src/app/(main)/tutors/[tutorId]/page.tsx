@@ -1,8 +1,9 @@
 'use client';
 
 import * as React from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import {
+  Alert,
   Avatar,
   Box,
   Button,
@@ -12,12 +13,11 @@ import {
   Container,
   Grid,
   Rating,
+  Skeleton,
   Stack,
   Typography,
-  Alert,
-  Skeleton,
 } from '@mui/material';
-import { ArrowLeft, Clock, GraduationCap, Users, Star } from '@phosphor-icons/react/dist/ssr';
+import { ArrowLeft, Clock, GraduationCap, Star, Users } from '@phosphor-icons/react/dist/ssr';
 
 import { TUTORS_DATA, type TutorData } from '../../../../constants/tutors';
 import { paths } from '../../../../paths';
@@ -68,9 +68,7 @@ export default function TutorProfilePage(): React.JSX.Element {
   if (!tutor) {
     return (
       <Container maxWidth="lg" sx={{ py: 3 }}>
-        <Alert severity="error">
-          Tutor not found. Please go back and select a valid tutor.
-        </Alert>
+        <Alert severity="error">Tutor not found. Please go back and select a valid tutor.</Alert>
         <Button
           startIcon={<ArrowLeft />}
           onClick={() => {
@@ -110,10 +108,7 @@ export default function TutorProfilePage(): React.JSX.Element {
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 <Stack direction="row" spacing={3} alignItems="flex-start">
-                  <Avatar
-                    src={tutor.avatar}
-                    sx={{ width: 120, height: 120 }}
-                  />
+                  <Avatar src={tutor.avatar} sx={{ width: 120, height: 120 }} />
                   <Stack spacing={2} flex={1}>
                     <div>
                       <Typography variant="h4" component="h1" gutterBottom>
@@ -131,13 +126,11 @@ export default function TutorProfilePage(): React.JSX.Element {
                         </Stack>
                         <Stack direction="row" alignItems="center" spacing={1}>
                           <Users size={16} />
-                          <Typography variant="body2">
-                            {tutor.sessionsCompleted} sessions completed
-                          </Typography>
+                          <Typography variant="body2">{tutor.sessionsCompleted} sessions completed</Typography>
                         </Stack>
                       </Stack>
                     </div>
-                    
+
                     <Stack direction="row" spacing={1} flexWrap="wrap">
                       {tutor.specialties.map((specialty) => (
                         <Chip key={specialty} label={specialty} size="small" color="primary" variant="outlined" />
@@ -171,9 +164,7 @@ export default function TutorProfilePage(): React.JSX.Element {
               <CardContent>
                 <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
                   <GraduationCap />
-                  <Typography variant="h6">
-                    Education
-                  </Typography>
+                  <Typography variant="h6">Education</Typography>
                 </Stack>
                 <Stack spacing={2}>
                   {tutor.education.map((edu) => (
@@ -205,9 +196,7 @@ export default function TutorProfilePage(): React.JSX.Element {
                       <Typography variant="body2" color="text.secondary" gutterBottom>
                         {exp.company} • {exp.duration}
                       </Typography>
-                      <Typography variant="body2">
-                        {exp.description}
-                      </Typography>
+                      <Typography variant="body2">{exp.description}</Typography>
                     </Box>
                   ))}
                 </Stack>
@@ -232,7 +221,7 @@ export default function TutorProfilePage(): React.JSX.Element {
                       per hour
                     </Typography>
                   </Box>
-                  
+
                   <Button
                     variant="contained"
                     size="large"
@@ -264,13 +253,7 @@ export default function TutorProfilePage(): React.JSX.Element {
                       </Typography>
                       <Stack direction="row" spacing={1} flexWrap="wrap">
                         {avail.timeSlots.map((slot) => (
-                          <Chip
-                            key={slot}
-                            label={slot}
-                            size="small"
-                            variant="outlined"
-                            icon={<Clock />}
-                          />
+                          <Chip key={slot} label={slot} size="small" variant="outlined" icon={<Clock />} />
                         ))}
                       </Stack>
                     </Box>
@@ -289,20 +272,20 @@ export default function TutorProfilePage(): React.JSX.Element {
                   <Stack direction="row" justifyContent="space-between">
                     <Typography variant="body2">Member since:</Typography>
                     <Typography variant="body2" fontWeight="medium">
-                      {tutor.joinedDate.toLocaleDateString('en-US', { 
-                        month: 'long', 
-                        year: 'numeric' 
+                      {tutor.joinedDate.toLocaleDateString('en-US', {
+                        month: 'long',
+                        year: 'numeric',
                       })}
                     </Typography>
                   </Stack>
-                  
+
                   <Stack direction="row" justifyContent="space-between">
                     <Typography variant="body2">Sessions completed:</Typography>
                     <Typography variant="body2" fontWeight="medium">
                       {tutor.sessionsCompleted}
                     </Typography>
                   </Stack>
-                  
+
                   <Stack direction="row" justifyContent="space-between">
                     <Typography variant="body2">Average rating:</Typography>
                     <Stack direction="row" alignItems="center" spacing={1}>

@@ -7,11 +7,10 @@ import type { SxProps } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { ArrowDown as ArrowDownIcon } from '@phosphor-icons/react/dist/ssr/ArrowDown';
 import { ArrowUp as ArrowUpIcon } from '@phosphor-icons/react/dist/ssr/ArrowUp';
+import { ChalkboardTeacher as Session } from '@phosphor-icons/react/dist/ssr/ChalkboardTeacher';
 import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
-import {ChalkboardTeacher as Session } from '@phosphor-icons/react/dist/ssr/ChalkboardTeacher';
 
-
-export interface TotalSessionsProps{
+export interface TotalSessionsProps {
   diff?: number;
   trend: 'up' | 'down';
   sx?: SxProps;

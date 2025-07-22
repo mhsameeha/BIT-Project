@@ -9,7 +9,7 @@ import { ArrowDown as ArrowDownIcon } from '@phosphor-icons/react/dist/ssr/Arrow
 import { ArrowUp as ArrowUpIcon } from '@phosphor-icons/react/dist/ssr/ArrowUp';
 import { BookOpen as Books } from '@phosphor-icons/react/dist/ssr/BookOpen';
 
-export interface UploadedCoursesProps{
+export interface UploadedCoursesProps {
   diff?: number;
   trend: 'up' | 'down';
   sx?: SxProps;

@@ -32,12 +32,6 @@ import { useUser } from '@/hooks/use-user';
 const schema = zod.object({
   firstName: zod.string().min(1, { message: 'First name is required' }),
   lastName: zod.string().min(1, { message: 'Last name is required' }),
-  // dob: zod.string()
-  // // .nonempty({ message: 'Date of Birth is required' })
-  // .transform((val) => new Date(val))
-  // .refine((date) => date > new Date(), {
-  //   message: 'Date of Birth must be in the past',
-  // }),
   dob: z.coerce
     .date({ required_error: 'Date of Birth is required' }) // Catch empty
     .max(new Date(), { message: 'Invalid Date of Birth' }),
@@ -186,16 +180,26 @@ export function SignUpForm(): React.JSX.Element {
                 </FormControl>
               )}
             />
-            <Controller
-              control={control}
-              name="dob"
-              render={(field) => (
-                <FormControl error={Boolean(errors.dob)}>
-                  <DatePicker label="Date of Birth" {...field} />
-                  {errors.dob ? <FormHelperText>{errors.dob.message}</FormHelperText> : null}
-                </FormControl>
-              )}
-            />
+              <Controller
+                name="dob"
+                control={control}
+                render={({ field }) => (
+                  <FormControl error={Boolean(errors.dob)} fullWidth>
+                    <DatePicker
+                      label="Date of Birth"
+                      // value={dayjs || null}
+                      onChange={(date) => field.onChange(date)}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          error: Boolean(errors.dob),
+                          helperText: errors.dob?.message || '',
+                        },
+                      }}
+                    />
+                  </FormControl>
+                )}
+              />
             <Controller
               control={control}
               name="email"

@@ -1,5 +1,5 @@
 'use client';
-
+import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import {
   Alert,
@@ -45,14 +45,14 @@ import {
   getPendingSessionRequests,
   getRejectedSessions,
   getSessionRequestsByTutor,
-  updateSessionStatus,
 } from '../../../constants/sessions';
 import { Session, SessionStatus, type SessionRequest } from '../../../types/session';
 import { joinRoom } from '@/components/main/session/jitsi-meet';
 import { RefObject, useMemo, useRef } from 'react';
-import { getSessionsByTutor } from '@/Services/sessions';
+import { getSessionsByTutor, updateSessionStatus } from '@/Services/sessions';
 import { TutorAvailabilitySettings, TimeSlot, DayAvailability } from '@/types/tutor-availability';
 import { AddAvailability } from '@/Services/tutor-availability';
+import { setTimeout } from 'timers/promises';
 
 // Types for availability management
 
@@ -288,22 +288,20 @@ function AvailabilityManagement({ tutorId: _tutorId }: AvailabilityManagementPro
 
   const [saveSuccess, setSaveSuccess] = React.useState(false);
 
-  const saveAvailability = (): void => {
-    // In a real app, this would save to the backend
-    // For now, just show success state
-    setSaveSuccess(true);
-    setTimeout(async () => {
-      const tutorAvailability = await AddAvailability(
-      {
-         disabledDates:availability.disabledDates,
-          weeklySchedule:availability.weeklySchedule
-        
-        }
-        
-      )
-      setSaveSuccess(false);
-    }, 3000); // Hide after 3 seconds
-  };
+const saveAvailability = async (): Promise<void> => {
+  setSaveSuccess(true);
+  
+  try {
+    await AddAvailability({
+      disabledDates: availability.disabledDates,
+      weeklySchedule: availability.weeklySchedule
+    });
+  } catch (error) {
+    console.error("Failed to save availability:", error);
+  }
+  
+   setSaveSuccess(false);
+};
 
   return (
     <>
@@ -830,22 +828,26 @@ export default function SessionManagementPage(): React.JSX.Element {
     setSelectedSession(null);
     setRejectionReason('');
   };
-
+const router = useRouter();
   const handleConfirmAction = (): void => {
     if (!selectedSession) return;
 
     const newStatus = actionType === 'approve' ? SessionStatus.Confirmed : SessionStatus.Rejected;
     const reason = actionType === 'reject' ? rejectionReason : undefined;
+   const fetchData = async () => {
+        const success = await updateSessionStatus({
+          sessionId: selectedSession?.sessionId ?? '',
+          sessionStatus:newStatus,
+          rejectionReason: reason || ''
+        });
 
-    const success = updateSessionStatus(selectedSession.sessionId, newStatus, reason);
-
-    if (success) {
-      // Refresh sessions
-      const updatedSessions = getSessionRequestsByTutor(currentTutorId);
-      setSessions(updatedSessions);
-
+        console.log("sess",success)
+      if (success) {
+      router.refresh();
       handleCloseActionDialog();
     }
+      };
+      fetchData();
   };
   const handleFilter = (status: string) => {
   const filtered = sessions.filter(session => session.sessionStatus === status);

@@ -1,4 +1,4 @@
 export type Level = {
-    courseDifficultyId : string,
-    courseDifficultyName : string
-}
+  courseDifficultyId: string;
+  courseDifficultyName: string;
+};

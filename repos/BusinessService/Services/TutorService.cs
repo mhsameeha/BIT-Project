@@ -87,12 +87,12 @@ namespace BusinessService.Services
             }
        
                 var sessionIncome = _context.Sessions
-               .Where(x => x.TutorFk == tutor.Id)
+               .Where(x => x.TutorId == tutor.Id)
                .Sum(x => x.SessionFee);
             var oneMonthAgo = DateTime.Now.AddDays(-30);
 
             var monthlySessionIncome = _context.Sessions
-            .Where(x => x.TutorFk == tutor.Id && x.EndTime >= oneMonthAgo && x.SessionStatus == "Completed")
+            .Where(x => x.TutorId == tutor.Id && x.EndTime >= oneMonthAgo && x.SessionStatus == "Completed")
             .Sum(x => x.SessionFee);
             var oneWeekAgo = DateTime.Now.AddDays(-7);
 
@@ -257,8 +257,8 @@ namespace BusinessService.Services
             var result = (from session in _context.Sessions
                           join learner in _context.Learners on session.LearnerFk equals learner.LearnerId
                           join user in _context.Users on learner.UserFk equals user.UserId
-                          join tutor in _context.Tutors on session.TutorFk equals tutor.TutorId
-                          where session.TutorFk == tutors.Id && session.SessionStatus == "Scheduled"
+                          join tutor in _context.Tutors on session.TutorId equals tutor.TutorId
+                          where session.TutorId == tutors.Id && session.SessionStatus == "Scheduled"
                           select new SessionDto
                           {
                             
@@ -272,6 +272,40 @@ namespace BusinessService.Services
                               LearnerName = user.FirstName + " " + user.LastName,
                           }).ToList();
             return result;
+        }
+
+        public TutorDetailsDto GetTutorAccountDetails(string email)
+        {
+            var tutor = (from u in _context.Users
+                          join t in _context.Tutors on u.UserId equals t.UserFk
+                          where u.Email == email
+                          select new
+                          {
+                              Id = t.TutorId
+                          }).FirstOrDefault();
+
+            if (tutor == null)
+            {
+                return null;
+            }
+
+            var tutorDetails = _context.Tutors
+                               .Include(u => u.User).FirstOrDefault(t => t.TutorId == tutor.Id);
+                        
+
+
+
+
+            return new TutorDetailsDto
+            {
+                FirstName = tutorDetails.User.FirstName,
+                LastName = tutorDetails.User.LastName,
+                DOB = tutorDetails.User.Dob,
+                Status = tutorDetails.Status,
+                TutorRate = tutorDetails.TutorRate,
+                TutorProfPic = tutorDetails.TutorProfPic
+            };
+          
         }
     }
 }

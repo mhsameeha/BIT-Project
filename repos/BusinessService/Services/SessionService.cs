@@ -37,8 +37,8 @@ namespace BusinessService.Services
             var result = (from session in _context.Sessions
                           join learner in _context.Learners on session.LearnerFk equals learner.LearnerId
                           join user in _context.Users on learner.UserFk equals user.UserId
-                          join tutor in _context.Tutors on session.TutorFk equals tutor.TutorId
-                          where session.TutorFk == tutors.Id
+                          join tutor in _context.Tutors on session.TutorId equals tutor.TutorId
+                          where session.TutorId == tutors.Id
                           select new SessionByTutorDto
                           {
                               SessionId = session.SessionId,
@@ -59,6 +59,28 @@ namespace BusinessService.Services
 
                           }).ToList();
             return result;
+        }
+
+        public void UpdateSessionStatus(SessionStatusDto sessionStatus, string email)
+        {
+            var tutors = (from u in _context.Users
+                          join t in _context.Tutors on u.UserId equals t.UserFk
+                          where u.Email == email
+                          select new
+                          {
+                              Id = t.TutorId
+                          }).FirstOrDefault();
+
+            if (tutors != null)
+            {
+                var session = _context.Sessions.FirstOrDefault(x => x.SessionId == sessionStatus.SessionId);
+
+                session.SessionStatus = sessionStatus.SessionStatus;
+                session.RejectionReason = sessionStatus.RejectionReason;
+
+                _context.SaveChanges();
+            }
+
         }
     }
 }

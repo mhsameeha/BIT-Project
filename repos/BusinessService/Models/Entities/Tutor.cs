@@ -29,9 +29,9 @@ namespace BusinessService.Models.Entities
         [Column("tutorProfPic")]
         public byte[]? TutorProfPic { get; set; }
         [Column("experience")]
-        public string? Experience { get; set; }
+        public string[]? Experience { get; set; }
         [Column("education")]
-        public string? Education { get; set; }
+        public string[]? Education { get; set; }
         [Column("userFk")]
         public Guid UserFk { get; set; }
         [Column("language")]

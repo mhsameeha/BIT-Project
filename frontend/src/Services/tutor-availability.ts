@@ -3,7 +3,7 @@ import { TutorAvailabilitySettings } from "@/types/tutor-availability";
 
 export async function AddAvailability(availabilityData: TutorAvailabilitySettings): Promise<{ data?: any; error?: string }> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/TutorAvailability/AddAvailability`, {
+    const response = await fetch(`${API_BASE_URL}/TutorAvailability/AddAvailability`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -20,7 +20,7 @@ export async function AddAvailability(availabilityData: TutorAvailabilitySetting
     const result = await response.text();
  console.log('data', result);
 
-    return { data: availabilityData };
+    return { data: result };
   } catch (error) {
     console.error('Add availability error:', error);
     return { error: 'Something went wrong while adding availability' };

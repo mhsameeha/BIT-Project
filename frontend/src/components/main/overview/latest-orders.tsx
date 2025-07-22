@@ -1,4 +1,5 @@
-'use client'
+'use client';
+
 import * as React from 'react';
 import { API_BASE_URL } from '@/config';
 import Box from '@mui/material/Box';
@@ -8,18 +9,19 @@ import CardActions from '@mui/material/CardActions';
 import CardHeader from '@mui/material/CardHeader';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
+import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
 import type { SxProps } from '@mui/material/styles';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Typography from '@mui/material/Typography';
 import { ArrowRight as ArrowRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowRight';
 import dayjs from 'dayjs';
+
 import { Tutors } from '@/types/tutor';
-import Stack from '@mui/material/Stack';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
 
 const statusMap = {
   Pending: { label: 'Pending', color: 'warning' },
@@ -67,84 +69,84 @@ const getAllTutors = async ()  => {
         return [];
     }
 
-  React.useEffect(()   =>   {
+  React.useEffect(() => {
     const fetchData = async () => {
-        const returnValue = await getAllTutors();
-        console.log('returnValue', returnValue);
-        
-            if ('error' in returnValue) {
-      console.error(returnValue.error);
-            const errorMessage = returnValue;
+      const returnValue = await getAllTutors();
+      console.log('returnValue', returnValue);
 
-      // Optionally, handle error UI here
-      return { error: errorMessage || 'Invalid Request' };
-    } 
-    setTutors(returnValue);
-  console.log(returnValue);
-  
-      };
+      if ('error' in returnValue) {
+        console.error(returnValue.error);
+        const errorMessage = returnValue;
 
-      fetchData();
-   
-    //initial load 
-  }, [])
+        // Optionally, handle error UI here
+        return { error: errorMessage || 'Invalid Request' };
+      }
+      setTutors(returnValue);
+      console.log(returnValue);
+    };
 
-const [approve, setApprove] = React.useState(false);
-const [reject, setReject] = React.useState(false);
+    fetchData();
 
+    //initial load
+  }, []);
 
-const handleClick = (request:string) => {
-  if (request == 'approve'){
-    setApprove(true);
-    setReject(false);
-  }
-  else {
-    setReject(true);
-    setApprove(false);
-  }
+  const [approve, setApprove] = React.useState(false);
+  const [reject, setReject] = React.useState(false);
 
-
-}
-   
+  const handleClick = (request: string) => {
+    if (request == 'approve') {
+      setApprove(true);
+      setReject(false);
+    } else {
+      setReject(true);
+      setApprove(false);
+    }
+  };
 
   return (
     <Card sx={sx}>
+      <CardHeader title="Tutor List" />
 
-        <CardHeader title="Tutor List" />
-       
-   
       <Divider />
       <Box sx={{ overflowX: 'auto' }}>
         <Table sx={{ minWidth: 800 }}>
           <TableHead>
             <TableRow>
               <TableCell>Tutor Name</TableCell>
-                
+
               <TableCell>Approval Status</TableCell>
               {/* <TableCell sortDirection="desc">Date</TableCell> */}
               <TableCell>Approval Request</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {tutors.map((tutor:Tutors) => {
+            {tutors.map((tutor: Tutors) => {
               const { label, color } = statusMap[tutor.approvalStatus] ?? { label: 'Unknown', color: 'default' };
 
               return (
                 <TableRow hover key={tutor.tutorid}>
                   <TableCell>{tutor.tutorName}</TableCell>
-                   <TableCell>
-                    
+                  <TableCell>
                     <Chip color={color} label={label} size="small" />
                   </TableCell>
-                 < TableCell>
-             
-                 <Button color='success' onClick={()=> handleClick('approve')} variant={approve ? 'contained':'outlined'} sx={{mr: 2}}>Approve</Button>
-                 <Button color='error'onClick={()=> handleClick('reject')} variant={reject ? 'contained':'outlined'}>Reject</Button>
-
-                 
-                 </TableCell>
+                  <TableCell>
+                    <Button
+                      color="success"
+                      onClick={() => handleClick('approve')}
+                      variant={approve ? 'contained' : 'outlined'}
+                      sx={{ mr: 2 }}
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      color="error"
+                      onClick={() => handleClick('reject')}
+                      variant={reject ? 'contained' : 'outlined'}
+                    >
+                      Reject
+                    </Button>
+                  </TableCell>
                   {/* <TableCell>{dayjs(order.createdAt).format('MMM D, YYYY')}</TableCell> */}
-                 
                 </TableRow>
               );
             })}
@@ -162,7 +164,7 @@ const handleClick = (request:string) => {
           View all
         </Button>
       </CardActions>
-       <Button variant='outlined'>Export to PDF</Button>
+      <Button variant="outlined">Export to PDF</Button>
     </Card>
   );
 }

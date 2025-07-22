@@ -27,25 +27,26 @@ namespace BusinessService.Services
 
 
         //register users to the system
-        public User AddUser(UserDto newUser)
+        public string AddLearner(NewLearnerUserDto newLearner)
 
         {
+            if (newLearner == null) return "Unable to add User";
+
             var user = new User
             {
                 UserId = Guid.NewGuid(),
-                FirstName = newUser.FirstName,
-                LastName = newUser.LastName,
-                Dob = newUser.Dob,
-                Email = newUser.Email,
-                Role = newUser.Role,
-                Password = BCrypt.Net.BCrypt.HashPassword(newUser.Password),
+                FirstName = newLearner.FirstName,
+                LastName = newLearner.LastName,
+                Dob = newLearner.Dob,
+                Email = newLearner.Email,
+                Role = newLearner.Role,
+                Password = BCrypt.Net.BCrypt.HashPassword(newLearner.Password),
                 CreatedDate = DateTime.Now,
 
             };
             _context.Add(user);
             _context.SaveChanges();
-            if (newUser.Role == "Learner")
-            {
+
                 var newlearner = new Learner
                 {
 
@@ -53,26 +54,50 @@ namespace BusinessService.Services
                 };
                 _context.Add(newlearner);
                 _context.SaveChanges();
-            }
-            ;
-            if (newUser.Role == "Tutor")
-            {
-                var newTutor = new Tutor
-                {
 
-                    UserFk = user.UserId,
-                    Status = "Pending"
-                };
-
-                _context.Add(newTutor);
-                _context.SaveChanges();
-            }
-                ;
-
-
-
-            return user;
+            return "added successfully";
         }
+
+        public string AddTutor(NewTutorUserDto newTutor)
+
+        {
+            if (newTutor == null) return "Unable to add User";
+
+            var userId = Guid.NewGuid();
+            var user = new User
+            {
+                UserId = userId,
+                FirstName = newTutor.FirstName,
+                LastName = newTutor.LastName,
+                Dob = newTutor.Dob,
+                Email = newTutor.Email,
+                Role = newTutor.Role,
+                Password = BCrypt.Net.BCrypt.HashPassword(newTutor.Password),
+                CreatedDate = DateTime.Now,
+
+                Tutor = new Tutor
+                {
+                    TutorId = Guid.NewGuid(),
+                    TutorDescription = newTutor.NewTutor.TutorDescription,
+                    TutorRate = newTutor.NewTutor.TutorRate,
+                    ApprovalRequestDate = DateTime.Now,
+                    Education = newTutor.NewTutor.Education,
+                    Experience = newTutor.NewTutor.Education,
+                    Status = "Pending",
+                    UserFk = userId,
+
+
+                }
+
+            };
+            _context.Users.Add(user);
+            _context.Tutors.Add(user.Tutor);
+            _context.SaveChanges();
+
+            return "added successfully";
+        }
+
+
 
         public GetUserProfileDto GetUserProfile(string email)
         {

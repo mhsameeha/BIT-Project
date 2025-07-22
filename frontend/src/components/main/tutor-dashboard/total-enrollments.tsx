@@ -9,7 +9,7 @@ import { ArrowDown as ArrowDownIcon } from '@phosphor-icons/react/dist/ssr/Arrow
 import { ArrowUp as ArrowUpIcon } from '@phosphor-icons/react/dist/ssr/ArrowUp';
 import { Student as UsersIcon } from '@phosphor-icons/react/dist/ssr/Student';
 
-export interface TotalEnrollmentsProps{
+export interface TotalEnrollmentsProps {
   diff?: number;
   trend: 'up' | 'down';
   sx?: SxProps;

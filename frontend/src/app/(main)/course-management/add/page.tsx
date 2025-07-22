@@ -43,7 +43,6 @@ import { Category } from '@/types/category';
 import { getAllCategories, getAllLanguages, getAllLevels } from '@/Services/courses';
 import { Language } from '@/types/language';
 import { useForm } from 'react-hook-form';
-import { API_BASE_URL } from '@/config';
 import { Level } from '@/types/level';
 import dayjs from 'dayjs';
 import { CurrencyRupee } from '@mui/icons-material';
@@ -101,41 +100,9 @@ interface CourseFormData {
   createdDate: Date;
 }
 
-let success = false; 
-async function addCourse(courseData: CourseFormData): Promise<{ data?: any; error?: string }> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/Course/AddCourse`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('custom-auth-token')}`
-      },
-      body: JSON.stringify(courseData),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.log('error', errorData);
-      return { error: errorData.message || 'Failed to add course' };
-    }
-    const result = await response.json();
- console.log('data', result);
-
-    success=true;
-    return { data: result };
-  } catch (error) {
-    console.error('Add course error:', error);
-    return { error: 'Something went wrong while adding the course' };
-  }
-}
-
-
-
 
 export default function AddCoursePage(): React.JSX.Element {
   const router = useRouter();
-
-  
 
   const [formData, setFormData] = React.useState<CourseFormData>({
     title: '',
@@ -1060,3 +1027,7 @@ export default function AddCoursePage(): React.JSX.Element {
     </Container>
   );
 }
+function addCourse(formData: CourseFormData): { error: any; } | PromiseLike<{ error: any; }> {
+  throw new Error('Function not implemented.');
+}
+

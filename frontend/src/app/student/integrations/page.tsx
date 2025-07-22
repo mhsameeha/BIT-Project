@@ -96,7 +96,7 @@ export default function Page(): React.JSX.Element {
           <Grid key={integration.id} lg={4} md={6} xs={12}>
             <IntegrationCard integration={integration} />
           </Grid> */}
-        {/* ))} */}
+      {/* ))} */}
       {/* </Grid> */}
       <Box sx={{ display: 'flex', justifyContent: 'center' }}>
         <Pagination count={3} size="small" />

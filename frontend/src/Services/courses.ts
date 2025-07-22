@@ -11,7 +11,7 @@ import { Speciality } from '@/types/speciality';
 
 export async function getAllCategories(): Promise<Category[] | { error: string }> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/Course/Categories`, { method: 'GET' });
+    const response = await fetch(`${API_BASE_URL}/Course/Categories`, { method: 'GET' });
     if (!response.ok) {
       const errorMessage = await response.text();
       return { error: errorMessage || 'Invalid Request' };
@@ -25,7 +25,7 @@ export async function getAllCategories(): Promise<Category[] | { error: string }
 
 export async function getAllLanguages(): Promise<Language[] | { error: string }> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/Course/Languages`, { method: 'GET' });
+    const response = await fetch(`${API_BASE_URL}/Course/Languages`, { method: 'GET' });
     if (!response.ok) {
       const errorMessage = await response.text();
       return { error: errorMessage || 'Invalid Request' };
@@ -41,7 +41,7 @@ export async function getAllLanguages(): Promise<Language[] | { error: string }>
 
 export async function getAllLevels(): Promise<Level[] | { error: string }> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/Course/Difficulties`, { method: 'GET' });
+    const response = await fetch(`${API_BASE_URL}/Course/Difficulties`, { method: 'GET' });
     if (!response.ok) {
       const errorMessage = await response.text();
       return { error: errorMessage || 'Invalid Request' };
@@ -55,7 +55,7 @@ export async function getAllLevels(): Promise<Level[] | { error: string }> {
 
 export async function getAllCourses(page = 1): Promise<PaginatedCourse | { error: string }> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/Course/GetAllCourses/${page}`, { method: 'GET' });
+    const response = await fetch(`${API_BASE_URL}/Course/GetAllCourses/${page}`, { method: 'GET' });
     if (!response.ok) {
       const errorMessage = await response.text();
       return { error: errorMessage || 'Invalid Request' };
@@ -69,7 +69,7 @@ export async function getAllCourses(page = 1): Promise<PaginatedCourse | { error
 
 export async function getAllSpecialties(): Promise<Speciality[] | { error: string }> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/Speciality/Speciality`, { method: 'GET' });
+    const response = await fetch(`${API_BASE_URL}/Speciality/Speciality`, { method: 'GET' });
     if (!response.ok) {
       const errorMessage = await response.text();
       return { error: errorMessage || 'Invalid Request' };
@@ -94,6 +94,33 @@ export async function getCourseById(courseId: string): Promise<TutorCourse | { e
     return { error: 'Request Error' };
   }
 }
+
+async function addCourse(courseData: CourseFormData): Promise<{ data?: any; error?: string }> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/Course/AddCourse`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('custom-auth-token')}`
+      },
+      body: JSON.stringify(courseData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.log('error', errorData);
+      return { error: errorData.message || 'Failed to add course' };
+    }
+    const result = await response.json();
+ console.log('data', result);
+
+    return { data: result };
+  } catch (error) {
+    console.error('Add course error:', error);
+    return { error: 'Something went wrong while adding the course' };
+  }
+}
+
 
  type UpdateCourseResult = {
   data?: any;
