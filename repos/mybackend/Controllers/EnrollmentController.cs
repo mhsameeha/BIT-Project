@@ -33,6 +33,51 @@ namespace mybackend.Controllers
             return result;
         }
 
+        // POST api/<EnrollmentController>/payment
+        [HttpPost("payment")]
+        public async Task<ActionResult<PaymentResponseDto>> ProcessPayment([FromForm] PaymentRequestDto request)
+        {
+            try
+            {
+                // Convert file to byte array if provided
+                var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+                if (email == null)
+                {
+                    return Unauthorized(new { message = "User is not authenticated." });
+                }
+                byte[]? paymentProof = null;
+                if (request.PaymentProof != null && request.PaymentProof.Length > 0)
+                {
+                    using var memoryStream = new MemoryStream();
+                    await request.PaymentProof.CopyToAsync(memoryStream);
+                    paymentProof = memoryStream.ToArray();
+                }
+
+                var paymentDto = new PaymentDto
+                {
+                    CourseId = request.CourseId,
+                    Amount = request.Amount,
+                    Currency = request.Currency ?? "LKR",
+                    TransactionReference = request.TransactionReference,
+                    PaymentProof = paymentProof,
+                    PaymentType = "BankTransfer"
+                };
+
+                IEnrollementService enrollmentService = new EnrollementService(_context);
+                var result = await enrollmentService.ProcessPaymentAsync(paymentDto, email);
+                
+                return Ok(result);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while processing payment.", details = ex.Message });
+            }
+        }
+
         // POST api/<EnrollmentController>
         [HttpPost]
         public void Post([FromBody] string value)

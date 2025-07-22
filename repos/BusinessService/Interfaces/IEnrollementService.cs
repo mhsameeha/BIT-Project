@@ -10,5 +10,6 @@ namespace BusinessService.Interfaces
     public interface IEnrollementService
     {
         public List<EnrollmentDto> GetEnrolledCourses(Guid learnerid);
+        public Task<PaymentResponseDto> ProcessPaymentAsync(PaymentDto paymentDto, string userEmail);
     }
 }

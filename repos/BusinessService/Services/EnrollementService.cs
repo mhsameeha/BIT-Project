@@ -18,6 +18,7 @@ namespace BusinessService.Services
         {
             _context = context;
         }
+        
         public List<EnrollmentDto> GetEnrolledCourses(Guid learnerid)
         {
             var result = (from enrollement in _context.Enrollments
@@ -25,10 +26,84 @@ namespace BusinessService.Services
                           where enrollement.LearnerFk == learnerid
                           select new EnrollmentDto
                           {
-
                               courseName = course.Title
                           }).ToList();
             return result;
+        }
+
+        public async Task<PaymentResponseDto> ProcessPaymentAsync(PaymentDto paymentDto, string userEmail)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+
+            
+            try
+            {
+                var leanerId = (from u in _context.Users
+                             join t in _context.Learners on u.UserId equals t.UserFk
+                             where u.Email == userEmail
+                             select new
+                             {
+                                 Id = t.LearnerId
+                             }).FirstOrDefault()?.Id;
+
+
+                // Check if the user is already enrolled in this course
+                var existingEnrollment = await _context.Enrollments
+                    .FirstOrDefaultAsync(e => e.CourseId == paymentDto.CourseId && e.LearnerFk == leanerId);
+
+                if (existingEnrollment != null)
+                {
+                    throw new InvalidOperationException("Student is already enrolled in this course.");
+                }
+
+                // Create Payment record
+                var payment = new Payment
+                {
+                    PaymentId = Guid.NewGuid(),
+                    PaymentType = paymentDto.PaymentType,
+                    LearnerFk = leanerId,
+                    Amount = paymentDto.Amount,
+                    Currency = paymentDto.Currency,
+                    PaymentStatus = "Pending", // Will be updated when admin verifies
+                    PaymentDate = DateTime.UtcNow,
+                    GatewayRef = paymentDto.TransactionReference,
+                    CourseFk = paymentDto.CourseId,
+                    PaymentProof = paymentDto.PaymentProof
+                };
+
+                _context.Payments.Add(payment);
+
+                // Create Enrollment record
+                var enrollment = new Enrollment
+                {
+                    EnrollmentId = Guid.NewGuid(),
+                    CourseId = paymentDto.CourseId,
+                    LearnerFk = leanerId,
+                    IsPaid = false, // Will be updated when payment is verified
+                    EnrolledDate = DateTime.UtcNow,
+                    EnrollmentStatus = "Pending Verification"
+                };
+
+                _context.Enrollments.Add(enrollment);
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return new PaymentResponseDto
+                {
+                    PaymentId = payment.PaymentId,
+                    EnrollmentId = enrollment.EnrollmentId,
+                    PaymentStatus = payment.PaymentStatus ?? "Pending",
+                    PaymentDate = payment.PaymentDate ?? DateTime.UtcNow,
+                    Message = "Payment submitted successfully. Your enrollment will be processed once payment is verified."
+                };
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
     }
 }

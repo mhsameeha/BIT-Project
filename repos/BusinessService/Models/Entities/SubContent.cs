@@ -19,12 +19,12 @@ namespace BusinessService.Models.Entities
 
         [Column("subContentDescription")]
         public string? SubContentDescription { get; set; }
-        //[ForeignKey("CourseContents")]
-        [Column("contentFk")]
-        public Guid? ContentId { get; set; }
 
-        [ForeignKey("ContentId")]  // Points to the property above
-        public virtual CourseContent? CourseContent { get; set; }
+        [ForeignKey("CourseContent")]
+        [Column("contentFk")]
+        public Guid? ContentFk { get; set; }
+
+        public CourseContent? CourseContent { get; set; }
 
         [Column("type")]
         public string? Type { get; set; }
@@ -36,10 +36,6 @@ namespace BusinessService.Models.Entities
         public byte[]? DocumentFile { get; set; }
         [Column ("subContentOrder")]
         public int? SubContentOrder {  get; set; }
-
-        // If there's a relationship to CourseContent:
-        //[ForeignKey("CourseContentFk")]
-        //public virtual CourseContent? CourseContent { get; set; }
 
     }
 

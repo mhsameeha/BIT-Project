@@ -103,3 +103,72 @@ export interface TutorCourse {
   currency: string;
   courseContent: CourseContent[]; // Optional course content
 }
+
+// Course details response from API
+export interface CourseDetailsResponse {
+  courseId: string;
+  title: string;
+  description: string;
+  introduction: string;
+  price: number;
+  currency: string;
+  isEnabled: boolean;
+  courseImage: Uint8Array | null;
+  tags: string[];
+  createdDate: string;
+  updatedDate: string;
+
+  // Related entity data
+  categoryName: string;
+  courseDifficultyName: string;
+  languageName: string;
+
+  // Tutor information
+  tutorFirstName: string;
+  tutorLastName: string;
+  tutorEmail: string;
+  tutorProfPic: string | null;
+  tutorDescription: string;
+  tutorExperience: string;
+  tutorEducation: string;
+  tutorFk: string | null; 
+
+  // Course statistics
+  enrolledStudents: number;
+  averageRating: number;
+  reviewCount: number;
+
+  // Course content
+  courseContent: CourseDetailsContent[];
+
+  // Course reviews
+  reviews: CourseReview[];
+}
+
+export interface CourseDetailsContent {
+  contentId: string;
+  contentTitle: string;
+  contentDescription: string;
+  contentDuration: string;
+  contentSortOrder: number;
+  subContent: CourseDetailsSubContent[];
+}
+
+export interface CourseDetailsSubContent {
+  subContentId: string;
+  subContentTitle: string;
+  subContentDescription: string;
+  type: string;
+  subContentOrder: number;
+}
+
+export interface CourseReview {
+  courseReviewId: string;
+  review: string;
+  rating: number;
+  reviewDate: string;
+  learnerFirstName: string;
+  learnerLastName: string;
+  learnerEmail: string;
+  learnerProfilePic: string | null;
+}

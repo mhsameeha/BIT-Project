@@ -14,7 +14,7 @@ import { Clock as ClockIcon } from '@phosphor-icons/react/dist/ssr/Clock';
 import { BookOpen as BookOpenIcon } from '@phosphor-icons/react/dist/ssr/BookOpen';
 import { Student as StudentIcon } from '@phosphor-icons/react/dist/ssr/Student';
 import { useRouter } from 'next/navigation';
-import { Course } from '@/types/course';
+import type { Course } from '@/types/course';
 
 
 
@@ -28,17 +28,6 @@ export function CourseListItem({ course }: CourseListItemProps): React.JSX.Eleme
 
   const handleViewCourse = (): void => {
     router.push(`/courses/${course.courseId}`);
-  };
-
-
-
-  const formatDuration = (minutes: number): string => {
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    if (hours > 0) {
-      return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
-    }
-    return `${remainingMinutes}m`;
   };
 
   return (
@@ -87,14 +76,14 @@ export function CourseListItem({ course }: CourseListItemProps): React.JSX.Eleme
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <ClockIcon size={16} />
                       <Typography color="text.secondary" variant="body2">
-                        {course.duration} total
+                        {course.totalDuration} total
                       </Typography>
                     </Box>
                     
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <BookOpenIcon size={16} />
                       <Typography color="text.secondary" variant="body2">
-                        {course.sections} sections
+                        {course.totalLessons} lessons
                       </Typography>
                     </Box>
                   </Box>
@@ -119,7 +108,7 @@ export function CourseListItem({ course }: CourseListItemProps): React.JSX.Eleme
               <Box sx={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
                 <Box>
                   <Chip 
-                    label={course.courseDifficulty} 
+                    label={course.courseDifficultyName} 
                     size="small" 
                     color="primary"
                     variant="outlined"
@@ -137,29 +126,29 @@ export function CourseListItem({ course }: CourseListItemProps): React.JSX.Eleme
                 
                 <Box>
                   <Typography color="text.secondary" variant="body2">
-                    Last updated: {(course.updatedDate?.toLocaleString())}
+                    Last updated: {course.updatedDate?.toLocaleString()}
                   </Typography>
                 </Box>
               </Box>
               
               {/* Course Preview - First few curriculum items */}
-              {course.sections > 0 && (
+              {Boolean(course.contents && course.contents.length > 0) && (
                 <Box>
                   <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
                     What you&apos;ll learn:
                   </Typography>
-                  {/* <Box sx={{ pl: 2 }}>
-                    {course.sections[0].lessons.slice(0, 3).map((lesson) => (
-                      <Typography key={lesson.id} color="text.secondary" variant="body2" sx={{ mb: 0.5 }}>
-                        • {lesson.title}
+                  <Box sx={{ pl: 2 }}>
+                    {course.contents!.slice(0, 3).map((content, index) => (
+                      <Typography key={content.contentId || index} color="text.secondary" variant="body2" sx={{ mb: 0.5 }}>
+                        • {content.contentTitle}
                       </Typography>
                     ))}
-                    {course.curriculum[0].lessons.length > 3 && (
+                    {course.contents!.length > 3 && (
                       <Typography color="primary" variant="body2" sx={{ fontWeight: 500 }}>
-                        +{course.curriculum[0].lessons.length - 3} more lessons...
+                        +{course.contents!.length - 3} more topics...
                       </Typography>
                     )}
-                  </Box> */}
+                  </Box>
                 </Box>
               )}
             </Stack>

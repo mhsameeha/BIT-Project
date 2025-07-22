@@ -64,14 +64,26 @@ namespace mybackend.Controllers
         }
 
         [HttpGet ("CourseById/{courseId}")]
-
         public IActionResult GetCourseById(Guid courseId)
-
         {
             var email = "prof.chen@educonnect.com";
             ICourseService courseService = new CourseService(_context);
             var course = courseService.GetCoursebyId(courseId);
             return Ok(course);
+        }
+
+        [HttpGet("CourseDetails/{courseId}")]
+        public async Task<IActionResult> GetCourseDetails(Guid courseId)
+        {
+            ICourseService courseService = new CourseService(_context);
+            var courseDetails = await courseService.GetCourseDetailsByIdAsync(courseId);
+            
+            if (courseDetails == null)
+            {
+                return NotFound(new { message = "Course not found" });
+            }
+            
+            return Ok(courseDetails);
         }
 
         [HttpPut("UpdateCourse/{courseId}")]

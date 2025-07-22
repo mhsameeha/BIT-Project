@@ -102,7 +102,7 @@ namespace BusinessService.Services
             {
                 new Claim (ClaimTypes.Email, currentUser.Email),
 
-                new Claim (ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim (ClaimTypes.NameIdentifier, user.UserId.ToString()),  
 
                 new Claim(ClaimTypes.Name, user.FirstName + " " + user.LastName),
 

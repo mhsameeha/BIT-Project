@@ -30,10 +30,8 @@ namespace BusinessService.Models.Entities
         public DateTime? CreatedDate { get; set; }
         [Column("updatedDate")]
         public DateTime? UpdatedDate { get; set; }
-        [Column("subContent")]
+
         public ICollection<SubContent> SubContent { get; set; } = new List<SubContent>();
-
-
 
     }
 }

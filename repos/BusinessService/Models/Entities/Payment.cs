@@ -32,7 +32,9 @@ namespace BusinessService.Models.Entities
             public string? GatewayRef { get; set; }
             [Column("courseFk")]
             public Guid? CourseFk { get; set; }
+            [Column("paymentProof")]
+            public byte[]? PaymentProof { get; set; }
 
-       
+
     }
 }
