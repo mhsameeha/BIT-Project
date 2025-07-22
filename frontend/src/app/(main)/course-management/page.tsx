@@ -39,11 +39,10 @@ import {
 } from '@phosphor-icons/react/dist/ssr';
 import dayjs from 'dayjs';
 
-import {
-  getCoursesByTutor,
-  deleteCourse,
-} from '../../../constants/courses';
-import type { TutorCourse } from '../../../types/course';
+
+import type { Course, PaginatedCourse, TutorCourse } from '../../../types/course';
+import { getCoursesByTutor } from '@/Services/tutor';
+import { deleteCourse } from '@/Services/courses';
 
 interface CourseCardProps {
   course: TutorCourse;
@@ -61,7 +60,7 @@ function CourseCard({ course, onEdit, onDelete, onViewDetails, onNavigateToDetai
           {/* Course Image */}
           <Grid item xs={12} sm="auto">
             <Avatar
-              src={course.logo}
+              src={course.courseImage}
               sx={{ width: 80, height: 80, bgcolor: 'primary.main' }}
             >
               <Books size={32} />
@@ -87,7 +86,7 @@ function CourseCard({ course, onEdit, onDelete, onViewDetails, onNavigateToDetai
                   {course.title}
                 </Typography>
                 <Chip
-                  label={course.isEnabled ? 'Enabled' : 'Disabled'}
+                  label={course.isEnabled ? 'Disabled' : 'Enabled'}
                   color={course.isEnabled ? 'success' : 'default'}
                   size="small"
                   variant="outlined"
@@ -95,7 +94,7 @@ function CourseCard({ course, onEdit, onDelete, onViewDetails, onNavigateToDetai
               </Box>
               
               <Typography variant="body2" color="text.secondary">
-                {course.category} • {course.level}
+                {course.categoryName} • {course.courseDifficultyName}
               </Typography>
               
               <Typography variant="body2" color="text.secondary" sx={{ 
@@ -144,7 +143,7 @@ function CourseCard({ course, onEdit, onDelete, onViewDetails, onNavigateToDetai
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <CurrencyDollar size={16} color="#666" />
                     <Typography variant="body2" color="text.secondary" fontWeight="medium">
-                      {course.currency} {course.fee}
+                      {course.currency} {course.price}
                     </Typography>
                   </Box>
                 </Grid>
@@ -152,7 +151,7 @@ function CourseCard({ course, onEdit, onDelete, onViewDetails, onNavigateToDetai
 
               {/* Last Updated */}
               <Typography variant="caption" color="text.secondary">
-                Last updated: {dayjs(course.updatedAt).format('MMM DD, YYYY')}
+                Last updated: {dayjs(course.updatedDate).format('MMM DD, YYYY')}
               </Typography>
             </Stack>
           </Grid>
@@ -193,12 +192,23 @@ export default function CourseManagementPage(): React.JSX.Element {
   const [viewDialogOpen, setViewDialogOpen] = React.useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [courseToDelete, setCourseToDelete] = React.useState<TutorCourse | null>(null);
-
+  const [page, setPage] = React.useState(1);
+  const pageSize = 10;
+  const [paginatedCourses, setPaginatedCourses] = React.useState<PaginatedCourse>();
   React.useEffect(() => {
     // Load courses for current tutor
-    const tutorCourses = getCoursesByTutor(currentTutorId);
-    setCourses(tutorCourses);
-  }, [currentTutorId]);
+       const fetchData = async () => {
+        const returnValue = await getCoursesByTutor(page);
+        if ('error' in returnValue) {
+          // Optionally, handle error UI here
+          return;
+        }
+        setPaginatedCourses(returnValue);
+        console.log('tutorc', returnValue);
+        setCourses(returnValue.courses);
+      };
+       fetchData();
+  }, []);
 
   const handleAddCourse = (): void => {
     // Navigate to add course page
@@ -207,13 +217,14 @@ export default function CourseManagementPage(): React.JSX.Element {
 
   const handleNavigateToDetails = (course: TutorCourse): void => {
     // Navigate to course details page
-    router.push(`/course-management/${course.id}`);
+    router.push(`/course-management/${course.courseId}`);
   };
 
   const handleEditCourse = (course: TutorCourse): void => {
     // TODO: Navigate to edit course page or open edit course dialog
     // eslint-disable-next-line no-console -- Temporary placeholder for development
-    console.log('Edit course:', course.id);
+    console.log('Edit course:', course.courseId);
+     router.push(`/course-management/${course.courseId}/edit`);
   };
 
   const handleDeleteCourse = (course: TutorCourse): void => {
@@ -221,15 +232,24 @@ export default function CourseManagementPage(): React.JSX.Element {
     setDeleteDialogOpen(true);
   };
 
-  const handleConfirmDelete = (): void => {
+  const handleConfirmDelete = async () => {
     if (courseToDelete) {
-      const success = deleteCourse(courseToDelete.id);
+      //deletecourse request
+      const success = await deleteCourse(courseToDelete.courseId);
       if (success) {
         // Refresh courses
-        const updatedCourses = getCoursesByTutor(currentTutorId);
-        setCourses(updatedCourses);
+        const fetchData = async () => {
+        const returnValue = await getCoursesByTutor(page);
+        if ('error' in returnValue) {
+          // Optionally, handle error UI here
+          return;
+        }
+        setPaginatedCourses(returnValue);
+        console.log('tutorc', returnValue);
+      };
         setDeleteDialogOpen(false);
         setCourseToDelete(null);
+       fetchData();
       }
     }
   };
@@ -249,20 +269,22 @@ export default function CourseManagementPage(): React.JSX.Element {
     setCourseToDelete(null);
   };
 
-  const enabledCourses = courses.filter(course => course.isEnabled);
+  const enabledCourses = courses.filter(course => !course.isEnabled);
   const totalStudents = courses.reduce((sum, course) => sum + course.enrolledStudents, 0);
   const averageRating = courses.length > 0 
     ? courses.reduce((sum, course) => sum + course.rating, 0) / courses.length 
     : 0;
 
   // Filter courses based on search query
-  const filteredCourses = courses.filter(course =>
-    course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    course.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    course.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    course.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredCourses = paginatedCourses?.courses.filter(course =>
+    (course.title?.toLowerCase()|| '').includes(searchQuery.toLowerCase()) ||
+    (course.description?.toLowerCase()|| '').includes(searchQuery.toLowerCase()) ||
+    (course.categoryName.toLowerCase()|| '').includes(searchQuery.toLowerCase()) ||
+    course.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
   );
-
+  
+  const totalPages = Math.max(1, Math.ceil((paginatedCourses?.totalItems ?? 0) / pageSize));
+const currentPage = Math.min(page, totalPages);
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
       <Stack spacing={3}>
@@ -363,59 +385,80 @@ export default function CourseManagementPage(): React.JSX.Element {
             />
           </Box>
           
-          {filteredCourses.length > 0 ? (
-            <Stack spacing={0}>
-              {filteredCourses.map((course) => (
-                <CourseCard
-                  key={course.id}
-                  course={course}
-                  onEdit={handleEditCourse}
-                  onDelete={handleDeleteCourse}
-                  onViewDetails={handleViewDetails}
-                  onNavigateToDetails={handleNavigateToDetails}
-                />
-              ))}
-            </Stack>
-          ) : searchQuery ? (
-            <Card>
-              <CardContent sx={{ textAlign: 'center', py: 8 }}>
-                <MagnifyingGlass size={64} style={{ color: '#ccc', marginBottom: 16 }} />
-                <Typography variant="h6" gutterBottom>
-                  No courses found
-                </Typography>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  No courses match your search criteria &ldquo;{searchQuery}&rdquo;
-                </Typography>
-                <Button
-                  variant="outlined"
-                  onClick={() => { setSearchQuery(''); }}
-                  sx={{ mt: 2 }}
-                >
-                  Clear Search
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card>
-              <CardContent sx={{ textAlign: 'center', py: 8 }}>
-                <Books size={64} style={{ color: '#ccc', marginBottom: 16 }} />
-                <Typography variant="h6" gutterBottom>
-                  No courses yet
-                </Typography>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Create your first course to start teaching students
-                </Typography>
-                <Button
-                  variant="contained"
-                  startIcon={<Plus size={20} />}
-                  onClick={handleAddCourse}
-                  sx={{ mt: 2 }}
-                >
-                  Create First Course
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+{paginatedCourses?.courses && paginatedCourses.courses.length > 0 ? (
+
+  <Stack spacing={0}>
+    {filteredCourses?.map((course:TutorCourse) => (
+      
+      <CourseCard
+        key={course.courseId}
+        course={course}
+        onEdit={handleEditCourse}
+        onDelete={handleDeleteCourse}
+        onViewDetails={handleViewDetails}
+        onNavigateToDetails={handleNavigateToDetails}
+      />
+    ))}
+  </Stack>
+) : searchQuery ? (
+  <Card>
+    <CardContent sx={{ textAlign: 'center', py: 8 }}>
+      <MagnifyingGlass size={64} style={{ color: '#ccc', marginBottom: 16 }} />
+      <Typography variant="h6" gutterBottom>
+        No courses found
+      </Typography>
+      <Typography variant="body2" color="text.secondary" gutterBottom>
+        No courses match your search criteria &ldquo;{searchQuery}&rdquo;
+      </Typography>
+      <Button
+        variant="outlined"
+        onClick={() => setSearchQuery('')}
+        sx={{ mt: 2 }}
+      >
+        Clear Search
+      </Button>
+    </CardContent>
+  </Card>
+) : (
+  <Card>
+    <CardContent sx={{ textAlign: 'center', py: 8 }}>
+      <Books size={64} style={{ color: '#ccc', marginBottom: 16 }} />
+      <Typography variant="h6" gutterBottom>
+        No courses yet
+      </Typography>
+      <Typography variant="body2" color="text.secondary" gutterBottom>
+        Create your first course to start teaching students
+      </Typography>
+      <Button
+        variant="contained"
+        startIcon={<Plus size={20} />}
+        onClick={handleAddCourse}
+        sx={{ mt: 2 }}
+      >
+        Create First Course
+      </Button>
+    </CardContent>
+  </Card>
+)}
+
+{/* Pagination controls - fixed logic */}
+<Box sx={{ display: 'flex', alignItems: 'center', mt: 2, gap: 2, justifyContent: 'end' }}>
+  <Typography variant="body2">
+    Page {currentPage} of {totalPages}
+  </Typography>
+  <Button
+    onClick={() => setPage(prev => Math.max(0, prev - 1))}
+    disabled={currentPage === 1}
+  >
+    Previous
+  </Button>
+  <Button
+    onClick={() => setPage(prev => prev + 1)}
+    disabled={currentPage >= totalPages}
+  >
+    Next
+  </Button>
+</Box>
         </Box>
 
         {/* View Course Details Dialog */}
@@ -432,7 +475,7 @@ export default function CourseManagementPage(): React.JSX.Element {
                 {/* Course Header */}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <Avatar
-                    src={selectedCourse.logo}
+                    src={selectedCourse.categoryName}
                     sx={{ width: 80, height: 80, bgcolor: 'primary.main' }}
                   >
                     <Books size={32} />
@@ -442,7 +485,7 @@ export default function CourseManagementPage(): React.JSX.Element {
                       {selectedCourse.title}
                     </Typography>
                     <Typography variant="subtitle1" color="text.secondary">
-                      {selectedCourse.category} • {selectedCourse.level}
+                      {selectedCourse.categoryName} • {selectedCourse.courseDifficultyName}
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
                       <Rating value={selectedCourse.rating} readOnly size="small" precision={0.1} />
@@ -503,7 +546,7 @@ export default function CourseManagementPage(): React.JSX.Element {
                   <Grid item xs={6} sm={3}>
                     <Box sx={{ textAlign: 'center' }}>
                       <Typography variant="h6" color="success.main">
-                        {selectedCourse.currency} {selectedCourse.fee}
+                        {selectedCourse.currency} {selectedCourse.price}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         Price
@@ -515,12 +558,12 @@ export default function CourseManagementPage(): React.JSX.Element {
                 {/* Tags */}
                 <Box>
                   <Typography variant="h6" gutterBottom>
-                    Tags
+                    Tags:
                   </Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                    {selectedCourse.tags.map((tag) => (
+                    {selectedCourse.tags?.map((tag:string, index) => (
                       <Chip
-                        key={tag}
+                        key={index}
                         label={tag}
                         size="small"
                         variant="outlined"
@@ -536,7 +579,7 @@ export default function CourseManagementPage(): React.JSX.Element {
                       Created:
                     </Typography>
                     <Typography variant="body1">
-                      {dayjs(selectedCourse.createdAt).format('MMMM DD, YYYY')}
+                      {dayjs(selectedCourse.createdDate).format('MMMM DD, YYYY')}
                     </Typography>
                   </Grid>
                   <Grid item xs={6}>
@@ -544,7 +587,7 @@ export default function CourseManagementPage(): React.JSX.Element {
                       Last Updated:
                     </Typography>
                     <Typography variant="body1">
-                      {dayjs(selectedCourse.updatedAt).format('MMMM DD, YYYY')}
+                      {dayjs(selectedCourse.updatedDate).format('MMMM DD, YYYY')}
                     </Typography>
                   </Grid>
                 </Grid>

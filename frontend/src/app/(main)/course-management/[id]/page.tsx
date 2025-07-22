@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import {
   Avatar,
   Box,
@@ -10,46 +10,110 @@ import {
   CardContent,
   Chip,
   Container,
+  Divider,
   Grid,
   IconButton,
   Rating,
   Stack,
   Typography,
-  Divider,
 } from '@mui/material';
 import {
   ArrowLeft,
   Books,
+  Clock,
+  CurrencyDollar,
+  FilePdf,
   PencilSimple,
+  Star,
+  Student,
   Trash,
   Users,
-  Clock,
-  Student,
-  CurrencyDollar,
   VideoCamera,
-  FilePdf,
-  Star,
 } from '@phosphor-icons/react/dist/ssr';
 import dayjs from 'dayjs';
 
-import { getCourseById } from '../../../../constants/courses';
-import type { TutorCourse } from '../../../../types/course';
+
+import type { TutorCourse,CourseContent, SubContent } from '../../../../types/course';
+import { getCourseById } from '@/Services/courses';
+
 
 export default function CourseDetailsPage(): React.JSX.Element {
   const router = useRouter();
   const params = useParams();
   const courseId = params.id as string;
-  
-  const [course, setCourse] = React.useState<TutorCourse | null>(null);
+
+  const [course, setCourse] = React.useState<TutorCourse>();
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    if (courseId) {
+    
       // Load course details
-      const courseData = getCourseById(courseId);
-      setCourse(courseData || null);
-      setLoading(false);
+const fetchData = async () => {
+  if (courseId) {
+    const returnValue = await getCourseById(courseId);
+    if ('error' in returnValue) {
+      // Handle error
+      return;
     }
+        if ( returnValue) {
+    const incomingContents = returnValue.courseContent || [];
+    
+    const mappedContents: CourseContent[] = incomingContents.map((content, index) => {
+      const mappedSubContents: SubContent[] = (content.subContent || []).map((sub, subIndex) => ({
+        subContentId: sub.subContentId ?? `sub-temp-${subIndex}`,
+        subContentTitle: sub.subContentTitle ?? '',
+        subContentDescription: sub.subContentDescription ?? '',
+        type: sub.type ?? '',
+        videoFile: sub.videoFile ?? null,
+        documentFile: sub.documentFile ?? null,
+        subContentOrder: sub.subContentOrder,
+      }));
+    
+      return {
+        contentId: content.contentId ?? `temp-${index}`,
+        contentTitle: content.contentTitle ?? '',
+        contentDuration: content.contentDuration ?? 0,
+        contentDescription: content.contentDescription ?? '',
+        contentSortOrder: content.contentSortOrder ?? 0,
+        subContent: mappedSubContents
+      };
+    });
+    
+          setCourse({
+            courseId:courseId,
+            title: returnValue.title,
+            description: returnValue.description,
+            introduction: returnValue.introduction || '',
+            categoryName: returnValue.categoryName,
+            categoryFk: returnValue.categoryFk,
+            courseDifficultyName: returnValue.courseDifficultyName,
+            courseDifficultyFk: returnValue.courseDifficultyFk,
+            price: returnValue.price,
+            currency: returnValue.currency,
+            isEnabled: returnValue.isEnabled,
+            tags: returnValue.tags,
+            languageFk: returnValue.languageFk,
+            courseContent: mappedContents,
+            courseImage: returnValue.courseImage,
+            updatedDate: returnValue.updatedDate,
+            createdDate:returnValue.createdDate,
+            totalDuration:returnValue.totalDuration,
+            totalLessons:returnValue.totalLessons,
+            enrolledStudents:returnValue.enrolledStudents,
+            languages:returnValue.languages,
+            rating:returnValue.rating,
+            reviewCount:returnValue.reviewCount,
+            tutorId:returnValue.tutorId,
+            tutorName:returnValue.tutorName,
+      
+          });
+        }
+        setLoading(false);
+  }
+};
+
+  fetchData();
+    
   }, [courseId]);
 
   const handleBack = (): void => {
@@ -58,10 +122,9 @@ export default function CourseDetailsPage(): React.JSX.Element {
 
   const handleEdit = (): void => {
     if (course) {
-      router.push(`/course-management/${course.id}/edit`);
+      router.push(`/course-management/${course.courseId}/edit`);
     }
   };
-
 
   if (loading) {
     return (
@@ -78,11 +141,7 @@ export default function CourseDetailsPage(): React.JSX.Element {
           <Typography variant="h5" color="error">
             Course not found
           </Typography>
-          <Button
-            variant="outlined"
-            startIcon={<ArrowLeft size={20} />}
-            onClick={handleBack}
-          >
+          <Button variant="outlined" startIcon={<ArrowLeft size={20} />} onClick={handleBack}>
             Back to Course Management
           </Button>
         </Stack>
@@ -91,7 +150,7 @@ export default function CourseDetailsPage(): React.JSX.Element {
   }
 
   // Use actual course content or fallback to empty array
-  const courseContent = course.contents || [];
+  const courseContent = course.courseContent || [];
 
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
@@ -110,18 +169,10 @@ export default function CourseDetailsPage(): React.JSX.Element {
             </Typography>
           </Box>
           <Stack direction="row" spacing={2}>
-            <Button
-              variant="outlined"
-              startIcon={<PencilSimple size={20} />}
-              onClick={handleEdit}
-            >
+            <Button variant="outlined" startIcon={<PencilSimple size={20} />} onClick={handleEdit}>
               Edit Course
             </Button>
-            <Button
-              variant="outlined"
-              color="error"
-              startIcon={<Trash size={20} />}
-            >
+            <Button variant="outlined" color="error" startIcon={<Trash size={20} />}>
               Delete Course
             </Button>
           </Stack>
@@ -134,10 +185,7 @@ export default function CourseDetailsPage(): React.JSX.Element {
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 3 }}>
-                  <Avatar
-                    src={course.logo}
-                    sx={{ width: 100, height: 100, bgcolor: 'primary.main' }}
-                  >
+                  <Avatar src={course.courseImage} sx={{ width: 100, height: 100, bgcolor: 'primary.main' }}>
                     <Books size={48} />
                   </Avatar>
                   <Box sx={{ flexGrow: 1 }}>
@@ -152,7 +200,7 @@ export default function CourseDetailsPage(): React.JSX.Element {
                       />
                     </Box>
                     <Typography variant="h6" color="text.secondary" gutterBottom>
-                      {course.category} • {course.level}
+                      {course.categoryName} • {course.courseDifficultyName}
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Rating value={course.rating} readOnly size="small" precision={0.1} />
@@ -209,7 +257,7 @@ export default function CourseDetailsPage(): React.JSX.Element {
                     <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
                       <CurrencyDollar size={24} color="#2e7d32" style={{ marginBottom: 8 }} />
                       <Typography variant="h6" color="success.main">
-                        {course.currency} {course.fee.toLocaleString()}
+                        {course.currency} {course.price.toLocaleString()}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         Fee
@@ -229,70 +277,61 @@ export default function CourseDetailsPage(): React.JSX.Element {
                 <Stack spacing={2}>
                   {courseContent.length > 0 ? (
                     courseContent.map((content, index) => (
-                    <Card key={content.id} variant="outlined">
-                      <CardContent>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                          <Typography variant="subtitle1" fontWeight="medium" color="primary">
-                            {index + 1}. {content.title}
-                          </Typography>
-                          <Chip
-                            label={content.duration}
-                            size="small"
-                            variant="outlined"
-                            icon={<Clock size={14} />}
-                          />
-                        </Box>
-                        <Typography variant="body2" color="text.secondary" paragraph>
-                          {content.description}
-                        </Typography>
-
-                        {/* Sub-Contents */}
-                        {content.subContents.length > 0 && (
-                          <Box>
-                            <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
-                              Materials:
+                      <Card key={content.contentId} variant="outlined">
+                        <CardContent>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                            <Typography variant="subtitle1" fontWeight="medium" color="primary">
+                              {index + 1}. {content.contentTitle}
                             </Typography>
-                            <Stack spacing={1}>
-                              {content.subContents.map((subContent) => (
-                                <Box
-                                  key={subContent.id}
-                                  sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 2,
-                                    p: 1.5,
-                                    bgcolor: 'grey.50',
-                                    borderRadius: 1,
-                                  }}
-                                >
-                                  {subContent.type === 'video' && (
-                                    <VideoCamera size={20} color="#1976d2" />
-                                  )}
-                                  {subContent.type === 'document' && (
-                                    <FilePdf size={20} color="#d32f2f" />
-                                  )}
-                                  {subContent.type === 'both' && (
-                                    <Box sx={{ display: 'flex', gap: 0.5 }}>
-                                      <VideoCamera size={16} color="#1976d2" />
-                                      <FilePdf size={16} color="#d32f2f" />
-                                    </Box>
-                                  )}
-                                  <Box>
-                                    <Typography variant="body2" fontWeight="medium">
-                                      {subContent.title}
-                                    </Typography>
-                                    <Typography variant="caption" color="text.secondary">
-                                      {subContent.description}
-                                    </Typography>
-                                  </Box>
-                                </Box>
-                              ))}
-                            </Stack>
+                            <Chip label={content.contentDuration} size="small" variant="outlined" icon={<Clock size={14} />} />
                           </Box>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))
+                          <Typography variant="body2" color="text.secondary" paragraph>
+                            {content.contentDescription}
+                          </Typography>
+
+                          {/* Sub-Contents */}
+                          {content.subContent.length > 0 && (
+                            <Box>
+                              <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
+                                Materials:
+                              </Typography>
+                              <Stack spacing={1}>
+                                {content.subContent.map((subContent:SubContent) => (
+                                  <Box
+                                    key={subContent.subContentId}
+                                    sx={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: 2,
+                                      p: 1.5,
+                                      bgcolor: 'grey.50',
+                                      borderRadius: 1,
+                                    }}
+                                  >
+                                    {subContent.type === 'video' && <VideoCamera size={20} color="#1976d2" />}
+                                    {subContent.type === 'document' && <FilePdf size={20} color="#d32f2f" />}
+                                    {subContent.type === 'both' && (
+                                      <Box sx={{ display: 'flex', gap: 0.5 }}>
+                                        <VideoCamera size={16} color="#1976d2" />
+                                        <FilePdf size={16} color="#d32f2f" />
+                                      </Box>
+                                    )}
+                                    <Box>
+                                      <Typography variant="body2" fontWeight="medium">
+                                        {subContent.subContentTitle}
+                                      </Typography>
+                                      <Typography variant="caption" color="text.secondary">
+                                        {subContent.subContentDescription}
+                                      </Typography>
+                                    </Box>
+                                  </Box>
+                                ))}
+                              </Stack>
+                            </Box>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))
                   ) : (
                     <Box sx={{ textAlign: 'center', py: 4 }}>
                       <Typography variant="body2" color="text.secondary">
@@ -319,53 +358,39 @@ export default function CourseDetailsPage(): React.JSX.Element {
                       Languages:
                     </Typography>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
-                      {course.languages.map((language) => (
-                        <Chip
-                          key={language}
-                          label={language}
-                          size="small"
-                          variant="outlined"
-                        />
-                      ))}
+                      {/* {course.language.map((language) => ( */}
+                        <Chip key={course.languageFk} label={course.languages} size="small" variant="outlined" />
+                      {/* ))} */}
                     </Box>
                   </Box>
-                  
+
                   <Divider />
-                  
+
                   <Box>
                     <Typography variant="body2" color="text.secondary">
                       Tags:
                     </Typography>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
-                      {course.tags.map((tag) => (
-                        <Chip
-                          key={tag}
-                          label={tag}
-                          size="small"
-                          variant="outlined"
-                        />
-                      ))}
+                       {course.tags.map((tag:string, idx) => ( 
+                        <Chip key={idx} label={tag} size="small" variant="outlined" />
+                      ))} 
                     </Box>
                   </Box>
-                  
+
                   <Divider />
-                  
+
                   <Box>
                     <Typography variant="body2" color="text.secondary">
                       Created:
                     </Typography>
-                    <Typography variant="body1">
-                      {dayjs(course.createdAt).format('MMMM DD, YYYY')}
-                    </Typography>
+                    <Typography variant="body1">{dayjs(course.createdDate).format('MMMM DD, YYYY')}</Typography>
                   </Box>
-                  
+
                   <Box>
                     <Typography variant="body2" color="text.secondary">
                       Last Updated:
                     </Typography>
-                    <Typography variant="body1">
-                      {dayjs(course.updatedAt).format('MMMM DD, YYYY')}
-                    </Typography>
+                    <Typography variant="body1">{dayjs(course.updatedDate).format('MMMM DD, YYYY')}</Typography>
                   </Box>
                 </Stack>
               </CardContent>
@@ -378,21 +403,12 @@ export default function CourseDetailsPage(): React.JSX.Element {
                   Quick Actions
                 </Typography>
                 <Stack spacing={1}>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    startIcon={<Users size={16} />}
-                  >
+                  <Button fullWidth variant="outlined" startIcon={<Users size={16} />}>
                     View Enrollments
                   </Button>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    startIcon={<Star size={16} />}
-                  >
+                  <Button fullWidth variant="outlined" startIcon={<Star size={16} />}>
                     View Reviews
                   </Button>
-                 
                 </Stack>
               </CardContent>
             </Card>

@@ -17,7 +17,7 @@ import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/di
 import { CourseListItem } from '@/components/main/courses/course-list-item';
 import { getAllCategories, getAllLevels, getAllCourses } from '@/Services/courses';
 import { Category } from '@/types/category';
-import { Course, PaginatedCourse } from '@/types/course';
+import { Course, PaginatedCourse, TutorCourse } from '@/types/course';
 import { Level } from '@/types/level';
 import { Button } from '@mui/material';
 
@@ -277,7 +277,7 @@ const currentPage = Math.min(page, totalPages);
             </Card>
           ) : (
             <Grid container spacing={1}>
-              {paginatedCourses?.courses?.map((course: Course) => (
+              {paginatedCourses?.courses?.map((course: TutorCourse) => (
                 <Grid key={course.courseId} xs={12}>
                   <CourseListItem course={course} />
                 </Grid>

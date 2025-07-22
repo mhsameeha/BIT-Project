@@ -26,8 +26,7 @@ export async function getCoursesByTutor(page = 1): Promise<PaginatedCourse | { e
   }
 }
 
-export async function getTutorProfileData(): Promise <TutorProfileData| {error:string}> {
-
+export async function getTutorDashboardData(): Promise<TutorProfileData | { error: string }> {
   try {
     const response = await fetch(`${API_BASE_URL}/api/Tutor/TutorProfileData/${'prof.chen@educonnect.com'}`, {
       method: 'GET',

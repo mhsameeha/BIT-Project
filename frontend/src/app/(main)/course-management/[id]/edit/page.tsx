@@ -45,6 +45,7 @@ import { Category } from '@/types/category';
 import { Language } from '@/types/language';
 import { Level } from '@/types/level';
 import { randomUUID } from 'crypto';
+import { TutorCourse } from '@/types/course';
 
 // interface SubContent {
 //   id: string;
@@ -117,7 +118,7 @@ const CURRENCIES = ['LKR'];
 export default function EditCoursePage(): React.JSX.Element {
   const router = useRouter();
   const params = useParams();
-  const courseId = 'FB182982-E845-43B6-AC76-CF837B22AB66';;
+  const courseId = params.id as string;
   
   const [formData, setFormData] = React.useState<CourseFormData>({
     courseId,
@@ -140,7 +141,7 @@ export default function EditCoursePage(): React.JSX.Element {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [newTag, setNewTag] = React.useState('');
   const [loading, setLoading] = React.useState(true);
-  const [course, setCourse] = React.useState<CourseFormData>();
+  const [course, setCourse] = React.useState<TutorCourse>();
   const [categories, setCategories] = React.useState<Category[]>([])
   const [languages, setLanguages] = React.useState<Language[]>([])
   const [levels, setLevels] = React.useState<Level[]>([])
@@ -217,7 +218,7 @@ const mappedContents: CourseContent[] = incomingContents.map((content, index) =>
 });
 
       setFormData({
-        courseId:returnValue.courseId,
+        courseId:courseId,
         title: returnValue.title,
         description: returnValue.description,
         introduction: returnValue.introduction || '',

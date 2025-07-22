@@ -55,7 +55,7 @@ export async function getAllLevels(): Promise<Level[] | { error: string }> {
 
 export async function getAllCourses(page = 1): Promise<PaginatedCourse | { error: string }> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/Course/Courses/${page}`, { method: 'GET' });
+    const response = await fetch(`${API_BASE_URL}/api/Course/GetAllCourses/${page}`, { method: 'GET' });
     if (!response.ok) {
       const errorMessage = await response.text();
       return { error: errorMessage || 'Invalid Request' };
@@ -81,7 +81,7 @@ export async function getAllSpecialties(): Promise<Speciality[] | { error: strin
   }}
 
 
-export async function getCourseById(courseId: string): Promise<CourseFormData | { error: string }> {
+export async function getCourseById(courseId: string): Promise<TutorCourse | { error: string }> {
   try {
     const response = await fetch(`${API_BASE_URL}/api/Course/CourseById/${courseId}`, { method: 'GET' });
     if (!response.ok) {
@@ -95,8 +95,6 @@ export async function getCourseById(courseId: string): Promise<CourseFormData | 
   }
 }
 
-
- const courseId = 'FB182982-E845-43B6-AC76-CF837B22AB66';
  type UpdateCourseResult = {
   data?: any;
   error?: string;
@@ -129,6 +127,30 @@ export async function updateCourse(courseId:string,formData: CourseFormData| und
   } catch (error) {
     console.error('Save course error:', error);
     return { error: 'Something went wrong while saving the course' };
+  }
+}
+
+export async function deleteCourse(courseId:string| undefined): Promise<boolean | undefined> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/Course/DeleteCourse/${courseId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        // 'Authorization': Bearer ${localStorage.getItem('custom-auth-token')}
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.log('error', errorData);
+      return false;
+    }
+    return true;
+    }
+  
+   catch (error) {
+    console.error('Save course error:', error);
+    return false;
   }
 }
 

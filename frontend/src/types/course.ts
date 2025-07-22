@@ -15,7 +15,7 @@
 // }
 
 export interface PaginatedCourse {
-  courses: Course[];
+  courses: TutorCourse[];
   page: number;
   pageSize: number;
   totalItems: number;
@@ -43,8 +43,8 @@ export interface Course {
   enrolledStudents: number;
   rating: number;
   reviewCount: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdDate: Date;
+  updatedDate: Date;
   totalLessons: number;
   totalDuration: string; // e.g., "10h 30m"
   languages: string[];
@@ -56,6 +56,7 @@ export interface Course {
 // Course content types for tutor course management
 export interface SubContent {
   subContentId: string;
+  subContentOrder: number;
   subContentTitle: string;
   subContentDescription: string;
   type: 'video' | 'document' | 'both';
@@ -70,17 +71,20 @@ export interface CourseContent {
   contentTitle: string;
   contentDuration: string; // e.g., "45 min", "1.5 hours"
   contentDescription: string;
-  subContents: SubContent[];
+  contentSortOrder: number;
+  subContent: SubContent[];
 }
 
 // Enhanced course interface for tutor course management
 export interface TutorCourse {
-  id: string;
+  courseId: string;
   title: string;
   description: string;
   introduction: string;
-  courseDifficultyFk: 'Beginner' | 'Intermediate' | 'Advanced';
-  categoryFk: string;
+  courseDifficultyName: 'Beginner' | 'Intermediate' | 'Advanced';
+  courseDifficultyFk: '';
+  categoryFk: '';
+  categoryName: string;
   tutorId: string;
   tutorName: string;
   courseImage: string;
@@ -93,8 +97,9 @@ export interface TutorCourse {
   updatedDate: Date;
   totalLessons: number;
   totalDuration: string; // e.g., "10h 30m"
-  languageFk: string;
+  languages: string;
+  languageFk: '';
   tags: string[];
   currency: string;
-  courseContents: CourseContent[]; // Optional course content
+  courseContent: CourseContent[]; // Optional course content
 }
