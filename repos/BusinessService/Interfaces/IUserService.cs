@@ -18,5 +18,7 @@ namespace BusinessService.Interfaces
 
         public GetUserProfileDto GetUserProfile(string email);
         //public void Claims(LoginDto currentUser);
+
+
     }
 }

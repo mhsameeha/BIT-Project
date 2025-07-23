@@ -48,7 +48,6 @@ namespace mybackend.Controllers
         public IActionResult AddNewCourse([FromBody] CourseDto newCourse)
 
         {
-            //var email = "prof.chen@educonnect.com";
             var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
             ICourseService courseService = new CourseService(_context);
             var course = courseService.AddCourse(newCourse, email);
@@ -64,9 +63,7 @@ namespace mybackend.Controllers
         }
 
         [HttpGet ("CourseById/{courseId}")]
-
         public IActionResult GetCourseById(Guid courseId)
-
         {
             var email = "prof.chen@educonnect.com";
             ICourseService courseService = new CourseService(_context);
@@ -74,11 +71,25 @@ namespace mybackend.Controllers
             return Ok(course);
         }
 
+        [HttpGet("CourseDetails/{courseId}")]
+        public async Task<IActionResult> GetCourseDetails(Guid courseId)
+        {
+            ICourseService courseService = new CourseService(_context);
+            var courseDetails = await courseService.GetCourseDetailsByIdAsync(courseId);
+            
+            if (courseDetails == null)
+            {
+                return NotFound(new { message = "Course not found" });
+            }
+            
+            return Ok(courseDetails);
+        }
+
         [HttpPut("UpdateCourse/{courseId}")]
 
         public IActionResult UpdateCourse([FromBody] UpdateCourseDto course, Guid courseId)
         {
-            var email = "prof.chen@educonnect.com";
+            var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
             ICourseService courseService = new CourseService(_context);
             var result = courseService.UpdateCourse( course,email,courseId);
             return Ok();

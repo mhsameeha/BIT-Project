@@ -38,8 +38,8 @@ namespace mybackend.Controllers
         [HttpPost("AddAvailability")]
         public void Post([FromBody] TutorAvailabilitySettingsDto tutorAvailability)
         {
-            var email = "prof.chen@educonnect.com";
-            //var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+     
+            var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
             ITutorAvailabilityService tutorAvailabilityService = new TutorAvailabiltyService(_context);
             var result = tutorAvailabilityService.SaveTutorAvailabilty(tutorAvailability, email);
         }

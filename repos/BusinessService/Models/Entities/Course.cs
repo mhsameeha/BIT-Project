@@ -27,9 +27,9 @@ namespace BusinessService.Models.Entities
         [Column("description")]
         public string? Description { get; set; }
         [Column("courseDifficultyFk")]
-        public Guid? CourseDifficultyFk { get; set; }
+        public Guid? CourseDifficultyId { get; set; }
         [Column("categoryFk")]
-        public Guid? CategoryFk { get; set; }
+        public Guid? CategoryId { get; set; }
         [Column("createdDate")]
         public DateTime? CreatedDate { get; set; }
         [Column("updatedDate")]
@@ -49,7 +49,9 @@ namespace BusinessService.Models.Entities
 
         [Column("currency")]
         public string? Currency { get; set; }
+        public Category? Category { get; set; }
+        public CourseDifficulty? CourseDifficulty { get; set; }
         public ICollection<CourseContent> CourseContent { get; set; } = new List<CourseContent>();
-        public ICollection<Enrollment> Enrollment { get; set; }
+        public ICollection<Enrollment>? Enrollment { get; set; }
     }
 }

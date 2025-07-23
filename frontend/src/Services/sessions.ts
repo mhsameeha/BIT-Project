@@ -1,30 +1,16 @@
-import { API_BASE_URL } from "@/config";
-import { Session } from "@/types/session";
-import { SessionStatus } from "@/types/session-status";
+import { API_BASE_URL } from '@/config';
+import { api, isApiError } from '../lib/api-client';
+import type { Session } from "@/types/session";
+import { SessionStatus } from '@/types/session-status';
 
-
-
-export async function getSessionsByTutor(): Promise <Session[]| {error:string}> {
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/Session/SessionsByTutor`, {
-      method: 'GET',
-    // headers: {
-    //     'Authorization': `Bearer ${token}`,
-    //     'Content-Type': 'application/json'
-    //   },
-    });
-
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      return { error: errorMessage || 'Invalid Request' };
-    }
-
-    return response.json(); // ✅ Just return the single value
-  } catch (error) {
-    console.error('Request Error:', error);
-    return { error: 'Request Error' };
+export async function getSessionsByTutor(): Promise<Session[] | { error: string }> {
+  const result = await api.get<Session[]>('/api/Session/SessionsByTutor');
+  
+  if (isApiError(result)) {
+    return { error: result.error };
   }
+  
+  return result;
 }
 
  type UpdateSessionStatusResult = {

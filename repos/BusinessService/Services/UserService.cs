@@ -64,37 +64,50 @@ namespace BusinessService.Services
             if (newTutor == null) return "Unable to add User";
 
             var userId = Guid.NewGuid();
-            var user = new User
-            {
-                UserId = userId,
-                FirstName = newTutor.FirstName,
-                LastName = newTutor.LastName,
-                Dob = newTutor.Dob,
-                Email = newTutor.Email,
-                Role = newTutor.Role,
-                Password = BCrypt.Net.BCrypt.HashPassword(newTutor.Password),
-                CreatedDate = DateTime.Now,
 
-                Tutor = new Tutor
+            var checkEmail = _context.Users.FirstOrDefault(x => x.Email == newTutor.Email);
+            if (checkEmail == null)
+            {
+
+                var user = new User
+                {
+                    UserId = userId,
+                    FirstName = newTutor.FirstName,
+                    LastName = newTutor.LastName,
+                    Dob = DateTime.Now,
+                    Email = newTutor.Email,
+                    Role = newTutor.Role,
+                    Password = BCrypt.Net.BCrypt.HashPassword(newTutor.Password),
+                    CreatedDate = DateTime.Now,
+                };
+
+                var Tutor = new Tutor
                 {
                     TutorId = Guid.NewGuid(),
-                    TutorDescription = newTutor.NewTutor.TutorDescription,
-                    TutorRate = newTutor.NewTutor.TutorRate,
-                    ApprovalRequestDate = DateTime.Now,
-                    Education = newTutor.NewTutor.Education,
-                    Experience = newTutor.NewTutor.Education,
+                    TutorDescription = newTutor.TutorDescription,
+                    TutorRate = newTutor.TutorRate,
+                    ApprovalRequestDate = newTutor.ApprovalRequestDate,
+                    Education = newTutor.Education,
+                    Experience = newTutor.Experience,
                     Status = "Pending",
-                    UserFk = userId,
+                    UserId = userId,
+                    Language = newTutor.Language,
+                    ApprovedDate = null,
+                    TutorProfPic = null,
 
 
-                }
 
-            };
-            _context.Users.Add(user);
-            _context.Tutors.Add(user.Tutor);
-            _context.SaveChanges();
+                };
 
-            return "added successfully";
+
+                _context.Users.Add(user);
+                _context.Tutors.Add(Tutor);
+                _context.SaveChanges();
+
+                return "Tutor Added Successfully";
+            }
+
+            return "Email Already Exists";
         }
 
 
@@ -121,13 +134,13 @@ namespace BusinessService.Services
             var user = _context.Users.SingleOrDefault(x => x.Email == currentUser.Email);
             Guid roleId = Guid.Empty; // Initialize with empty GUID
 
-            if (user != null && BCrypt.Net.BCrypt.Verify(currentUser.Password, user.Password))
+            if (user != null && user.Role == currentUser.Role && BCrypt.Net.BCrypt.Verify(currentUser.Password, user.Password))
             {
                 List<Claim> claims = new List<Claim>
             {
                 new Claim (ClaimTypes.Email, currentUser.Email),
 
-                new Claim (ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim (ClaimTypes.NameIdentifier, user.UserId.ToString()),  
 
                 new Claim(ClaimTypes.Name, user.FirstName + " " + user.LastName),
 

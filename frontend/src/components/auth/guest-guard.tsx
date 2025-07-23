@@ -7,6 +7,8 @@ import Alert from '@mui/material/Alert';
 import { paths } from '@/paths';
 import { logger } from '@/lib/default-logger';
 import { useUser } from '@/hooks/use-user';
+import { authClient } from '@/lib/auth/client';
+
 
 export interface GuestGuardProps {
   children: React.ReactNode;
@@ -16,6 +18,7 @@ export function GuestGuard({ children }: GuestGuardProps): React.JSX.Element | n
   const router = useRouter();
   const { user, error, isLoading } = useUser();
   const [isChecking, setIsChecking] = React.useState<boolean>(true);
+const AuthClient = authClient.getBasicUserInfo()
 
   const checkPermissions = async (): Promise<void> => {
     if (isLoading) {
@@ -29,7 +32,24 @@ export function GuestGuard({ children }: GuestGuardProps): React.JSX.Element | n
 
     if (user) {
       logger.debug('[GuestGuard]: User is logged in, redirecting to dashboard');
+      
+        if (AuthClient?.role.toLowerCase() == 'tutor') {
+      logger.debug('[GuestGuard]: User is logged in, redirecting to dashboard');
       router.replace(paths.main.overview);
+      return;
+    }
+
+       if (AuthClient?.role.toLowerCase() == 'learner') {
+      logger.debug('[GuestGuard]: User is logged in, redirecting to dashboard');
+      router.replace(paths.main.learnerdashboard);
+      return;
+    }
+
+         if (AuthClient?.role.toLowerCase() == 'admin') {
+      logger.debug('[GuestGuard]: User is logged in, redirecting to dashboard');
+      router.replace(paths.main.overview);
+      return;
+    }
       return;
     }
 

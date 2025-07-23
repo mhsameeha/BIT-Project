@@ -1,6 +1,6 @@
 export const paths = {
   home: '/',
-  auth: { signIn: '/auth/sign-in', signUp: '/auth/sign-up', resetPassword: '/auth/reset-password' },
+  auth: { signIn: '/auth/sign-in', signUp: '/auth/sign-up', tutorSignUp: '/auth/tutor-sign-up', resetPassword: '/auth/reset-password' },
   // courses: {
   //   list: '/courses/list',
   // },

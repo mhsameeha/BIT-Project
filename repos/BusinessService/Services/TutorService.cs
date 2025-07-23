@@ -24,7 +24,7 @@ namespace BusinessService.Services
         public List<TutorDto> GetAllTutors()
         {
             var result = (from tutor in _context.Tutors
-                          join user in _context.Users on tutor.UserFk equals user.UserId
+                          join user in _context.Users on tutor.UserId equals user.UserId
                           select new TutorDto
                           {
                               TutorId = tutor.TutorId,
@@ -40,7 +40,7 @@ namespace BusinessService.Services
         {
 
             var tutor = (from u in _context.Users
-                          join t in _context.Tutors on u.UserId equals t.UserFk
+                          join t in _context.Tutors on u.UserId equals t.UserId
                           where u.Email == email
                           select new
                           {
@@ -74,7 +74,7 @@ namespace BusinessService.Services
         public TutorDashboardDataDto GetTutorDashboardData(string email)
         {
             var tutor = (from u in _context.Users
-                         join t in _context.Tutors on u.UserId equals t.UserFk
+                         join t in _context.Tutors on u.UserId equals t.UserId
                          where u.Email == email
                          select new
                          {
@@ -141,7 +141,7 @@ namespace BusinessService.Services
         public async Task<PaginatedCoursesDto> GetCoursesByTutor(string email, int page, int items)
         {
             var currentTutor = await (from u in _context.Users
-                         join t in _context.Tutors on u.UserId equals t.UserFk
+                         join t in _context.Tutors on u.UserId equals t.UserId
                          where u.Email == email
                          select t.TutorId)
                          .FirstOrDefaultAsync();
@@ -188,10 +188,10 @@ namespace BusinessService.Services
 
 
             var courses = (from course in _context.Courses
-                           join category in _context.Categories on course.CategoryFk equals category.CategoryId
-                           join difficulty in _context.CourseDifficulties on course.CourseDifficultyFk equals difficulty.CourseDifficultyId
+                           join category in _context.Categories on course.CategoryId equals category.CategoryId
+                           join difficulty in _context.CourseDifficulties on course.CourseDifficultyId equals difficulty.CourseDifficultyId
                            join tutor in _context.Tutors on course.TutorId equals tutor.TutorId
-                           join user in _context.Users on tutor.UserFk equals user.UserId //innerJoin
+                           join user in _context.Users on tutor.UserId equals user.UserId //innerJoin
                            where (tutor.TutorId == currentTutor  && course.IsDeleted==false )                      
                            select new
                            {
@@ -242,7 +242,7 @@ namespace BusinessService.Services
         public List<SessionDto> UpcomingSessions(string email)
         {
             var tutors = (from u in _context.Users
-                         join t in _context.Tutors on u.UserId equals t.UserFk
+                         join t in _context.Tutors on u.UserId equals t.UserId
                          where u.Email == email
                          select new
                          {
@@ -274,10 +274,10 @@ namespace BusinessService.Services
             return result;
         }
 
-        public TutorDetailsDto GetTutorAccountDetails(string email)
+        public TutorData GetTutorAccountDetails(string email)
         {
             var tutor = (from u in _context.Users
-                          join t in _context.Tutors on u.UserId equals t.UserFk
+                          join t in _context.Tutors on u.UserId equals t.UserId
                           where u.Email == email
                           select new
                           {
@@ -289,24 +289,100 @@ namespace BusinessService.Services
                 return null;
             }
 
-            var tutorDetails = _context.Tutors
-                               .Include(u => u.User).FirstOrDefault(t => t.TutorId == tutor.Id);
-                        
-
-
-
-
-            return new TutorDetailsDto
+            var tutorDetails = _context.Users
+                               .Include(u => u.Tutor).FirstOrDefault(t => t.Tutor.TutorId == tutor.Id);
+            if (tutorDetails == null)
             {
-                FirstName = tutorDetails.User.FirstName,
-                LastName = tutorDetails.User.LastName,
-                DOB = tutorDetails.User.Dob,
-                Status = tutorDetails.Status,
-                TutorRate = tutorDetails.TutorRate,
-                TutorProfPic = tutorDetails.TutorProfPic
+                return null;
+            }
+
+            var availability = _context.TutorWeeklyAvailabilities
+                .Where(a => a.TutorId == tutor.Id)
+                .Include(a => a.TimeSlots) // assumes a.TimeSlots is ICollection<TutorTimeSlot>
+                .ToList();
+
+            var allDayAvailableDays = _context.TutorWeeklyAvailabilities
+                                    .Where(x => x.IsAvailable && x.AllDay)
+                                    .Select(x => x.Day)
+                                    .ToList();
+            var someSlotsAvailable = _context.TutorWeeklyAvailabilities
+                                  .Where(x => x.IsAvailable && x.AllDay == false)
+                                  .Select(x => new TutorAvailabilityDto
+                                  {
+                                     Day = x.Day,
+                                     TimeSlots = x.TimeSlots,
+                                  })
+                                  .ToList();
+
+            var sessionsCompleted = 0;
+
+            decimal avgRating = 0;
+
+            if (sessionsCompleted > 0)
+            {
+                avgRating = _context.Sessions
+                            .Where(s => s.TutorId == tutor.Id && s.SessionStatus.ToLower() == "completed")
+                            .Sum(s => s.SessionRate) / sessionsCompleted;
+            }
+
+          
+
+
+            return new TutorData
+            {
+                Name = tutorDetails.FirstName + ' ' + tutorDetails.LastName,
+                Dob = tutorDetails.Dob,
+                Email = tutorDetails.Email,
+                Status = tutorDetails.Tutor.Status,
+                TutorRate = tutorDetails.Tutor.TutorRate,
+                TutorProfPic = tutorDetails.Tutor.TutorProfPic,
+                TutorDescription = tutorDetails.Tutor.TutorDescription,
+                Education = tutorDetails.Tutor.EducationJson,
+                Experience = tutorDetails.Tutor.ExperienceJson,
+                Language = tutorDetails.Tutor.Language,
+                ApprovedDate = tutorDetails.Tutor.ApprovedDate,
+                Availability = someSlotsAvailable,
+
             };
           
         }
+
+        public TutorData GetTutorAccountDetails(Guid tutorId)
+        {
+        
+
+            var tutorDetails = _context.Users
+                               .Include(u => u.Tutor).FirstOrDefault(t => t.Tutor.TutorId == tutorId);
+
+
+    
+
+            if (tutorDetails == null)
+            {
+                return null;
+            }
+
+
+            var TutorProfileData = new TutorData
+            {
+                Name = tutorDetails.FirstName + ' ' + tutorDetails.LastName,
+                Dob = tutorDetails.Dob,
+                Email = tutorDetails.Email,
+                Status = tutorDetails.Tutor.Status,
+                TutorRate = tutorDetails.Tutor.TutorRate,
+                TutorProfPic = tutorDetails.Tutor.TutorProfPic,
+                TutorDescription = tutorDetails.Tutor.TutorDescription,
+                Education = tutorDetails.Tutor.EducationJson,
+                Experience = tutorDetails.Tutor.ExperienceJson,
+                Language = tutorDetails.Tutor.Language,
+
+            };
+
+            return TutorProfileData;    
+
+        }
+
+ 
     }
 }
 

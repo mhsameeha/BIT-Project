@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static System.Collections.Specialized.BitVector32;
+using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace BusinessService.Models.Entities
 {
@@ -22,6 +24,7 @@ namespace BusinessService.Models.Entities
         public decimal? TutorRate { get; set; }
         [Column("status")]
         public string? Status { get; set; }
+
         [Column("approvedDate")]
         public DateTime? ApprovedDate { get; set; }
         [Column("approvalRequestDate")]
@@ -29,20 +32,60 @@ namespace BusinessService.Models.Entities
         [Column("tutorProfPic")]
         public byte[]? TutorProfPic { get; set; }
         [Column("experience")]
-        public string[]? Experience { get; set; }
+        public string? ExperienceJson { get; set; }
+        [NotMapped]
+        public List<Experience>? Experience
+        {
+            get => string.IsNullOrEmpty(ExperienceJson)
+        ? new List<Experience>()
+        : JsonSerializer.Deserialize<List<Experience>>(ExperienceJson);
+            set => ExperienceJson = JsonSerializer.Serialize(value);
+        }
         [Column("education")]
-        public string[]? Education { get; set; }
+
+        public string? EducationJson { get; set; }
+        [NotMapped]
+        public List<Education>? Education
+        {
+            get => string.IsNullOrEmpty(EducationJson)
+        ? new List<Education>()
+        : JsonSerializer.Deserialize<List<Education>>(EducationJson);
+            set => EducationJson = JsonSerializer.Serialize(value);
+        }
         [Column("userFk")]
-        public Guid UserFk { get; set; }
+        public Guid UserId { get; set; }
         [Column("language")]
-        public string[]? Language {get; set;}
 
-        public ICollection<Session> Session { get; set; }
+        public string[]? Language { get; set; }
+    }
+    [Keyless]
+    [NotMapped]
+    [Owned]
+    public class Experience
+    {
+        
+        public string? Position { get; set; }
+        public string? Company { get; set; }
+        public string? TimePeriod { get; set; }
+    }
+    [Keyless]
+    [NotMapped]
+    [Owned]
 
-        [ForeignKey("UserFk")]
-        public User User { get; set; }
+    public class Education
+    {
+        public string? Qualification { get; set; }
+        public string? Institute { get; set; }
+        public string? GraduationDate { get; set; }
+    }
+    [Keyless]
+    [NotMapped]
+    [Owned]
 
-
+    public class LanguageProf
+    {
+        public string? Name { get; set; }
+        public string? Proficiency { get; set; }
     }
 }
 

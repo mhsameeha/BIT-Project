@@ -29,8 +29,7 @@ namespace EduConnect.API.Controllers
         [HttpGet("SessionsByTutor")]
         public IActionResult GetSessionsByTutor()
         {
-            var email = "prof.chen@educonnect.com";
-            //var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+            var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
             ISessionService sessionService = new SessionService(_context);
             var result = sessionService.SessionsByTutor(email);
             return Ok(result);
@@ -46,8 +45,7 @@ namespace EduConnect.API.Controllers
         [HttpPut("UpdateSessionStatus")]
         public void UpdateSessionStatus([FromBody] SessionStatusDto sessionStatus)
         {
-            var email = "prof.chen@educonnect.com";
-            //var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+            var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
             ISessionService sessionService = new SessionService(_context);
             sessionService.UpdateSessionStatus(sessionStatus, email);
         }

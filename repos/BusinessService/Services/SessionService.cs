@@ -22,7 +22,7 @@ namespace BusinessService.Services
         public List<SessionByTutorDto> SessionsByTutor(string email)
         {
             var tutors = (from u in _context.Users
-                          join t in _context.Tutors on u.UserId equals t.UserFk
+                          join t in _context.Tutors on u.UserId equals t.UserId
                           where u.Email == email
                           select new
                           {
@@ -64,16 +64,17 @@ namespace BusinessService.Services
         public void UpdateSessionStatus(SessionStatusDto sessionStatus, string email)
         {
             var tutors = (from u in _context.Users
-                          join t in _context.Tutors on u.UserId equals t.UserFk
+                          join t in _context.Tutors on u.UserId equals t.UserId
                           where u.Email == email
                           select new
                           {
                               Id = t.TutorId
                           }).FirstOrDefault();
+            var session = _context.Sessions.FirstOrDefault(x => x.SessionId == sessionStatus.SessionId);
 
-            if (tutors != null)
+            if (tutors != null && session != null)
             {
-                var session = _context.Sessions.FirstOrDefault(x => x.SessionId == sessionStatus.SessionId);
+                
 
                 session.SessionStatus = sessionStatus.SessionStatus;
                 session.RejectionReason = sessionStatus.RejectionReason;

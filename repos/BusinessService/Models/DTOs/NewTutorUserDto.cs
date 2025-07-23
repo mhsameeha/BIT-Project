@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BusinessService.Models.Entities;
 
 namespace BusinessService.Models.DTOs
 {
@@ -22,12 +23,6 @@ namespace BusinessService.Models.DTOs
             public required string Password { get; set; }
             public required string Role { get; set; }
 
-            public NewTutorDto? NewTutor { get; set; }
-
-
-        public class NewTutorDto
-        {
-
             public string? TutorDescription { get; set; }
             public decimal? TutorRate { get; set; }
 
@@ -35,12 +30,12 @@ namespace BusinessService.Models.DTOs
 
             public DateTime? ApprovalRequestDate { get; set; }
 
-            public string[]? Experience { get; set; }
+            public List<Experience>? Experience { get; set; }
 
-            public string[]? Education { get; set; }
+            public List<Education>? Education { get; set; }
             public Guid UserFk { get; set; }
             public string[]? Language { get; set; }
 
         }
     }
-}
+

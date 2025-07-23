@@ -1,13 +1,8 @@
-﻿using System.Globalization;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Security.Claims;
-using BusinessService.Data;
+﻿using BusinessService.Data;
 using BusinessService.Interfaces;
 using BusinessService.Models.DTOs;
 using BusinessService.Models.Entities;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 
 namespace BusinessService.Services
 {
@@ -23,7 +18,7 @@ namespace BusinessService.Services
         public string AddCourse(CourseDto newCourse, string email)
         {
             var tutor = (from u in _context.Users
-                        join t in _context.Tutors on u.UserId equals t.UserFk
+                        join t in _context.Tutors on u.UserId equals t.UserId
                         where u.Email == email
                         select new
                         {
@@ -42,8 +37,8 @@ namespace BusinessService.Services
                     Title = newCourse.Title,
                     Description = newCourse.Description,
                     Introduction = newCourse.Introduction,
-                    CategoryFk = newCourse.CategoryFk,
-                    CourseDifficultyFk = newCourse.CourseDifficultyFk,
+                    CategoryId = newCourse.CategoryFk,
+                    CourseDifficultyId = newCourse.CourseDifficultyFk,
                     Price = newCourse.Price,
                     IsEnabled = true,
                     LanguageFk = newCourse.LanguageFk,
@@ -98,7 +93,7 @@ namespace BusinessService.Services
         public string UpdateCourse(UpdateCourseDto updatedCourse, string email, Guid courseId)
         {
                 var tutor = (from u in _context.Users
-                             join t in _context.Tutors on u.UserId equals t.UserFk
+                             join t in _context.Tutors on u.UserId equals t.UserId
                              where u.Email == email
                              select new
                              {
@@ -133,12 +128,10 @@ namespace BusinessService.Services
             _context.CourseContents.RemoveRange(contentsToRemove);
 
             var indexMain = 0;
-            var index = 0;
 
             foreach (var contentDto in updatedCourse.CourseContent)
             {
                 indexMain++;
-                var subIndex = 0;
                 // Existing content - update
                 if (contentDto.ContentId != Guid.Empty &&
                     existingCourseContentIds.Contains(contentDto.ContentId))
@@ -186,7 +179,7 @@ namespace BusinessService.Services
                             {
                                 SubContentId = Guid.NewGuid(),
                                 SubContentTitle = subDto.SubContentTitle,
-                                SubContentDescription = subDto.SubContentDescription,   
+                                SubContentDescription = subDto.SubContentDescription,
                                 Type = subDto.Type,
                                 SubContentOrder = subDto.SubContentOrder,
                                 ContentId = contentDto.ContentId
@@ -265,10 +258,10 @@ namespace BusinessService.Services
                 Title = findCourse.Title,
                 Description = findCourse.Description,
                 Introduction = findCourse.Introduction,
-                CategoryFk = findCourse.CategoryFk,
-                CategoryName = _context.Categories.FirstOrDefault(x => x.CategoryId == findCourse.CategoryFk)?.CategoryName,
-                CourseDifficultyFk = findCourse.CourseDifficultyFk,
-                CourseDifficultyName = _context.CourseDifficulties.FirstOrDefault(x => x.CourseDifficultyId == findCourse.CourseDifficultyFk)?.CourseDifficultyName,
+                CategoryFk = findCourse.CategoryId,
+                CategoryName = _context.Categories.FirstOrDefault(x => x.CategoryId == findCourse.CategoryId)?.CategoryName,
+                CourseDifficultyFk = findCourse.CourseDifficultyId,
+                CourseDifficultyName = _context.CourseDifficulties.FirstOrDefault(x => x.CourseDifficultyId == findCourse.CourseDifficultyId)?.CourseDifficultyName,
                 Price = findCourse.Price,
                 IsEnabled = findCourse.IsEnabled,
                 LanguageFk = findCourse.LanguageFk,
@@ -376,10 +369,10 @@ namespace BusinessService.Services
 
 
             var courses = (from course in _context.Courses
-                          join category in _context.Categories on course.CategoryFk equals category.CategoryId
-                          join difficulty in _context.CourseDifficulties on course.CourseDifficultyFk equals difficulty.CourseDifficultyId
+                          join category in _context.Categories on course.CategoryId equals category.CategoryId
+                          join difficulty in _context.CourseDifficulties on course.CourseDifficultyId equals difficulty.CourseDifficultyId
                           join tutor in _context.Tutors on course.TutorId equals tutor.TutorId
-                          join user in _context.Users on tutor.UserFk equals user.UserId //innerJoin
+                          join user in _context.Users on tutor.UserId equals user.UserId //innerJoin
                           where (course.IsEnabled== true && course.IsDeleted == false)
                           select new 
                           {
@@ -435,6 +428,141 @@ namespace BusinessService.Services
                 removeCourse.IsDeleted = true;
                 _context.SaveChanges();
             }
+        }
+
+        public async Task<CourseDetailsDto?> GetCourseDetailsByIdAsync(Guid courseId)
+        {
+            // Get course with all related data
+            var courseWithRelations = await _context.Courses
+                .Where(c => c.CourseId == courseId && c.IsDeleted != true)
+                .Include(c => c.CourseContent)
+                    .ThenInclude(cc => cc.SubContent)
+                .Select(c => new
+                {
+                    Course = c,
+                    Category = _context.Categories
+                        .Where(cat => cat.CategoryId == c.CategoryId)
+                        .Select(cat => cat.CategoryName)
+                        .FirstOrDefault(),
+                    Difficulty = _context.CourseDifficulties
+                        .Where(d => d.CourseDifficultyId == c.CourseDifficultyId)
+                        .Select(d => d.CourseDifficultyName)
+                        .FirstOrDefault(),
+                    Language = _context.Languages
+                        .Where(l => l.LanguageId == c.LanguageFk)
+                        .Select(l => l.Languages)
+                        .FirstOrDefault(),
+                    Tutor = (from tutor in _context.Tutors
+                            join user in _context.Users on tutor.UserId equals user.UserId
+                            where tutor.TutorId == c.TutorId
+                            select new
+                            {
+                                tutor.TutorProfPic,
+                                tutor.TutorDescription,
+                                tutor.Experience,
+                                tutor.Education,
+                                user.FirstName,
+                                user.LastName,
+                                user.Email,
+                                tutor.TutorId
+                            }).FirstOrDefault()
+                })
+                .FirstOrDefaultAsync();
+
+            if (courseWithRelations == null)
+                return null;
+
+            // Get course reviews with learner information
+            var reviews = await _context.CourseReviews
+                .Where(r => r.CourseFk == courseId)
+                .Join(_context.Learners,
+                    review => review.LearnerFk,
+                    learner => learner.LearnerId,
+                    (review, learner) => new { review, learner })
+                .Join(_context.Users,
+                    combined => combined.learner.UserFk,
+                    user => user.UserId,
+                    (combined, user) => new CourseReviewDto
+                    {
+                        CourseReviewId = combined.review.CourseReviewId,
+                        Review = combined.review.Review,
+                        Rating = combined.review.Rating,
+                        LearnerFirstName = user.FirstName,
+                        LearnerLastName = user.LastName,
+                        LearnerEmail = user.Email
+                    })
+                .ToListAsync();
+
+            // Get enrollment count
+            var enrollmentCount = await _context.Enrollments
+                .CountAsync(e => e.CourseId == courseId);
+
+            // Calculate average rating
+            var averageRating = reviews.Any() && reviews.Any(r => r.Rating.HasValue)
+                ? reviews.Where(r => r.Rating.HasValue).Average(r => r.Rating!.Value) 
+                : 0;
+
+            // Map to CourseDetailsDto
+            var courseDetailsDto = new CourseDetailsDto
+            {
+                CourseId = courseWithRelations.Course.CourseId,
+                Title = courseWithRelations.Course.Title,
+                Description = courseWithRelations.Course.Description,
+                Introduction = courseWithRelations.Course.Introduction,
+                Price = courseWithRelations.Course.Price,
+                Currency = courseWithRelations.Course.Currency,
+                IsEnabled = courseWithRelations.Course.IsEnabled,
+                CourseImage = courseWithRelations.Course.CourseImage,
+                Tags = courseWithRelations.Course.Tags,
+                CreatedDate = courseWithRelations.Course.CreatedDate,
+                UpdatedDate = courseWithRelations.Course.UpdatedDate,
+                // Related entity data
+                CategoryName = courseWithRelations.Category,
+                CourseDifficultyName = courseWithRelations.Difficulty,
+                LanguageName = courseWithRelations.Language,
+                // Tutor information
+                TutorFirstName = courseWithRelations.Tutor?.FirstName,
+                TutorLastName = courseWithRelations.Tutor?.LastName,
+                TutorEmail = courseWithRelations.Tutor?.Email,
+                TutorFk = courseWithRelations.Tutor?.TutorId,
+                TutorProfPic = courseWithRelations.Tutor?.TutorProfPic != null
+                    ? Convert.ToBase64String(courseWithRelations.Tutor.TutorProfPic)
+                    : null,
+                TutorDescription = courseWithRelations.Tutor?.TutorDescription,
+                TutorExperience = courseWithRelations.Tutor?.Experience,
+                TutorEducation = courseWithRelations.Tutor?.Education,
+                // Statistics
+                EnrolledStudents = enrollmentCount,
+                AverageRating = averageRating,
+                ReviewCount = reviews.Count,
+                // Course content
+                CourseContent = courseWithRelations.Course.CourseContent
+                    .OrderBy(cc => cc.ContentSortOrder)
+                    .Select(cc => new CourseDetailsContentDto
+                    {
+                        ContentId = cc.ContentId ?? Guid.Empty,
+                        ContentTitle = cc.ContentTitle,
+                        ContentDescription = cc.ContentDescription,
+                        ContentDuration = cc.ContentDuration,
+                        ContentSortOrder = cc.ContentSortOrder,
+                        SubContent = cc.SubContent
+                            .OrderBy(sc => sc.SubContentOrder)
+                            .Select(sc => new CourseDetailsSubContentDto
+                            {
+                                SubContentId = sc.SubContentId ?? Guid.Empty,
+                                SubContentTitle = sc.SubContentTitle,
+                                SubContentDescription = sc.SubContentDescription,
+                                Type = sc.Type,
+                                SubContentOrder = sc.SubContentOrder ?? 0
+                            })
+                            .ToList()
+                    })
+                    .ToList(),
+                // Reviews
+                Reviews = reviews
+            };
+
+            return courseDetailsDto;
         }
 
         public CourseManagementCardDto GetCourseManagementCardDetails(string email)

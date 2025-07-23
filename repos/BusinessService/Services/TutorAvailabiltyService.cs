@@ -23,7 +23,7 @@ namespace BusinessService.Services
         public string SaveTutorAvailabilty(TutorAvailabilitySettingsDto tutorAvailability, string email)
         {
             var tutor = (from u in _context.Users
-                         join t in _context.Tutors on u.UserId equals t.UserFk
+                         join t in _context.Tutors on u.UserId equals t.UserId
                          where u.Email == email
                          select new
                          {
