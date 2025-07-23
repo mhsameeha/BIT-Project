@@ -21,7 +21,7 @@ namespace BusinessService.Models.Entities
         public string? SubContentDescription { get; set; }
         [Column("contentFk")]
         public Guid? ContentId { get; set; }
-
+        [ForeignKey("ContentId")]
         public CourseContent? CourseContent { get; set; }
 
         [Column("type")]
