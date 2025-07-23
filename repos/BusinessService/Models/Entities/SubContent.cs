@@ -29,8 +29,8 @@ namespace BusinessService.Models.Entities
         [Column("type")]
         public string? Type { get; set; }
 
-        [Column("videoFile")]
-        public byte[]? VideoFile { get; set; }
+        [Column("filePath")]
+        public string? FilePath { get; set; }
 
         [Column("documentFile")]
         public byte[]? DocumentFile { get; set; }

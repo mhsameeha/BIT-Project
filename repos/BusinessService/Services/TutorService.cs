@@ -273,6 +273,81 @@ namespace BusinessService.Services
                           }).ToList();
             return result;
         }
+
+        public List<TutorDetailDto> GetAvailableTutorsWithDetails()
+        {
+            try
+            {
+                // First get basic tutor and user data without the problematic Language field
+                var tutorsWithDetails = (from tutor in _context.Tutors
+                                       join user in _context.Users on tutor.UserFk equals user.UserId
+                                       where tutor.Status == "Approved"
+                                       select new { 
+                                           TutorId = tutor.TutorId,
+                                           UserFk = tutor.UserFk,
+                                           TutorDescription = tutor.TutorDescription,
+                                           TutorRate = tutor.TutorRate,
+                                           Status = tutor.Status,
+                                           Experience = tutor.Experience,
+                                           Education = tutor.Education,
+                                           FirstName = user.FirstName,
+                                           LastName = user.LastName
+                                       }).ToList();
+
+                var result = new List<TutorDetailDto>();
+
+                foreach (var tutorData in tutorsWithDetails)
+                {
+                    try
+                    {
+                        // Check if tutor has enabled time slots
+                        var hasAvailableTimeSlots = _context.TutorWeeklyAvailabilities
+                            .Any(wa => wa.TutorId == tutorData.TutorId && 
+                                      _context.TutorTimeslots.Any(ts => ts.AvailabilityId == wa.AvailabilityId));
+
+                        if (!hasAvailableTimeSlots)
+                            continue; // Skip tutors without available time slots
+
+                        // Get specialities for this tutor
+                        var specialities = (from ts in _context.TutorSpecialities
+                                          join s in _context.Specialities on ts.SpecialityFk equals s.SpecialityId
+                                          where ts.TutorFk == tutorData.TutorId
+                                          select s.SpecialityName ?? string.Empty).ToList();
+
+                        var tutorDetailDto = new TutorDetailDto
+                        {
+                            TutorId = tutorData.TutorId,
+                            FirstName = tutorData.FirstName,
+                            LastName = tutorData.LastName,
+                            TutorName = (tutorData.FirstName ?? "") + " " + (tutorData.LastName ?? ""),
+                            TutorDescription = tutorData.TutorDescription,
+                            TutorRate = tutorData.TutorRate,
+                            Status = tutorData.Status,
+                            Experience = tutorData.Experience,
+                            Education = tutorData.Education,
+                            Language = new string[] { "English" }, // Default language for now
+                            Specialities = specialities,
+                            HasAvailableTimeSlots = hasAvailableTimeSlots
+                        };
+
+                        result.Add(tutorDetailDto);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log the error and continue with next tutor
+                        Console.WriteLine($"Error processing tutor {tutorData.TutorId}: {ex.Message}");
+                        continue;
+                    }
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetAvailableTutorsWithDetails: {ex.Message}");
+                return new List<TutorDetailDto>();
+            }
+        }
     }
 }
 

@@ -1,4 +1,4 @@
-import { api, isApiError } from '../lib/api-client';
+import { api, isApiError, type ApiErrorResponse } from '@/lib/api-client';
 
 export interface PaymentRequest {
   courseId: string;
@@ -17,14 +17,51 @@ export interface PaymentResponse {
   message: string;
 }
 
-export interface ApiErrorResponse {
-  error: string;
-  message?: string;
-}
-
 export interface EnrollmentData {
   courseName: string;
+  enrollmentId: string;
+  courseId: string;
+  enrollmentStatus: 'Pending Verification' | 'Active' | 'Rejected';
+  enrolledDate: string;
+  isPaid: boolean;
+  paymentStatus?: string;
 }
+
+export interface EnrollmentStatus {
+  enrollmentId: string;
+  courseId: string;
+  enrollmentStatus: 'Pending Verification' | 'Active' | 'Rejected';
+  enrolledDate: string;
+  courseName?: string;
+  isPaid: boolean;
+  paymentStatus?: string;
+}
+
+export async function checkEnrollmentStatus(courseId: string): Promise<EnrollmentStatus | ApiErrorResponse> {
+  const result = await api.get<EnrollmentStatus>(`/api/Enrollment/course-status/${courseId}`);
+  
+  if (isApiError(result)) {
+    return result;
+  }
+  
+  return result;
+}
+
+export async function getMyEnrollments(): Promise<EnrollmentData[] | ApiErrorResponse> {
+  const result = await api.get<EnrollmentData[]>('/api/Enrollment/my-enrollments');
+  
+  if (isApiError(result)) {
+    return result;
+  }
+  
+  return result;
+}
+
+export async function getEnrollmentsByLearner(): Promise<EnrollmentData[] | ApiErrorResponse> {
+  // This method now uses the same endpoint as getMyEnrollments since we get learner from claims
+  return getMyEnrollments();
+}
+
 
 export async function submitPayment(paymentData: PaymentRequest): Promise<PaymentResponse | ApiErrorResponse> {
   const formData = new FormData();
@@ -39,16 +76,6 @@ export async function submitPayment(paymentData: PaymentRequest): Promise<Paymen
   formData.append('paymentProof', paymentData.paymentProof);
 
   const result = await api.postForm<PaymentResponse>('/api/Enrollment/payment', formData);
-  
-  if (isApiError(result)) {
-    return result;
-  }
-  
-  return result;
-}
-
-export async function getEnrollmentsByLearner(learnerId: string): Promise<EnrollmentData[] | ApiErrorResponse> {
-  const result = await api.get<EnrollmentData[]>(`/api/Enrollment/${learnerId}`);
   
   if (isApiError(result)) {
     return result;

@@ -6,6 +6,7 @@ namespace BusinessService.Interfaces
     {
         public List<SessionDto> UpcomingSessions(string email);
         public List<TutorDto> GetAllTutors();
+        public List<TutorDetailDto> GetAvailableTutorsWithDetails();
 
         public Task<PaginatedCoursesDto> GetCoursesByTutor(string email, int page, int pageSize );
 

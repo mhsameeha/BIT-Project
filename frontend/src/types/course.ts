@@ -59,11 +59,8 @@ export interface SubContent {
   subContentOrder: number;
   subContentTitle: string;
   subContentDescription: string;
-  type: 'video' | 'document' | 'both';
-  videoFile?: File | null;
-  documentFile?: File | null;
-  videoUrl?: string; // For display purposes
-  documentUrl?: string; // For display purposes
+  type: 'video' | 'document';
+  filePath?: string; // For display purposes
 }
 
 export interface CourseContent {
@@ -160,6 +157,7 @@ export interface CourseDetailsSubContent {
   subContentDescription: string;
   type: string;
   subContentOrder: number;
+  filePath: string
 }
 
 export interface CourseReview {

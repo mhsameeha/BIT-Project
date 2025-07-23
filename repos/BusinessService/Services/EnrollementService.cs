@@ -26,8 +26,61 @@ namespace BusinessService.Services
                           where enrollement.LearnerFk == learnerid
                           select new EnrollmentDto
                           {
-                              courseName = course.Title
+                              CourseName = course.Title,
+                              EnrollmentId = enrollement.EnrollmentId,
+                              CourseId = enrollement.CourseId ?? Guid.Empty,
+                              EnrollmentStatus = enrollement.EnrollmentStatus,
+                              EnrolledDate = enrollement.EnrolledDate ?? DateTime.UtcNow,
+                              IsPaid = enrollement.IsPaid
                           }).ToList();
+            return result;
+        }
+
+        public async Task<List<EnrollmentDto>> GetEnrollmentsByLearnerEmailAsync(string userEmail)
+        {
+            var result = await (from u in _context.Users
+                               join l in _context.Learners on u.UserId equals l.UserFk
+                               join e in _context.Enrollments on l.LearnerId equals e.LearnerFk
+                               join c in _context.Courses on e.CourseId equals c.CourseId
+                               join p in _context.Payments on new { CourseId = e.CourseId, LearnerId = e.LearnerFk } 
+                                   equals new { CourseId = p.CourseFk, LearnerId = p.LearnerFk } into payments
+                               from payment in payments.DefaultIfEmpty()
+                               where u.Email == userEmail
+                               select new EnrollmentDto
+                               {
+                                   CourseName = c.Title,
+                                   EnrollmentId = e.EnrollmentId,
+                                   CourseId = e.CourseId ?? Guid.Empty,
+                                   EnrollmentStatus = e.EnrollmentStatus,
+                                   EnrolledDate = e.EnrolledDate ?? DateTime.UtcNow,
+                                   IsPaid = e.IsPaid,
+                                   PaymentStatus = payment != null ? payment.PaymentStatus : null
+                               }).ToListAsync();
+            
+            return result;
+        }
+
+        public async Task<EnrollmentDto?> GetCourseEnrollmentStatusAsync(string userEmail, Guid courseId)
+        {
+            var result = await (from u in _context.Users
+                               join l in _context.Learners on u.UserId equals l.UserFk
+                               join e in _context.Enrollments on l.LearnerId equals e.LearnerFk
+                               join c in _context.Courses on e.CourseId equals c.CourseId
+                               join p in _context.Payments on new { CourseId = e.CourseId, LearnerId = e.LearnerFk } 
+                                   equals new { CourseId = p.CourseFk, LearnerId = p.LearnerFk } into payments
+                               from payment in payments.DefaultIfEmpty()
+                               where u.Email == userEmail && e.CourseId == courseId
+                               select new EnrollmentDto
+                               {
+                                   CourseName = c.Title,
+                                   EnrollmentId = e.EnrollmentId,
+                                   CourseId = e.CourseId ?? Guid.Empty,
+                                   EnrollmentStatus = e.EnrollmentStatus,
+                                   EnrolledDate = e.EnrolledDate ?? DateTime.UtcNow,
+                                   IsPaid = e.IsPaid,
+                                   PaymentStatus = payment != null ? payment.PaymentStatus : null
+                               }).FirstOrDefaultAsync();
+            
             return result;
         }
 

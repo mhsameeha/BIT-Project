@@ -32,6 +32,63 @@ namespace mybackend.Controllers
             return result;
         }
 
+        //GET: api/<TutorController>/available-tutors
+        [HttpGet("available-tutors")]
+        public IActionResult GetAvailableTutorsWithDetails()
+        {
+            try
+            {
+                ITutorService tutorService = new TutorService(_context);
+                var result = tutorService.GetAvailableTutorsWithDetails();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Failed to retrieve tutors", message = ex.Message });
+            }
+        }
+
+        //GET: api/<TutorController>/learner-info
+        [HttpGet("learner-info")]
+        public IActionResult GetLearnerFromClaims()
+        {
+            try
+            {
+                var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+                
+                if (string.IsNullOrEmpty(email))
+                {
+                    return BadRequest(new { error = "Email not found in claims" });
+                }
+
+                // Get user by email
+                var user = _context.Users.FirstOrDefault(u => u.Email == email);
+                if (user == null)
+                {
+                    return NotFound(new { error = "User not found" });
+                }
+
+                // Get learner by user ID
+                var learner = _context.Learners.FirstOrDefault(l => l.UserFk == user.UserId);
+                if (learner == null)
+                {
+                    return NotFound(new { error = "Learner profile not found" });
+                }
+
+                return Ok(new { 
+                    learnerId = learner.LearnerId,
+                    userId = user.UserId,
+                    email = user.Email,
+                    firstName = user.FirstName,
+                    lastName = user.LastName
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Failed to retrieve learner information", message = ex.Message });
+            }
+        }
+
         // GET api/<TutorController>/5
 
         // POST api/<TutorController>

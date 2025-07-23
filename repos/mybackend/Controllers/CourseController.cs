@@ -75,14 +75,20 @@ namespace mybackend.Controllers
         [HttpGet("CourseDetails/{courseId}")]
         public async Task<IActionResult> GetCourseDetails(Guid courseId)
         {
+            // Get learnerId from claims (similar to EnrollmentController)
+            var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(email))
+            {
+                return Unauthorized(new { message = "User is not authenticated." });
+            }
+            // Get learnerId from email
+           
             ICourseService courseService = new CourseService(_context);
-            var courseDetails = await courseService.GetCourseDetailsByIdAsync(courseId);
-            
+            var courseDetails = await courseService.GetCourseDetailsByIdAsync(courseId, email);
             if (courseDetails == null)
             {
                 return NotFound(new { message = "Course not found" });
             }
-            
             return Ok(courseDetails);
         }
 

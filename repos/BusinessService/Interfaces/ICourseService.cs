@@ -6,7 +6,7 @@ namespace BusinessService.Interfaces
     public interface ICourseService
     {
         public UpdateCourseDto GetCoursebyId(Guid id);
-        public Task<CourseDetailsDto?> GetCourseDetailsByIdAsync(Guid courseId);
+        public Task<CourseDetailsDto?> GetCourseDetailsByIdAsync(Guid courseId, string learnerId);
         //public IEnumerable<string> GetAllCourses();
 
         public Task<PaginatedCoursesDto> GetAllCourses(int page, int pageSize);

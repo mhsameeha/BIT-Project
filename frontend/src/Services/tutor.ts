@@ -2,6 +2,49 @@ import { api, isApiError } from '../lib/api-client';
 import type { PaginatedCourse } from "@/types/course";
 import type { Session } from "@/types/session";
 
+export interface TutorDetailData {
+  tutorId: string;
+  firstName: string;
+  lastName: string;
+  tutorName: string;
+  tutorDescription: string;
+  tutorRate: number;
+  status: string;
+  experience: string;
+  education: string;
+  language: string[];
+  specialities: string[];
+  hasAvailableTimeSlots: boolean;
+}
+
+export interface LearnerInfo {
+  learnerId: string;
+  userId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+}
+
+export async function getAvailableTutors(): Promise<TutorDetailData[] | { error: string }> {
+  const result = await api.get<TutorDetailData[]>('/api/Tutor/available-tutors');
+  
+  if (isApiError(result)) {
+    return { error: result.error };
+  }
+  
+  return result;
+}
+
+export async function getLearnerInfo(): Promise<LearnerInfo | { error: string }> {
+  const result = await api.get<LearnerInfo>('/api/Tutor/learner-info');
+  
+  if (isApiError(result)) {
+    return { error: result.error };
+  }
+  
+  return result;
+}
+
 export async function getCoursesByTutor(page = 1): Promise<PaginatedCourse | { error: string }> {
   const result = await api.get<PaginatedCourse>(`/api/Tutor/tutorCourses/${page}`);
   
