@@ -16,10 +16,12 @@ namespace BusinessService.Models.Entities
             public Guid PaymentId { get; set; } 
             [Column("paymentType")]
             public string? PaymentType { get; set; }
-            [Column("tutorFk")]
+        [ForeignKey("Tutor")]
+        [Column("tutorFk")]
             public Guid? TutorFk { get; set; }
             [Column("learnerFk")]
-            public Guid? LearnerFk { get; set; }
+        [ForeignKey("Learner")]
+        public Guid? LearnerFk { get; set; }
             [Column("amount")]
             public decimal? Amount { get; set; }
             [Column("currency")]
@@ -34,6 +36,9 @@ namespace BusinessService.Models.Entities
             public Guid? CourseFk { get; set; }
             [Column("paymentProof")]
             public byte[]? PaymentProof { get; set; }
+
+        public virtual Tutor Tutor { get; set; }
+        public virtual Learner Learner { get; set; }
 
 
     }

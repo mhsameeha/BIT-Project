@@ -18,8 +18,11 @@ namespace BusinessService.Models.Entities
         [Column("sessionLink")]
         public string? SessionLink { get; set; }
         [Column("learnerFk")]
+        [ForeignKey("Learner")]
         public Guid? LearnerFk { get; set; }
+        [ForeignKey("Tutor")]
         [Column("tutorFk")]
+
         public Guid? TutorFk { get; set; }
         [Column("startTime")]
         public DateTime StartTime { get; set; }
@@ -40,6 +43,8 @@ namespace BusinessService.Models.Entities
         public string? RequestMessage { get; set; }
         [Column("rejectionReason")]
         public string? RejectionReason { get; set; }
+        public virtual Tutor Tutor { get; set; }
+        public virtual Learner Learner { get; set; }
 
     }
 

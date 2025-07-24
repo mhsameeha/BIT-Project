@@ -48,6 +48,55 @@ namespace mybackend.Controllers
             }
         }
 
+        //GET: api/<TutorController>/tutor/{tutorId}
+        [HttpGet("tutor/{tutorId}")]
+        public IActionResult GetTutorById(string tutorId)
+        {
+            try
+            {
+                if (!Guid.TryParse(tutorId, out Guid tutorGuid))
+                {
+                    return BadRequest(new { error = "Invalid tutor ID format" });
+                }
+
+                ITutorService tutorService = new TutorService(_context);
+                var result = tutorService.GetTutorById(tutorGuid);
+                
+                if (result == null)
+                {
+                    return NotFound(new { error = "Tutor not found" });
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Failed to retrieve tutor", message = ex.Message });
+            }
+        }
+
+        //GET: api/<TutorController>/availability/{tutorId}
+        [HttpGet("availability/{tutorId}")]
+        public IActionResult GetTutorAvailability(string tutorId)
+        {
+            try
+            {
+                if (!Guid.TryParse(tutorId, out Guid tutorGuid))
+                {
+                    return BadRequest(new { error = "Invalid tutor ID format" });
+                }
+
+                ITutorService tutorService = new TutorService(_context);
+                var result = tutorService.GetTutorAvailability(tutorGuid);
+                
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Failed to retrieve tutor availability", message = ex.Message });
+            }
+        }
+
         //GET: api/<TutorController>/learner-info
         [HttpGet("learner-info")]
         public IActionResult GetLearnerFromClaims()

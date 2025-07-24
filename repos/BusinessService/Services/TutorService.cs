@@ -348,6 +348,219 @@ namespace BusinessService.Services
                 return new List<TutorDetailDto>();
             }
         }
+
+        public TutorDetailDto GetTutorById(Guid tutorId)
+        {
+            try
+            {
+                var tutorData = (from tutor in _context.Tutors
+                               join user in _context.Users on tutor.UserFk equals user.UserId
+                               where tutor.TutorId == tutorId && tutor.Status == "Approved"
+                               select new { 
+                                   TutorId = tutor.TutorId,
+                                   UserFk = tutor.UserFk,
+                                   TutorDescription = tutor.TutorDescription,
+                                   TutorRate = tutor.TutorRate,
+                                   Status = tutor.Status,
+                                   Experience = tutor.Experience,
+                                   Education = tutor.Education,
+                                   FirstName = user.FirstName,
+                                   LastName = user.LastName
+                               }).FirstOrDefault();
+
+                if (tutorData == null)
+                    return null;
+
+                // Check if tutor has enabled time slots
+                var hasAvailableTimeSlots = _context.TutorWeeklyAvailabilities
+                    .Any(wa => wa.TutorId == tutorData.TutorId && 
+                              _context.TutorTimeslots.Any(ts => ts.AvailabilityId == wa.AvailabilityId));
+
+                // Get specialities for this tutor
+                var specialities = (from ts in _context.TutorSpecialities
+                                  join s in _context.Specialities on ts.SpecialityFk equals s.SpecialityId
+                                  where ts.TutorFk == tutorData.TutorId
+                                  select s.SpecialityName ?? string.Empty).ToList();
+
+                return new TutorDetailDto
+                {
+                    TutorId = tutorData.TutorId,
+                    FirstName = tutorData.FirstName,
+                    LastName = tutorData.LastName,
+                    TutorName = (tutorData.FirstName ?? "") + " " + (tutorData.LastName ?? ""),
+                    TutorDescription = tutorData.TutorDescription,
+                    TutorRate = tutorData.TutorRate,
+                    Status = tutorData.Status,
+                    Experience = tutorData.Experience,
+                    Education = tutorData.Education,
+                    Language = new string[] { "English" }, // Default language for now
+                    Specialities = specialities,
+                    HasAvailableTimeSlots = hasAvailableTimeSlots
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetTutorById: {ex.Message}");
+                throw new Exception("Failed to retrieve tutor details", ex);
+            }
+        }
+
+        public object GetTutorAvailability(Guid tutorId)
+        {
+            try
+            {
+                // Get tutor's weekly availability settings
+                var weeklyAvailabilities = _context.TutorWeeklyAvailabilities
+                    .Where(wa => wa.TutorId == tutorId)
+                    .ToList();
+
+                if (!weeklyAvailabilities.Any())
+                {
+                    return new TutorAvailabilityResponseDto
+                    {
+                        TutorId = tutorId,
+                        Availability = new List<TutorAvailabilityDto>(),
+                        DateAvailability = new List<TutorDateAvailabilityDto>()
+                    };
+                }
+
+                // Get all time slots for these availabilities
+                var availabilityIds = weeklyAvailabilities.Select(wa => wa.AvailabilityId).ToList();
+                var timeSlots = _context.TutorTimeslots
+                    .Where(ts => availabilityIds.Contains(ts.AvailabilityId))
+                    .ToList();
+
+                // Generate dates for the next 30 days
+                var startDate = DateTime.Today;
+                var endDate = startDate.AddDays(30);
+                var dateAvailabilities = new List<TutorDateAvailabilityDto>();
+
+                for (var date = startDate; date <= endDate; date = date.AddDays(1))
+                {
+                    var dayOfWeek = date.DayOfWeek.ToString();
+                    
+                    // Find weekly availability for this day
+                    var weeklyAvailability = weeklyAvailabilities
+                        .FirstOrDefault(wa => wa.Day.Equals(dayOfWeek, StringComparison.OrdinalIgnoreCase));
+
+                    if (weeklyAvailability != null)
+                    {
+                        // Get time slots for this day
+                        var dayTimeSlots = timeSlots
+                            .Where(ts => ts.AvailabilityId == weeklyAvailability.AvailabilityId)
+                            .Where(ts => !IsTimeSlotBookedForDate(tutorId, date, ts.Starttime))
+                            .Select(ts => ts.Starttime)
+                            .OrderBy(ts => ConvertTimeToSortable(ts))
+                            .ToList();
+
+                        if (dayTimeSlots.Any())
+                        {
+                            dateAvailabilities.Add(new TutorDateAvailabilityDto
+                            {
+                                Date = date,
+                                DayOfWeek = dayOfWeek,
+                                TimeSlots = dayTimeSlots
+                            });
+                        }
+                    }
+                }
+
+                // Also maintain backward compatibility with old format
+                var weeklyAvailabilityDto = weeklyAvailabilities
+                    .Select(wa => new TutorAvailabilityDto
+                    {
+                        Day = wa.Day,
+                        TimeSlots = timeSlots
+                            .Where(ts => ts.AvailabilityId == wa.AvailabilityId)
+                            .Select(ts => ts.Starttime)
+                            .OrderBy(ts => ConvertTimeToSortable(ts))
+                            .ToList()
+                    })
+                    .ToList();
+
+                return new TutorAvailabilityResponseDto
+                {
+                    TutorId = tutorId,
+                    Availability = weeklyAvailabilityDto,
+                    DateAvailability = dateAvailabilities
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetTutorAvailability: {ex.Message}");
+                return new TutorAvailabilityResponseDto
+                {
+                    TutorId = tutorId,
+                    Availability = new List<TutorAvailabilityDto>(),
+                    DateAvailability = new List<TutorDateAvailabilityDto>()
+                };
+            }
+        }
+
+        private bool IsTimeSlotBookedForDate(Guid tutorId, DateTime date, string startTime)
+        {
+            try
+            {
+                // Get sessions for this tutor on the specific date that are not cancelled or rejected
+                var bookedSessions = _context.Sessions
+                    .Where(s => s.TutorFk == tutorId 
+                               && s.StartTime.Date == date.Date
+                               && s.SessionStatus != "Cancelled" 
+                               && s.SessionStatus != "Rejected")
+                    .ToList();
+
+                // Check if any session conflicts with this time slot
+                foreach (var session in bookedSessions)
+                {
+                    var sessionStartTime = session.StartTime.ToString("HH:mm");
+                    if (TryParseToTimeSpan(startTime, out var slotTs))
+                    {
+                        var sessionTs = session.StartTime.TimeOfDay;
+                        if (sessionTs.Hours == slotTs.Hours && sessionTs.Minutes == slotTs.Minutes)
+                        {
+                            return true; // Time slot is booked
+                        }
+                    }
+                }
+
+                return false; // Time slot is available
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in IsTimeSlotBookedForDate: {ex.Message}");
+                return false; // In case of error, assume available
+            }
+        }
+
+        private bool TryParseToTimeSpan(string time, out TimeSpan result)
+        {
+            // Try parsing "10.00", "10:00", "10:00 AM", etc.
+            if (TimeSpan.TryParse(time.Replace('.', ':'), out result))
+                return true;
+            if (DateTime.TryParse(time, out var dt))
+            {
+                result = dt.TimeOfDay;
+                return true;
+            }
+            result = default;
+            return false;
+        }
+
+        private string ConvertTimeToSortable(string timeString)
+        {
+            try
+            {
+                if (DateTime.TryParse(timeString, out DateTime time))
+                {
+                    return time.ToString("HH:mm");
+                }
+                return timeString;
+            }
+            catch
+            {
+                return timeString;
+            }
+        }
     }
 }
 

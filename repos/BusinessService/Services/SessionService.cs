@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using BusinessService.Data;
 using BusinessService.Interfaces;
 using BusinessService.Models.DTOs;
@@ -59,6 +60,90 @@ namespace BusinessService.Services
 
                           }).ToList();
             return result;
+        }
+
+        public async Task<SessionBookingResponseDto> BookSession(SessionBookingRequestDto request, string learnerEmail)
+        {
+            try
+            {
+                // Get learner information from email
+                var learner = await _context.Learners
+                    .Join(_context.Users, l => l.UserFk, u => u.UserId, (l, u) => new { Learner = l, User = u })
+                    .Where(x => x.User.Email == learnerEmail)
+                    .Select(x => x.Learner)
+                    .FirstOrDefaultAsync();
+
+                if (learner == null)
+                {
+                    throw new InvalidOperationException("Learner not found");
+                }
+
+                // Verify tutor exists
+                var tutorExists = await _context.Tutors.AnyAsync(t => t.TutorId == request.TutorId);
+                if (!tutorExists)
+                {
+                    throw new InvalidOperationException("Tutor not found");
+                }
+
+                // Create session record
+                var session = new Session
+                {
+                    SessionId = Guid.NewGuid(),
+                    SessionName = request.SessionName,
+                    LearnerFk = learner.LearnerId,
+                    TutorFk = request.TutorId,
+                    StartTime = request.StartTime,
+                    EndTime = request.EndTime,
+                    SessionFee = request.SessionFee,
+                    SessionStatus = "Pending Payment Approval",
+                    IsPaid = false,
+                    RequestMessage = request.RequestMessage
+                };
+
+                _context.Sessions.Add(session);
+
+                // Create payment record
+                var payment = new Payment
+                {
+                    PaymentId = Guid.NewGuid(),
+                    PaymentType = "Session Booking",
+                    TutorFk = request.TutorId,
+                    LearnerFk = learner.LearnerId,
+                    Amount = request.SessionFee,
+                    Currency = request.Currency ?? "LKR",
+                    PaymentStatus = "Pending Verification",
+                    PaymentDate = DateTime.UtcNow,
+                    GatewayRef = request.TransactionReference
+                };
+
+                // Convert payment proof to byte array if provided
+                if (request.PaymentProof != null)
+                {
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        await request.PaymentProof.CopyToAsync(memoryStream);
+                        payment.PaymentProof = memoryStream.ToArray();
+                    }
+                }
+
+                _context.Payments.Add(payment);
+
+                // Save changes
+                await _context.SaveChangesAsync();
+
+                return new SessionBookingResponseDto
+                {
+                    SessionId = session.SessionId,
+                    PaymentId = payment.PaymentId,
+                    Message = "Session booking submitted successfully. Your payment will be verified and you will be notified once approved.",
+                    SessionStatus = session.SessionStatus,
+                    PaymentStatus = payment.PaymentStatus ?? "Pending Verification"
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Failed to book session: {ex.Message}", ex);
+            }
         }
     }
 }
