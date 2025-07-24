@@ -371,7 +371,7 @@ const fetchData = async () => {
                       Tags:
                     </Typography>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
-                       {course.tags.map((tag:string, idx) => ( 
+                       {course.tags?.map((tag:string, idx) => ( 
                         <Chip key={idx} label={tag} size="small" variant="outlined" />
                       ))} 
                     </Box>

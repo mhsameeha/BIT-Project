@@ -99,6 +99,7 @@ export interface TutorCourse {
   tags: string[];
   currency: string;
   courseContent: CourseContent[]; // Optional course content
+  havingEnrollment: boolean; // Indicates if the tutor has enrollments for this course
 }
 
 // Course details response from API

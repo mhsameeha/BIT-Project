@@ -21,11 +21,21 @@ namespace mybackend.Controllers
             _context = context;
         }
         // GET: api/<CourseController>
-        [HttpGet("GetAllCourses/{page}")]
-        public Task<PaginatedCoursesDto> GetAllCourses(int page = 1, int items = 10)
+        [HttpGet("GetAllCourses/{page}/{items}")]
+        public async Task<PaginatedCoursesDto> GetAllCourses(int page = 1, int items = 100)
         {
+            var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+            Guid? learnerId = null;
+            if (!string.IsNullOrEmpty(email))
+            {
+                learnerId = (from u in _context.Users
+                             join l in _context.Learners on u.UserId equals l.UserFk
+                             where u.Email == email
+                             select l.LearnerId).FirstOrDefault();
+                if (learnerId == Guid.Empty) learnerId = null;
+            }
             ICourseService courseService = new CourseService(_context);
-            var course = courseService.GetAllCourses(page, items);
+            var course = await courseService.GetAllCourses(page, items, learnerId);
             return course;
         }
 

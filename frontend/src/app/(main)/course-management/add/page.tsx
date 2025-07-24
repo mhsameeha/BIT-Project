@@ -40,7 +40,7 @@ import {
 // import { addCourse } from '../../../../constants/courses';
 import type { TutorCourse } from '../../../../types/course';
 import { Category } from '@/types/category';
-import { getAllCategories, getAllLanguages, getAllLevels } from '@/Services/courses';
+import { addCourse, getAllCategories, getAllLanguages, getAllLevels } from '@/Services/courses';
 import { Language } from '@/types/language';
 import { useForm } from 'react-hook-form';
 import { Level } from '@/types/level';
@@ -54,7 +54,7 @@ interface SubContent {
   type: 'video' | 'document' | 'both';
   videoFile?: File | null;
   documentFile?: File | null;
-  videoUrl?: string; // For display purposes
+  filePath?: string; // For display purposes
   documentUrl?: string; // For display purposes
 }
 
@@ -341,6 +341,8 @@ export default function AddCoursePage(): React.JSX.Element {
                       ...sub,
                       [fileType === 'video' ? 'videoFile' : 'documentFile']: file,
                       [fileType === 'video' ? 'videoUrl' : 'documentUrl']: fileUrl,
+                      filePath: `/resources/${file.name}`,
+                      type: fileType,
                     }
                   : sub
               ),
@@ -692,9 +694,9 @@ export default function AddCoursePage(): React.JSX.Element {
                                                     );
                                                   }}
                                                 >
-                                                  <MenuItem value="video">Video Only</MenuItem>
-                                                  <MenuItem value="document">Document Only</MenuItem>
-                                                  <MenuItem value="both">Video + Document</MenuItem>
+                                                  <MenuItem value="video">Video </MenuItem>
+                                                  <MenuItem value="document">Document </MenuItem>
+                                                
                                                 </Select>
                                               </FormControl>
                                             </Grid>
@@ -927,6 +929,7 @@ export default function AddCoursePage(): React.JSX.Element {
                           label="Course Fee"
                           placeholder="e.g., 3000 (LKR 2000-6000 per hour typical)"
                           value={formData.price}
+                          slotProps={{ min: 0 }}
                           onChange={(e) => {
                             setFormData((prev) => ({ ...prev, price: parseFloat(e.target.value) ?? 0 }));
                           }}
@@ -1027,7 +1030,3 @@ export default function AddCoursePage(): React.JSX.Element {
     </Container>
   );
 }
-function addCourse(formData: CourseFormData): { error: any; } | PromiseLike<{ error: any; }> {
-  throw new Error('Function not implemented.');
-}
-

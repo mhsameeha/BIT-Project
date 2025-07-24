@@ -12,33 +12,20 @@ import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Unstable_Grid2';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/dist/ssr/MagnifyingGlass';
 
 import { CourseListItem } from '@/components/main/courses/course-list-item';
 import { getAllCategories, getAllLevels, getAllCourses } from '@/Services/courses';
-import { Category } from '@/types/category';
-import { Course, PaginatedCourse, TutorCourse } from '@/types/course';
-import { Level } from '@/types/level';
-import { Button } from '@mui/material';
-
-
-
-
-// Search courses function
-// const searchCourses = (query: string): Course[] => {
-//   const lowercaseQuery = query.toLowerCase();
-//   return getAllCourses().filter(course => 
-//     course.title.toLowerCase().includes(lowercaseQuery) ||
-//     course.introduction.toLowerCase().includes(lowercaseQuery) ||
-//     course.categoryName.toLowerCase().includes(lowercaseQuery) ||
-//     course.tutorName.toLowerCase().includes(lowercaseQuery) ||
-//     course.section.toLowerCase().includes(lowercaseQuery)
-//   );
-// };
+import type { Category } from '@/types/category';
+import type { PaginatedCourse, TutorCourse } from '@/types/course';
+import type { Level } from '@/types/level';
 
 
 export default function Page(): React.JSX.Element {
   const [paginatedCourses, setPaginatedCourses] = React.useState<PaginatedCourse>();
+  const [filteredCourses, setFilteredCourses] = React.useState<TutorCourse[]>([]);
 
   const [searchQuery, setSearchQuery] = React.useState<string>('');
   const [selectedCategories, setSelectedCategories] = React.useState<string[]>([]);
@@ -48,13 +35,14 @@ export default function Page(): React.JSX.Element {
   const [levels, setLevels] = React.useState<Level[]>([]);
 
   const [sortBy, setSortBy] = React.useState<string>('title');
+  const [showOnlyEnrolled, setShowOnlyEnrolled] = React.useState<boolean>(false);
 
   // Pagination state
   const [page, setPage] = React.useState(1);
-  const pageSize = 10;
+  const pageSize = 100;
 
   React.useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (): Promise<void> => {
       const returnValue = await getAllCategories();
       if ('error' in returnValue) {
         // Optionally, handle error UI here
@@ -62,11 +50,11 @@ export default function Page(): React.JSX.Element {
       }
       setAllCategories(returnValue);
     };
-     fetchData();
+    void fetchData();
   }, []);
 
   React.useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (): Promise<void> => {
       const returnValue = await getAllLevels();
       if ('error' in returnValue) {
         // Optionally, handle error UI here
@@ -74,11 +62,11 @@ export default function Page(): React.JSX.Element {
       }
       setLevels(returnValue);
     };
-     fetchData();
+    void fetchData();
   }, []);
 
   React.useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (): Promise<void> => {
       const returnValue = await getAllCourses(page);
       if ('error' in returnValue) {
         // Optionally, handle error UI here
@@ -86,11 +74,75 @@ export default function Page(): React.JSX.Element {
       }
 
         setPaginatedCourses(returnValue);
-         console.log('paginatedCourse', returnValue);
 
     };
-    fetchData();
+    void fetchData();
   }, [page]);
+
+  // Apply search and filtering to the loaded courses
+  React.useEffect(() => {
+    if (!paginatedCourses?.courses) {
+      setFilteredCourses([]);
+      return;
+    }
+
+    let filtered = [...paginatedCourses.courses];
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(course => 
+        course.title.toLowerCase().includes(query) ||
+        course.introduction.toLowerCase().includes(query) ||
+        course.categoryName.toLowerCase().includes(query) ||
+        course.tutorName.toLowerCase().includes(query)
+      );
+    }
+
+    // Apply category filter
+    if (selectedCategories.length > 0) {
+      filtered = filtered.filter(course =>
+        selectedCategories.includes(course.categoryName)
+      );
+    }
+
+    // Apply level filter
+    if (selectedLevels.length > 0) {
+      filtered = filtered.filter(course =>
+        selectedLevels.includes(course.courseDifficultyName)
+      );
+    }
+
+    // Apply enrolled courses filter
+    if (showOnlyEnrolled) {
+      // Note: This assumes enrolledStudents > 0 indicates the user is enrolled
+      // You may need to adjust this logic based on your actual enrollment data structure
+      filtered = filtered.filter(course => course.havingEnrollment);
+    }
+
+    // Apply sorting
+    switch (sortBy) {
+      case 'title':
+        filtered.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'rating':
+        // Rating sorting - if rating field exists
+        break;
+      case 'students':
+        // Student count sorting - if enrolledStudents field exists
+        break;
+      case 'fee':
+        filtered.sort((a, b) => a.price - b.price);
+        break;
+      case 'newest':
+        filtered.sort((a, b) => new Date(b.updatedDate || b.createdDate).getTime() - new Date(a.updatedDate || a.createdDate).getTime());
+        break;
+      default:
+        break;
+    }
+
+    setFilteredCourses(filtered);
+  }, [paginatedCourses, searchQuery, selectedCategories, selectedLevels, sortBy, showOnlyEnrolled]);
 
 
   // // Handle search and filtering
@@ -158,8 +210,9 @@ export default function Page(): React.JSX.Element {
     setSortBy(event.target.value);
   };
 
-  const totalPages = Math.max(1, Math.ceil((paginatedCourses?.totalItems ?? 0) / pageSize));
-const currentPage = Math.min(page, totalPages);
+  const handleEnrolledFilterChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    setShowOnlyEnrolled(event.target.checked);
+  };
 
   return (
     <Box sx={{ maxWidth: 'var(--Content-maxWidth)', m: 'var(--Content-margin)', p: 'var(--Content-padding)', width: 'var(--Content-width)' }}>
@@ -260,16 +313,32 @@ const currentPage = Math.min(page, totalPages);
                 </Select>
               </FormControl>
             </Grid>
+
+            {/* Show Only Enrolled Checkbox */}
+            <Grid xs={12} lg={3}>
+              <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={showOnlyEnrolled}
+                      onChange={handleEnrolledFilterChange}
+                      color="primary"
+                    />
+                  }
+                  label="Show only Enrolled Courses"
+                />
+              </Box>
+            </Grid>
           </Grid>
         </Card>
 
         {/* Results */}
         <div>
           <Typography variant="h6" sx={{ mb: 2 }}>
-            {paginatedCourses?.courses?.length} {paginatedCourses?.courses?.length === 1 ? 'course' : 'courses'} found
+            {filteredCourses.length} {filteredCourses.length === 1 ? 'course' : 'courses'} found
           </Typography>
           
-          {paginatedCourses?.courses?.length === 0 ? (
+          {filteredCourses.length === 0 ? (
             <Card sx={{ p: 4, textAlign: 'center' }}>
               <Typography color="text.secondary" variant="body1">
                 No courses found matching your criteria. Try adjusting your search or filters.
@@ -277,16 +346,19 @@ const currentPage = Math.min(page, totalPages);
             </Card>
           ) : (
             <Grid container spacing={1}>
-              {paginatedCourses?.courses?.map((course: TutorCourse) => (
+              {filteredCourses.map((course: TutorCourse) => (
                 <Grid key={course.courseId} xs={12}>
-                  <CourseListItem course={course} />
+                  <CourseListItem course={{
+                    ...course,
+                    languages: typeof course.languages === 'string' ? [course.languages] : course.languages
+                  }} />
                 </Grid>
               ))}
             </Grid>
           )}
 
           {/* Pagination Controls */}
-          <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, gap: 2, justifyContent: 'end' }}>
+          {/* <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, gap: 2, justifyContent: 'end' }}>
             <Typography variant="body2">
               Page {currentPage} of {totalPages}
             </Typography>
@@ -299,12 +371,12 @@ const currentPage = Math.min(page, totalPages);
             </Button>
             <Button
               onClick={() => setPage((prev) => (prev + 1 < Math.ceil((paginatedCourses?.courses??[]).length / pageSize) ? prev + 1 : prev))}
-              disabled={page >= Math.ceil((paginatedCourses?.courses??[]).length / pageSize)}
+              disabled={page >= Math.ceil((paginatedCourses?.courses??[]).length / totalPages)}
               style={{ padding: '4px 12px', borderRadius: 4, border: '1px solid #ccc', background: page + 1 >= Math.ceil((paginatedCourses?.courses??[]).length / pageSize) ? 'not-allowed' : 'pointer' }}
             >
               Next
             </Button>
-          </Box>
+          </Box> */}
         </div>
       </Stack>
     </Box>

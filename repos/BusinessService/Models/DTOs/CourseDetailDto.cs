@@ -51,7 +51,7 @@ namespace BusinessService.Models.DTOs
         public string? SubContent { get; set; }
         public string? Tags { get; set; }
 
-
+        public bool HavingEnrollment { get; set; }
 
 
 

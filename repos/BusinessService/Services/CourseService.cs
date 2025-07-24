@@ -328,46 +328,54 @@ namespace BusinessService.Services
             return languages;
         }
 
-        public async Task<PaginatedCoursesDto> GetAllCourses(int page, int items)
+        public async Task<PaginatedCoursesDto> GetAllCourses(int page, int items, Guid? learnerId = null)
         {
-
-                    var ratings = await _context.CourseReviews
-                                        .GroupBy(r => r.CourseFk)
-                                        .Select(g => new
-                                        {
-                                            CourseId = g.Key,
-                                            AverageRating = g.Average(r => r.Rating),
-                                            reviewCount = g.Count()
-                                        })
-                                        .ToListAsync();
-                     var duration = _context.CourseContents  
-                                        .Select(c => new
-                                        {
-                                            c.CourseId,
-                                            c.ContentDuration
-                                        })
-                                        .AsEnumerable() // Switches to in-memory LINQ
-                                        .GroupBy(c => c.CourseId)
-                                        .Select(g => new
-                                        {
-                                            CourseId = g.Key,
-                                            TotalDuration = TimeSpan.FromTicks(
-                                                g.Sum(c =>
-                                                    TimeSpan.TryParse(c.ContentDuration, out var ts) ? ts.Ticks : 0
-                                                )
-                                            ).ToString(@"hh\:mm\:ss")
-                                        })
-                                        .ToList();
+            var ratings = await _context.CourseReviews
+                .GroupBy(r => r.CourseFk)
+                .Select(g => new
+                {
+                    CourseId = g.Key,
+                    AverageRating = g.Average(r => r.Rating),
+                    reviewCount = g.Count()
+                })
+                .ToListAsync();
+            var duration = _context.CourseContents
+                .Select(c => new
+                {
+                    c.CourseId,
+                    c.ContentDuration
+                })
+                .AsEnumerable() // Switches to in-memory LINQ
+                .GroupBy(c => c.CourseId)
+                .Select(g => new
+                {
+                    CourseId = g.Key,
+                    TotalDuration = TimeSpan.FromTicks(
+                        g.Sum(c =>
+                            TimeSpan.TryParse(c.ContentDuration, out var ts) ? ts.Ticks : 0
+                        )
+                    ).ToString(@"hh\:mm\:ss")
+                })
+                .ToList();
 
             var enrolledStudents = await _context.Enrollments
-                                       .GroupBy(r => r.CourseId)
-                                       .Select(g => new
-                                       {
-                                           CourseId = g.Key,
-                                           StudentEnrolled = g.Count(),
-                                       })
-                                       .ToListAsync();
+                .GroupBy(r => r.CourseId)
+                .Select(g => new
+                {
+                    CourseId = g.Key,
+                    StudentEnrolled = g.Count(),
+                })
+                .ToListAsync();
 
+            // Get all enrollments for the learner (if learnerId is provided)
+            var learnerEnrollments = new HashSet<Guid>();
+            if (learnerId.HasValue)
+            {
+                learnerEnrollments = _context.Enrollments
+                    .Where(e => e.LearnerFk == learnerId.Value)
+                    .Select(e => e.CourseId ?? Guid.Empty)
+                    .ToHashSet();
+            }
 
             var courses = (from course in _context.Courses
                           join category in _context.Categories on course.CategoryId equals category.CategoryId
@@ -400,22 +408,20 @@ namespace BusinessService.Services
                 ReviewCount = ratings.FirstOrDefault(r => r.CourseId == c.CourseId)?.reviewCount ?? 0,
                 Duration = duration.FirstOrDefault(r => r.CourseId == c.CourseId)?.TotalDuration ?? "0",
                 EnrolledStudents = enrolledStudents.FirstOrDefault(r => r.CourseId == c.CourseId)?.StudentEnrolled ?? 0,
-
+                HavingEnrollment = learnerId.HasValue && learnerEnrollments.Contains(c.CourseId)
             }).ToList();
-
 
             var totalCount = await _context.Courses.CountAsync();
             return new PaginatedCoursesDto
             {
                 TotalItems = totalCount,
                 Page = page,
-                PageSize = (int)Math.Ceiling((decimal)totalCount / items),
+                PageSize = items,
                 Courses = result
-                .Skip((page-1) * items)
-                .Take(items)
-                .ToList(),
+                    .Skip((page-1) * items)
+                    .Take(items)
+                    .ToList(),
             };
-          
         }
 
 
@@ -562,7 +568,7 @@ namespace BusinessService.Services
                                 SubContentId = sc.SubContentId ?? Guid.Empty,
                                 SubContentTitle = sc.SubContentTitle,
                                 SubContentDescription = sc.SubContentDescription,
-                                Type = sc.Type,
+                                Type = sc.Type.Trim(),
                                 SubContentOrder = sc.SubContentOrder ?? 0,
                                 FilePath = hasActiveEnrollment ? sc.FilePath : null
                             })

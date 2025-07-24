@@ -6,7 +6,7 @@ subContentOrder: number;
   type: 'video' | 'document' | 'both';
   videoFile?: File | null;
   documentFile?: File | null;
-  videoUrl?: string; // For display purposes
+  filePath?: string; // For display purposes
   documentUrl?: string; // For display purposes
 }
 

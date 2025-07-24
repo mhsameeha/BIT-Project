@@ -37,8 +37,9 @@ export async function getAllLevels(): Promise<Level[] | { error: string }> {
   return result;
 }
 
-export async function getAllCourses(page = 1): Promise<PaginatedCourse | { error: string }> {
-  const result = await api.get<PaginatedCourse>(`/Course/GetAllCourses/${page}`, { requireAuth: false });
+export async function getAllCourses(page = 1, pageSize = 100): Promise<PaginatedCourse | { error: string }> {
+
+  const result = await api.get<PaginatedCourse>(`/Course/GetAllCourses/${page}/${pageSize}`, { requireAuth: true });
   
   if (isApiError(result)) {
     return { error: result.error };
@@ -77,7 +78,7 @@ export async function getCourseDetails(courseId: string): Promise<CourseDetailsR
   return result;
 }
 
-async function addCourse(courseData: CourseFormData): Promise<{ data?: any; error?: string }> {
+export async function addCourse(courseData: CourseFormData): Promise<{ data?: any; error?: string }> {
   try {
     const response = await fetch(`${API_BASE_URL}/Course/AddCourse`, {
       method: 'POST',

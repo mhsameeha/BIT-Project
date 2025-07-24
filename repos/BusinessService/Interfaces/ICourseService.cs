@@ -9,7 +9,7 @@ namespace BusinessService.Interfaces
         public Task<CourseDetailsDto?> GetCourseDetailsByIdAsync(Guid courseId, string learnerId);
         //public IEnumerable<string> GetAllCourses();
 
-        public Task<PaginatedCoursesDto> GetAllCourses(int page, int pageSize);
+        public Task<PaginatedCoursesDto> GetAllCourses(int page, int pageSize, Guid? learnerId = null);
         public List<Category> GetCourseCategories();
         public List<Language> GetCourseLanguages();
 
