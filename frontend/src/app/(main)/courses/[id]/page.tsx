@@ -4,7 +4,8 @@ import * as React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import type { CourseData } from '@/constants/courses';
 import { getCourseDetails } from '@/Services/courses';
-import { submitPayment, type PaymentRequest } from '@/Services/enrollment';
+import { submitPayment, checkEnrollmentStatus, type PaymentRequest, type EnrollmentStatus } from '@/Services/enrollment';
+import { useUser } from '@/hooks/use-user';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
@@ -30,6 +31,8 @@ import { CaretDown as CaretDownIcon } from '@phosphor-icons/react/dist/ssr/Caret
 import { Clock as ClockIcon } from '@phosphor-icons/react/dist/ssr/Clock';
 import { Receipt as ReceiptIcon } from '@phosphor-icons/react/dist/ssr/Receipt';
 import { Upload as UploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
+import { Play as PlayIcon } from '@phosphor-icons/react/dist/ssr/Play';
+import { FileText as FileTextIcon } from '@phosphor-icons/react/dist/ssr/FileText';
 import dayjs from 'dayjs';
 
 // Types for styled components
@@ -71,6 +74,7 @@ const VisuallyHiddenInput = styled('input')({
 export default function CourseDetailPage(): React.JSX.Element {
   const params = useParams();
   const router = useRouter();
+  const { user } = useUser();
   const courseId = params.id as string;
   const [expandedSection, setExpandedSection] = React.useState<number | false>(false);
   const [course, setCourse] = React.useState<CourseData | null>(null);
@@ -84,6 +88,11 @@ export default function CourseDetailPage(): React.JSX.Element {
   const [uploadError, setUploadError] = React.useState<string | null>(null);
   const [isSubmittingPayment, setIsSubmittingPayment] = React.useState(false);
   const [paymentSuccess, setPaymentSuccess] = React.useState<string | null>(null);
+  const [enrollmentPending, setEnrollmentPending] = React.useState(false);
+  
+  // Enrollment status state
+  const [enrollmentStatus, setEnrollmentStatus] = React.useState<EnrollmentStatus | null>(null);
+  const [checkingEnrollment, setCheckingEnrollment] = React.useState(false);
 
   React.useEffect(() => {
     const fetchCourseData = async (): Promise<void> => {
@@ -91,8 +100,7 @@ export default function CourseDetailPage(): React.JSX.Element {
       setError(null);
       
       try {
-
-        // If not found in static data, try API
+        // Fetch course details
         const apiResult = await getCourseDetails(courseId);
         if ('error' in apiResult) {
           setError(apiResult.error);
@@ -121,6 +129,8 @@ export default function CourseDetailPage(): React.JSX.Element {
               lessons: content.subContent?.map((sub, subIndex) => ({
                 id: subIndex + 1,
                 title: sub.subContentTitle,
+                type: sub.type,
+                filePath: sub.filePath,
                 duration: '10 min' // SubContent doesn't have duration in the API
               })) || []
             })) || [],
@@ -134,6 +144,21 @@ export default function CourseDetailPage(): React.JSX.Element {
             })) || []
           };
           setCourse(transformedCourse);
+
+            setCheckingEnrollment(true);
+            const enrollmentResult = await checkEnrollmentStatus(courseId);
+            
+            if ('error' in enrollmentResult) {
+              // No enrollment found or error - user can enroll
+              setEnrollmentStatus(null);
+            } else {
+              // Enrollment exists - check status
+              setEnrollmentStatus(enrollmentResult);
+              if (enrollmentResult.enrollmentStatus === 'Pending Verification') {
+                setEnrollmentPending(true);
+              }
+            }
+            setCheckingEnrollment(false);
         }
       } catch (err) {
         setError('Failed to load course data');
@@ -143,7 +168,15 @@ export default function CourseDetailPage(): React.JSX.Element {
     };
 
     void fetchCourseData();
-  }, [courseId]);
+  }, [courseId, user?.id]);
+
+  const handleOpenContent = (filePath: string, _type: string): void => {
+    if (filePath) {
+      console.log('Opening content:', filePath);
+      // Open the content in a new tab
+      window.open(filePath, '_blank', 'noopener,noreferrer');
+    }
+  };
 
   const handleBackToCourses = (): void => {
     router.push('/courses/list');
@@ -218,11 +251,10 @@ export default function CourseDetailPage(): React.JSX.Element {
       } else {
         // Success
         setPaymentSuccess(result.message);
+        setEnrollmentPending(true);
         // Close modal after a short delay to show success message
         setTimeout(() => {
           handleClosePaymentModal();
-          // You might want to redirect to a success page or show a toast
-          router.push('/courses/list?payment=success');
         }, 2000);
       }
     } catch (paymentError) {
@@ -285,6 +317,40 @@ export default function CourseDetailPage(): React.JSX.Element {
 
         {/* Course Header Section */}
         <MainCard>
+          {(enrollmentPending || enrollmentStatus?.enrollmentStatus === 'Pending Verification') ? (
+            <Box sx={{ mb: 3 }}>
+              <Paper elevation={2} sx={{ p: 3, backgroundColor: 'success.light', color: 'success.contrastText' }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                  🎉 Payment Successful!
+                </Typography>
+                <Typography variant="body2">
+                  Your payment has been submitted successfully. Your enrollment is pending verification and you will be notified once it&apos;s approved.
+                </Typography>
+              </Paper>
+            </Box>
+          ) : enrollmentStatus?.enrollmentStatus === 'Active' ? (
+            <Box sx={{ mb: 3 }}>
+              <Paper elevation={2} sx={{ p: 3, backgroundColor: 'info.light', color: 'info.contrastText' }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                  ✅ Already Enrolled
+                </Typography>
+                <Typography variant="body2">
+                  You are already enrolled in this course. Access your course materials from your dashboard.
+                </Typography>
+              </Paper>
+            </Box>
+          ) : enrollmentStatus?.enrollmentStatus === 'Rejected' ? (
+            <Box sx={{ mb: 3 }}>
+              <Paper elevation={2} sx={{ p: 3, backgroundColor: 'error.light', color: 'error.contrastText' }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                  ❌ Enrollment Rejected
+                </Typography>
+                <Typography variant="body2">
+                  Your previous enrollment was rejected. Please contact support for more information.
+                </Typography>
+              </Paper>
+            </Box>
+          ) : null}
           <Stack spacing={3}>
             {/* Course Title and Basic Info */}
             <Box>
@@ -349,11 +415,19 @@ export default function CourseDetailPage(): React.JSX.Element {
                 variant="contained"
                 size="large"
                 onClick={handleEnrollNow}
+                disabled={enrollmentPending || (enrollmentStatus?.enrollmentStatus === 'Pending Verification' || enrollmentStatus?.enrollmentStatus === 'Active') || checkingEnrollment}
                 sx={{
                   minWidth: '150px',
                 }}
               >
-                Enroll Now
+                {checkingEnrollment 
+                  ? 'Checking...' 
+                  : enrollmentPending || (enrollmentStatus?.enrollmentStatus === 'Pending Verification')
+                    ? 'Pending Verification'
+                    : enrollmentStatus?.enrollmentStatus === 'Active'
+                      ? 'Already Enrolled'
+                      : 'Enroll Now'
+                }
               </Button>
             </Stack>
           </Stack>
@@ -409,6 +483,53 @@ export default function CourseDetailPage(): React.JSX.Element {
                       <Typography variant="body1" sx={{ flexGrow: 1 }}>
                         {lesson.title}
                       </Typography>
+                      
+                      {/* Content Type Icons */}
+                      {lesson.filePath ? (
+                        <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                          {lesson.type === 'video' && (
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              startIcon={<PlayIcon size={16} />}
+                              onClick={() => { handleOpenContent(lesson.filePath!, lesson.type!); }}
+                              sx={{ 
+                                minWidth: 'auto',
+                                px: 1,
+                                py: 0.5,
+                                fontSize: '0.75rem',
+                                '&:hover': {
+                                  backgroundColor: 'primary.light',
+                                  color: 'primary.contrastText'
+                                }
+                              }}
+                            >
+                              Video
+                            </Button>
+                          )}
+                          {lesson.type === 'document' && (
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              startIcon={<FileTextIcon size={16} />}
+                              onClick={() => { handleOpenContent(lesson.filePath!, lesson.type!); }}
+                              sx={{ 
+                                minWidth: 'auto',
+                                px: 1,
+                                py: 0.5,
+                                fontSize: '0.75rem',
+                                '&:hover': {
+                                  backgroundColor: 'secondary.light',
+                                  color: 'secondary.contrastText'
+                                }
+                              }}
+                            >
+                              Document
+                            </Button>
+                          )}
+                        </Stack>
+                      ) : null}
+                      
                       <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
                         <ClockIcon size={14} />
                         <Typography variant="body2" color="text.secondary">

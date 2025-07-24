@@ -1,7 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { getAllTutors, searchTutors, type TutorData } from '@/constants/tutors';
+import { type TutorData } from '@/constants/tutors';
+import { getAvailableTutors, type TutorDetailData } from '@/Services/tutor';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
@@ -15,51 +16,90 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Unstable_Grid2';
 import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/dist/ssr/MagnifyingGlass';
 import { TutorListItem } from '@/components/main/session/tutor-list-item';
-import { Speciality } from '@/types/speciality';
-import { API_BASE_URL } from '@/config';
+import type { Speciality } from '@/types/speciality';
 import { getAllSpecialties } from '@/Services/courses';
 
 export default function Page(): React.JSX.Element {
-  const [tutors, setTutors] = React.useState<TutorData[]>(getAllTutors());
+  const [tutors, setTutors] = React.useState<TutorData[]>([]);
+  const [originalTutors, setOriginalTutors] = React.useState<TutorData[]>([]);
   const [searchQuery, setSearchQuery] = React.useState<string>('');
   const [selectedSpecialties, setSelectedSpecialties] = React.useState<string[]>([]);
   const [allSpecialties, setAllSpecialties] = React.useState<Speciality[]>([]);
-
+  const [loading, setLoading] = React.useState<boolean>(true);
+  const [error, setError] = React.useState<string | null>(null);
   const [sortBy, setSortBy] = React.useState<string>('name');
 
-
-
+  // Transform API data to match TutorData interface
+  const transformTutorData = (apiTutor: TutorDetailData): TutorData => ({
+    id: apiTutor.tutorId,
+    name: apiTutor.tutorName,
+    avatar: '/assets/avatar-1.png', // Default avatar
+    title: apiTutor.tutorDescription || 'Professional Tutor',
+    specialties: apiTutor.specialities,
+    description: apiTutor.tutorDescription || '',
+    education: [], // You might want to parse this from the education field
+    experience: [], // You might want to parse this from the experience field
+    rating: 4.5, // Default rating - you might want to calculate this
+    reviewCount: 0, // Default - you might want to get this from the database
+    sessionsCompleted: 0, // Default - you might want to get this from the database
+    hourlyRate: apiTutor.tutorRate || 0,
+    currency: 'LKR',
+    languages: apiTutor.language || [],
+    availability: [], // You might want to get this from time slots
+    isAvailable: apiTutor.hasAvailableTimeSlots,
+    joinedDate: new Date(), // Default - you might want to get this from the database
+  });
 
   React.useEffect(() => {
-    const fetchData = async () => {
-      const returnValue = await getAllSpecialties();
-      if ('error' in returnValue) {
-        // Optionally, handle error UI here
-        return;
+    const fetchData = async (): Promise<void> => {
+      setLoading(true);
+      try {
+        // Fetch specialties
+        const specialtiesResult = await getAllSpecialties();
+        if ('error' in specialtiesResult) {
+          setError('Failed to load specialties');
+        } else {
+          setAllSpecialties(specialtiesResult);
+        }
 
+        // Fetch available tutors
+        const tutorsResult = await getAvailableTutors();
+        if ('error' in tutorsResult) {
+          setError('Failed to load tutors');
+        } else {
+          const transformedTutors = tutorsResult.map(transformTutorData);
+          setTutors(transformedTutors);
+          setOriginalTutors(transformedTutors);
+        }
+      } catch (err) {
+        setError('An unexpected error occurred');
+      } finally {
+        setLoading(false);
       }
-
-      console.log(returnValue);
-      setAllSpecialties(returnValue);
     };
-     fetchData();
+
+    void fetchData();
   }, []);
 
-  // Handle search and filtering
+  // Filter and search logic
   React.useEffect(() => {
-    let filteredTutors = getAllTutors();
+    let filteredTutors = [...originalTutors];
 
     // Apply search filter
-    if (searchQuery.trim()) {
-      filteredTutors = searchTutors(searchQuery.trim());
+    if (searchQuery) {
+      filteredTutors = filteredTutors.filter(tutor =>
+        tutor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        tutor.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        tutor.specialties.some(specialty => 
+          specialty.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      );
     }
 
     // Apply specialty filter
     if (selectedSpecialties.length > 0) {
-      filteredTutors = filteredTutors.filter((tutor) =>
-        selectedSpecialties.some((specialty) =>
-          tutor.specialties.some((tutorSpecialty) => tutorSpecialty.toLowerCase().includes(specialty.toLowerCase()))
-        )
+      filteredTutors = filteredTutors.filter(tutor =>
+        tutor.specialties.some(specialty => selectedSpecialties.includes(specialty))
       );
     }
 
@@ -72,7 +112,7 @@ export default function Page(): React.JSX.Element {
         filteredTutors.sort((a, b) => b.rating - a.rating);
         break;
       case 'experience':
-        filteredTutors.sort((a, b) => b.sessionsCompleted - a.sessionsCompleted);
+        filteredTutors.sort((a, b) => b.experience.length - a.experience.length);
         break;
       case 'rate':
         filteredTutors.sort((a, b) => a.hourlyRate - b.hourlyRate);
@@ -82,7 +122,7 @@ export default function Page(): React.JSX.Element {
     }
 
     setTutors(filteredTutors);
-  }, [searchQuery, selectedSpecialties, sortBy]);
+  }, [originalTutors, searchQuery, selectedSpecialties, sortBy]);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     setSearchQuery(event.target.value);
@@ -96,6 +136,54 @@ export default function Page(): React.JSX.Element {
   const handleSortChange = (event: SelectChangeEvent): void => {
     setSortBy(event.target.value);
   };
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          maxWidth: 'var(--Content-maxWidth)',
+          m: 'var(--Content-margin)',
+          p: 'var(--Content-padding)',
+          width: 'var(--Content-width)',
+        }}
+      >
+        <Stack spacing={4}>
+          <div>
+            <Typography variant="h4" sx={{ mb: 1 }}>
+              Find Your Perfect Tutor
+            </Typography>
+            <Typography color="text.secondary" variant="body1">
+              Loading tutors...
+            </Typography>
+          </div>
+        </Stack>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box
+        sx={{
+          maxWidth: 'var(--Content-maxWidth)',
+          m: 'var(--Content-margin)',
+          p: 'var(--Content-padding)',
+          width: 'var(--Content-width)',
+        }}
+      >
+        <Stack spacing={4}>
+          <div>
+            <Typography variant="h4" sx={{ mb: 1 }}>
+              Find Your Perfect Tutor
+            </Typography>
+            <Typography color="error" variant="body1">
+              {error}
+            </Typography>
+          </div>
+        </Stack>
+      </Box>
+    );
+  }
 
   return (
     <Box

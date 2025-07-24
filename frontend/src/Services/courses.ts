@@ -8,7 +8,7 @@ import type { Speciality } from '@/types/speciality';
 import { API_BASE_URL } from '@/config';
 
 export async function getAllCategories(): Promise<Category[] | { error: string }> {
-  const result = await api.get<Category[]>('/api/Course/Categories', { requireAuth: false });
+  const result = await api.get<Category[]>('/Course/Categories', { requireAuth: false });
   
   if (isApiError(result)) {
     return { error: result.error };
@@ -18,7 +18,7 @@ export async function getAllCategories(): Promise<Category[] | { error: string }
 }
 
 export async function getAllLanguages(): Promise<Language[] | { error: string }> {
-  const result = await api.get<Language[]>('/api/Course/Languages', { requireAuth: false });
+  const result = await api.get<Language[]>('/Course/Languages', { requireAuth: false });
   
   if (isApiError(result)) {
     return { error: result.error };
@@ -28,7 +28,7 @@ export async function getAllLanguages(): Promise<Language[] | { error: string }>
 }
 
 export async function getAllLevels(): Promise<Level[] | { error: string }> {
-  const result = await api.get<Level[]>('/api/Course/Difficulties', { requireAuth: false });
+  const result = await api.get<Level[]>('/Course/Difficulties', { requireAuth: false });
   
   if (isApiError(result)) {
     return { error: result.error };
@@ -38,7 +38,7 @@ export async function getAllLevels(): Promise<Level[] | { error: string }> {
 }
 
 export async function getAllCourses(page = 1): Promise<PaginatedCourse | { error: string }> {
-  const result = await api.get<PaginatedCourse>(`/api/Course/GetAllCourses/${page}`, { requireAuth: false });
+  const result = await api.get<PaginatedCourse>(`/Course/GetAllCourses/${page}`, { requireAuth: false });
   
   if (isApiError(result)) {
     return { error: result.error };
@@ -48,7 +48,7 @@ export async function getAllCourses(page = 1): Promise<PaginatedCourse | { error
 }
 
 export async function getAllSpecialties(): Promise<Speciality[] | { error: string }> {
-  const result = await api.get<Speciality[]>('/api/Speciality/Speciality', { requireAuth: false });
+  const result = await api.get<Speciality[]>('/Speciality/Speciality', { requireAuth: false });
   
   if (isApiError(result)) {
     return { error: result.error };
@@ -58,7 +58,7 @@ export async function getAllSpecialties(): Promise<Speciality[] | { error: strin
 }
 
 export async function getCourseById(courseId: string): Promise<{ error: string } | TutorCourse> {
-  const result = await api.get<TutorCourse>(`/api/Course/CourseById/${courseId}`);
+  const result = await api.get<TutorCourse>(`/Course/CourseById/${courseId}`);
   
   if (isApiError(result)) {
     return { error: result.error };
@@ -68,7 +68,7 @@ export async function getCourseById(courseId: string): Promise<{ error: string }
 }
 
 export async function getCourseDetails(courseId: string): Promise<CourseDetailsResponse | { error: string }> {
-  const result = await api.get<CourseDetailsResponse>(`/api/Course/CourseDetails/${courseId}`);
+  const result = await api.get<CourseDetailsResponse>(`/Course/CourseDetails/${courseId}`);
   
   if (isApiError(result)) {
     return { error: result.error };
@@ -114,7 +114,7 @@ export async function updateCourse(courseId: string, formData: CourseFormData | 
     return { error: 'No course data provided' };
   }
 
-  const result = await api.put<unknown>(`/api/Course/UpdateCourse/${courseId}`, formData);
+  const result = await api.put<unknown>(`/Course/UpdateCourse/${courseId}`, formData);
   
   if (isApiError(result)) {
     return { error: result.error };
@@ -128,7 +128,7 @@ export async function deleteCourse(courseId: string | undefined): Promise<boolea
     return undefined;
   }
 
-  const result = await api.delete<unknown>(`/api/Course/DeleteCourse/${courseId}`);
+  const result = await api.delete<unknown>(`/Course/DeleteCourse/${courseId}`);
   
   if (isApiError(result)) {
     return false;

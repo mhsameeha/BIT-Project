@@ -11,7 +11,6 @@ namespace BusinessService.Models.DTOs
     public class TutorData
 
     {
-
         public string? Name { get; set; }
         public DateTime? Dob { get; set; }
 
@@ -37,15 +36,14 @@ namespace BusinessService.Models.DTOs
 
         public string? AllDay { get; set; }
 
-        public List<TutorAvailabilityDto>? Availability { get; set; }
+        public List<TutorAvailabilitySlotsDto>? Availability { get; set; }
 
     }
-    public class TutorAvailabilityDto
-        {public string Day { get; set; }
+
+    public class TutorAvailabilitySlotsDto
+    {
+        public string Day { get; set; }
 
         public ICollection<TutorTimeSlot>? TimeSlots { get; set; }
     }
-
-
-    
 }

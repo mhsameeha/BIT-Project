@@ -37,7 +37,7 @@ namespace BusinessService.Models.Entities
         public List<Experience>? Experience
         {
             get => string.IsNullOrEmpty(ExperienceJson)
-        ? new List<Experience>()
+        ? new List<Experience>() 
         : JsonSerializer.Deserialize<List<Experience>>(ExperienceJson);
             set => ExperienceJson = JsonSerializer.Serialize(value);
         }

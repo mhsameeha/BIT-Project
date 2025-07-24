@@ -11,6 +11,8 @@ namespace BusinessService.Interfaces
     {
         public List<EnrollmentDto> GetEnrolledCourses(Guid learnerid);
         public Task<PaymentResponseDto> ProcessPaymentAsync(PaymentDto paymentDto, string userEmail);
+        public Task<List<EnrollmentDto>> GetEnrollmentsByLearnerEmailAsync(string userEmail);
+        public Task<EnrollmentDto?> GetCourseEnrollmentStatusAsync(string userEmail, Guid courseId);
 
         public List<EnrollmentsByTutorDto> GetEnrollmentsByTutor(string email);
     }

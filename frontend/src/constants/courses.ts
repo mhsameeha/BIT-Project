@@ -1,11 +1,11 @@
-import dayjs from 'dayjs';
-import type { TutorCourse } from '../types/course';
 
 // Types
 export interface Lesson {
   id: number;
   title: string;
   duration: string;
+  type?: string;
+  filePath?: string;
 }
 
 export interface CurriculumSection {

@@ -4,7 +4,7 @@ import type { Session } from "@/types/session";
 import { SessionStatus } from '@/types/session-status';
 
 export async function getSessionsByTutor(): Promise<Session[] | { error: string }> {
-  const result = await api.get<Session[]>('/api/Session/SessionsByTutor');
+  const result = await api.get<Session[]>('/Session/SessionsByTutor');
   
   if (isApiError(result)) {
     return { error: result.error };

@@ -11,6 +11,7 @@ namespace BusinessService.Interfaces
     public interface ISessionService
     {
         public List<SessionByTutorDto> SessionsByTutor(string email);
+        public Task<SessionBookingResponseDto> BookSession(SessionBookingRequestDto request, string learnerEmail);
         public void UpdateSessionStatus(SessionStatusDto sessionStatus, string email);
 
 

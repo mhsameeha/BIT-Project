@@ -70,7 +70,8 @@ namespace BusinessService.Services
                                   ContentId = cid,
                                   SubContentTitle = sub.SubContentTitle,
                                   SubContentDescription = sub.SubContentDescription,
-                                  Type = sub.Type
+                                  Type = sub.Type,
+                                  FilePath = sub.FilePath ?? ""
                               }).ToList()
 
                           };
@@ -430,8 +431,14 @@ namespace BusinessService.Services
             }
         }
 
-        public async Task<CourseDetailsDto?> GetCourseDetailsByIdAsync(Guid courseId)
+        public async Task<CourseDetailsDto?> GetCourseDetailsByIdAsync(Guid courseId, string email)
         {
+
+            var learnerId = (from u in _context.Users
+                             join l in _context.Learners on u.UserId equals l.UserFk
+                             where u.Email == email
+                             select l.LearnerId).FirstOrDefault();
+
             // Get course with all related data
             var courseWithRelations = await _context.Courses
                 .Where(c => c.CourseId == courseId && c.IsDeleted != true)
@@ -497,6 +504,9 @@ namespace BusinessService.Services
             var enrollmentCount = await _context.Enrollments
                 .CountAsync(e => e.CourseId == courseId);
 
+            // Check if learner has active enrollment
+            bool hasActiveEnrollment = await _context.Enrollments.AnyAsync(e => e.CourseId == courseId && e.LearnerFk == learnerId && e.EnrollmentStatus == "Active");
+
             // Calculate average rating
             var averageRating = reviews.Any() && reviews.Any(r => r.Rating.HasValue)
                 ? reviews.Where(r => r.Rating.HasValue).Average(r => r.Rating!.Value) 
@@ -553,7 +563,8 @@ namespace BusinessService.Services
                                 SubContentTitle = sc.SubContentTitle,
                                 SubContentDescription = sc.SubContentDescription,
                                 Type = sc.Type,
-                                SubContentOrder = sc.SubContentOrder ?? 0
+                                SubContentOrder = sc.SubContentOrder ?? 0,
+                                FilePath = hasActiveEnrollment ? sc.FilePath : null
                             })
                             .ToList()
                     })

@@ -163,7 +163,7 @@ class AuthClient {
   
     //Sign In API request
     try {
-      const response = await fetch(`${API_BASE_URL}/api/User/SignIn`, {
+      const response = await fetch(`${API_BASE_URL}/User/SignIn`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

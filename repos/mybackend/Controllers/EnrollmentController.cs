@@ -33,6 +33,57 @@ namespace mybackend.Controllers
             return result;
         }
 
+        // GET api/<EnrollmentController>/my-enrollments
+        [HttpGet("my-enrollments")]
+        public async Task<ActionResult<List<EnrollmentDto>>> GetMyEnrollments()
+        {
+            try
+            {
+                var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+                if (email == null)
+                {
+                    return Unauthorized(new { message = "User is not authenticated." });
+                }
+
+                IEnrollementService enrollmentService = new EnrollementService(_context);
+                var result = await enrollmentService.GetEnrollmentsByLearnerEmailAsync(email);
+                
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while fetching enrollments.", details = ex.Message });
+            }
+        }
+
+        // GET api/<EnrollmentController>/course-status/courseId
+        [HttpGet("course-status/{courseId}")]
+        public async Task<ActionResult<EnrollmentDto>> GetCourseEnrollmentStatus(Guid courseId)
+        {
+            try
+            {
+                var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+                if (email == null)
+                {
+                    return Unauthorized(new { message = "User is not authenticated." });
+                }
+
+                IEnrollementService enrollmentService = new EnrollementService(_context);
+                var result = await enrollmentService.GetCourseEnrollmentStatusAsync(email, courseId);
+                
+                if (result == null)
+                {
+                    return NotFound(new { message = "No enrollment found for this course." });
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while checking enrollment status.", details = ex.Message });
+            }
+        }
+
         // POST api/<EnrollmentController>/payment
         [HttpPost("payment")]
         public async Task<ActionResult<PaymentResponseDto>> ProcessPayment([FromForm] PaymentRequestDto request)
