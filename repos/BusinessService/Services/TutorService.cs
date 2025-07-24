@@ -311,8 +311,8 @@ namespace BusinessService.Services
 
                         // Get specialities for this tutor
                         var specialities = (from ts in _context.TutorSpecialities
-                                          join s in _context.Specialities on ts.SpecialityFk equals s.SpecialityId
-                                          where ts.TutorFk == tutorData.TutorId
+                                          join s in _context.Specialities on ts.SpecialityId equals s.SpecialityId
+                                          where ts.TutorId == tutorData.TutorId
                                           select s.SpecialityName ?? string.Empty).ToList();
 
                         var tutorDetailDto = new TutorDetailDto
@@ -379,8 +379,8 @@ namespace BusinessService.Services
 
                 // Get specialities for this tutor
                 var specialities = (from ts in _context.TutorSpecialities
-                                  join s in _context.Specialities on ts.SpecialityFk equals s.SpecialityId
-                                  where ts.TutorFk == tutorData.TutorId
+                                  join s in _context.Specialities on ts.SpecialityId equals s.SpecialityId
+                                  where ts.TutorId == tutorData.TutorId
                                   select s.SpecialityName ?? string.Empty).ToList();
 
                 return new TutorDetailDto

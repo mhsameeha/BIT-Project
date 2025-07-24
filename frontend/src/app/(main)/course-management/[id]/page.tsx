@@ -403,9 +403,7 @@ const fetchData = async () => {
                   Quick Actions
                 </Typography>
                 <Stack spacing={1}>
-                  <Button fullWidth variant="outlined" startIcon={<Users size={16} />}>
-                    View Enrollments
-                  </Button>
+                 
                   <Button fullWidth variant="outlined" startIcon={<Star size={16} />}>
                     View Reviews
                   </Button>

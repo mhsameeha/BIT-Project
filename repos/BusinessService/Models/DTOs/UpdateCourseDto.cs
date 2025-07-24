@@ -57,7 +57,7 @@ namespace BusinessService.Models.DTOs
         public string? SubContentDescription { get; set; }
         public string? Type { get; set; }
         public int? SubContentOrder { get; set; }
-
+        public string? FilePath { get; set; }
     }
 
 

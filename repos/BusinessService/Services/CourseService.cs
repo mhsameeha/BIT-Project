@@ -156,7 +156,8 @@ namespace BusinessService.Services
                     _context.SubContents.RemoveRange(subsToRemove);
 
                    
-
+                    var addedSubContents = new List<SubContent>();
+                    var updatedSubContents = new List<SubContent>();
                     foreach (var subDto in contentDto.SubContent)
                     {
                       
@@ -171,29 +172,37 @@ namespace BusinessService.Services
                             existingSub.SubContentDescription = subDto.SubContentDescription;
                             existingSub.Type = subDto.Type;
                             existingSub.SubContentOrder = subDto.SubContentOrder;
-                           
+                            existingSub.FilePath = subDto.FilePath;
+
+
+                            updatedSubContents.Add(existingSub);
                         }
                         // New subcontent - add
                         else if (subDto.SubContentId == null || !existingSubIds.Contains(subDto.SubContentId))
                         {
-                            existingContent.SubContent.Add(new SubContent
+                            var newSubContent = new SubContent
                             {
                                 SubContentId = Guid.NewGuid(),
                                 SubContentTitle = subDto.SubContentTitle,
                                 SubContentDescription = subDto.SubContentDescription,
                                 Type = subDto.Type,
                                 SubContentOrder = subDto.SubContentOrder,
-                                ContentId = contentDto.ContentId
+                                ContentId = contentDto.ContentId,
+                                FilePath = subDto.FilePath
                                 // Assuming you want to set order based on index
                                 // ... other properties
-                            });
+                            };
 
-                            _context.SubContents.AddRange(existingContent.SubContent);
+                            addedSubContents.Add(newSubContent);
+                            //_context.SubContents.UpdateRange()
                         }
+
                     }
+                    _context.SubContents.AddRange(addedSubContents);
+                    _context.SubContents.UpdateRange(updatedSubContents);
                 }
-            
-            //New content -add
+
+                //New content -add
                 else
             {
                     var contentId = Guid.NewGuid();

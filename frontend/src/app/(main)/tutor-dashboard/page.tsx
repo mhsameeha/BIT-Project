@@ -343,7 +343,7 @@ const upcomingSession = sessions.filter(session => session.sessionStatus.toLower
 
       {/* Stats Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        {/* <Grid item xs={12} sm={6} md={3}>
           <Card>
             <CardContent>
               <Stack direction="row" spacing={2} alignItems="center">
@@ -371,7 +371,7 @@ const upcomingSession = sessions.filter(session => session.sessionStatus.toLower
               </Stack>
             </CardContent>
           </Card>
-        </Grid>
+        </Grid> */}
 
         <Grid item xs={12} sm={6} md={3}>
           <Card>
@@ -544,7 +544,7 @@ const upcomingSession = sessions.filter(session => session.sessionStatus.toLower
         </Grid>
 
         {/* Newly Enrolled Students */}
-        <Grid item xs={12} md={6}>
+        {/* <Grid item xs={12} md={6}>
           <Card>
             <CardHeader 
               title="Newly Enrolled Students" 
@@ -588,7 +588,7 @@ const upcomingSession = sessions.filter(session => session.sessionStatus.toLower
               </Stack>
             </CardContent>
           </Card>
-        </Grid>
+        </Grid> */}
 
         {/* Upcoming Sessions */}
         <Grid item xs={12} md={6}>
@@ -667,7 +667,7 @@ const upcomingSession = sessions.filter(session => session.sessionStatus.toLower
                       <TableCell align="right">Total Revenue</TableCell>
                     </TableRow>
                   </TableHead>
-                  <TableBody>
+                  {/* <TableBody>
                     {TUTOR_COURSES_DATA.slice(0, 5).map((course) => {
                       const enrolledStudents = Math.floor(Math.random() * 20) + 5;
                       const completionRate = Math.floor(Math.random() * 40) + 60;
@@ -714,7 +714,7 @@ const upcomingSession = sessions.filter(session => session.sessionStatus.toLower
                         </TableRow>
                       );
                     })}
-                  </TableBody>
+                  </TableBody> */}
                 </Table>
               </TableContainer>
             </CardContent>
