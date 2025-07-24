@@ -8,7 +8,7 @@ export type RoleType = typeof Role[keyof typeof Role];
 
 export const allowedNavKeys: Record<RoleType, string[]> = {
   [Role.LEARNER]: [
-    'dashboard',
+    'learner-dashboard',
     'courses',
     'session',
     'reports',
@@ -26,8 +26,8 @@ export const allowedNavKeys: Record<RoleType, string[]> = {
     'error',
   ],
   [Role.ADMIN]: [
-    'tutors/[tutorId]',
-    'overview',
+    'admin-dashboard',
+    'tutor-management',
     'courses',
     'session',
     'admin-reports',

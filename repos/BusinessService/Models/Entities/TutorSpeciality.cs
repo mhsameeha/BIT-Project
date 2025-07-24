@@ -9,13 +9,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BusinessService.Models.Entities
 {
-    [PrimaryKey(nameof(TutorFk), nameof(SpecialityFk))]
+    [PrimaryKey(nameof(TutorId), nameof(SpecialityId))]
     public class TutorSpeciality
         {
         [Column("tutorFk")]
-            public Guid TutorFk { get; set; }
+            public Guid TutorId { get; set; }
         [Column("specialityFk")]
-            public Guid SpecialityFk { get; set; }
+            public Guid SpecialityId { get; set; }
+        [ForeignKey("TutorId")]
+        public Tutor Tutor { get; set; }
+        [ForeignKey("SpecialityId")]
+        public Speciality Speciality { get; set; }
 
  
         }

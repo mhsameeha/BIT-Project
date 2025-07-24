@@ -90,7 +90,7 @@ export default function TutorProfilePage(): React.JSX.Element {
         <Button
           startIcon={<ArrowLeft />}
           onClick={() => {
-            router.push(paths.main.overview);
+            router.push(paths.main.tutorDashboard);
           }}
           sx={{ mt: 2 }}
         >

@@ -24,17 +24,48 @@ namespace BusinessService.Services
         {
 
             var oneMonthAgo = DateTime.Now.AddDays(-30);
-            var tutors = _context.Users
-                        .Include(t => t.Tutor)
-                        .Where(t => t.Tutor.Status.ToLower() == "pending")
-                        .Select(g => new RecentTutorApplicationsDto
-                        {
-                            TutorId = g.Tutor.TutorId,
-                            TutorName = g.FirstName + ' ' + g.LastName,
-                            Status = g.Tutor.Status,
-                            ApprovalRequestDate = g.Tutor.ApprovalRequestDate
-                        })
-                     .ToList();
+            var tutorEdu = _context.Tutors
+                            .Select(t => new
+                            {
+                                TutorId = t.TutorId,
+                                Education = t.Education,
+                            }
+                            ).ToList();
+
+            var tutorSpec = _context.TutorSpecialities
+                            .Include(t => t.Speciality)
+                            .GroupBy(t => t.TutorId)
+                            .Select(g => new
+                            {
+                                TutorId = g.Key,
+                                Specialities = g.Select(s => s.Speciality.SpecialityName).ToList()
+
+                            }).ToList();
+
+        var tutors = _context.Tutors
+                .Include(t => t.Users)
+                .Select(t => new TutorApplicationsDto
+                {
+                    TutorId = t.TutorId,
+                    TutorName = t.Users.FirstName + " " + t.Users.LastName,
+                    Status = char.ToUpper(t.Status[0]) + t.Status.Substring(1).ToLower(),
+                    ApprovalRequestDate = t.ApprovalRequestDate,
+                    Email = t.Users.Email,
+                }).ToList();
+
+            //var newt =( from s in  tutorSpec
+            //           join t in tutors on s.TutorId equals t.TutorId into joined
+            //           from sp in joined.DefaultIfEmpty()
+            //           select new TutorApplicationsDto
+            //           {
+            //               TutorId = sp.TutorId,
+            //               TutorName = sp.TutorName,
+            //               Status = sp.Status,
+            //               ApprovalRequestDate = sp.ApprovalRequestDate,
+            //               Email = sp.Email,
+            //               Specialities = s != null ? s.Specialities : new List<string>(),
+            //           }).ToList();
+
 
             var totalTutors = _context.Tutors
                              .Where(x => x.Status.ToLower() == "Approved")
@@ -88,7 +119,7 @@ namespace BusinessService.Services
                 TotalTutors = totalTutors,
                 PendingTutorApprovals = pendingApprovals,
                 ApprovedTutors = approvedTutors,
-                RecentTutorApplications = tutors,
+                TutorApplications = tutors,
                 NewStudentsThisMonth = newStudentsThisMonth
 
 
@@ -98,6 +129,8 @@ namespace BusinessService.Services
 
             return adminDashbaordData;
         }
+
+
 
         public string ApproveTutorApplication(Guid tutorId)
         {

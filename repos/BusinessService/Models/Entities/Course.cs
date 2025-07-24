@@ -52,6 +52,6 @@ namespace BusinessService.Models.Entities
         public Category? Category { get; set; }
         public CourseDifficulty? CourseDifficulty { get; set; }
         public ICollection<CourseContent> CourseContent { get; set; } = new List<CourseContent>();
-        public ICollection<Enrollment>? Enrollment { get; set; }
+        public List<Enrollment> Enrollment { get; set; }
     }
 }

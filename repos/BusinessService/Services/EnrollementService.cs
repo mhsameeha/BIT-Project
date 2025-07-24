@@ -31,6 +31,35 @@ namespace BusinessService.Services
             return result;
         }
 
+        public List<EnrollmentsByTutorDto> GetEnrollmentsByTutor(string email)
+        {
+            //var tutors = (from u in _context.Users
+            //              join t in _context.Tutors on u.UserId equals t.UserId
+            //              where u.Email == email
+            //              select new
+            //              {
+            //                  Id = t.TutorId
+            //              }).FirstOrDefault();
+
+            //if (tutors == null) return null;
+
+            //var findEnrollments = _context.Enrollments
+            //                .Include(c => c.Course)
+            //                .Where(c => c.EnrollmentStatus.ToLower() == "active")
+            //                .Select(c => new EnrollmentsByTutorDto
+            //                {
+            //                    EnrollmentId = c.EnrollmentId,
+            //                    CourseId = c.CourseId,
+            //                    CourseName = c.Course.Title,
+            //                    EnrolledDate = c.EnrolledDate,
+            //                    CoursePrice = c.Course.Price,
+            //                }).toList();
+
+            //return findEnrollments;
+
+            return null;
+                }
+
         public async Task<PaymentResponseDto> ProcessPaymentAsync(PaymentDto paymentDto, string userEmail)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();

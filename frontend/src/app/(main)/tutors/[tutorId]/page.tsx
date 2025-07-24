@@ -135,6 +135,7 @@ React.useEffect(() => {
                       <Typography variant="h6" color="text.secondary" gutterBottom>
                         {tutor.title}
                       </Typography>
+                      {tutor.status.toLowerCase() === "approved" && 
                       <Stack direction="row" alignItems="center" spacing={2}>
                         <Stack direction="row" alignItems="center" spacing={1}>
                           <Rating value={tutor.rating} readOnly size="small" />
@@ -147,6 +148,7 @@ React.useEffect(() => {
                           <Typography variant="body2">{tutor.sessionsCompleted} sessions completed</Typography>
                         </Stack>
                       </Stack>
+                      }
                     </div>
 
                     {/* <Stack direction="row" spacing={1} flexWrap="wrap">
@@ -258,6 +260,7 @@ React.useEffect(() => {
             </Card>
 
             {/* Availability Card */}
+             {tutor.status.toLowerCase() === "approved" && 
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -278,15 +281,16 @@ React.useEffect(() => {
                   ))}
                 </Stack> */}
               </CardContent>
-            </Card>
+             </Card> }
 
-            {/* Stats Card */}
+             {/* Stats Card */}
+             {tutor.status.toLowerCase() === "approved" && 
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
                   Statistics
                 </Typography>
-                <Stack spacing={2}>
+             <Stack spacing={2}>
                   <Stack direction="row" justifyContent="space-between">
                     <Typography variant="body2">Member since:</Typography>
                     <Typography variant="body2" fontWeight="medium">
@@ -317,6 +321,7 @@ React.useEffect(() => {
                 </Stack>
               </CardContent>
             </Card>
+            }
           </Grid>
         </Grid>
       </Stack>

@@ -5,6 +5,10 @@ export const navItems = [
   // { key: 'overview', title: 'Overview', href: paths.main.overview, icon: 'chart-pie' },
   { key: 'tutor-dashboard', title: 'Tutor Dashboard', href: paths.main.tutorDashboard, icon: 'chart-pie' },
   { key: 'overview', title: 'Dashboard', href: paths.main.learnerdashboard, icon: 'chart-pie' },
+  { key: 'tutor-management', title: 'Tutor Management', href: paths.main.tutorManagement, icon: 'chart-pie' },
+  { key: 'admin-management', title: 'Admin Management', href: paths.main.adminDashboard, icon: 'chart-pie' },
+
+
 
   // { key: 'customers', title: 'Customers', href: paths.main.customers, icon: 'users' },
   { key: 'courses', title: 'Courses', href: paths.main.courses, icon: 'users' },

@@ -37,10 +37,9 @@ import {
   VideoCamera,
 } from '@phosphor-icons/react/dist/ssr';
 
-// import { addCourse } from '../../../../constants/courses';
 import type { TutorCourse } from '../../../../types/course';
 import { Category } from '@/types/category';
-import { getAllCategories, getAllLanguages, getAllLevels } from '@/Services/courses';
+import { addCourse, getAllCategories, getAllLanguages, getAllLevels } from '@/Services/courses';
 import { Language } from '@/types/language';
 import { useForm } from 'react-hook-form';
 import { Level } from '@/types/level';
@@ -1026,8 +1025,5 @@ export default function AddCoursePage(): React.JSX.Element {
     </Container>
     </Container>
   );
-}
-function addCourse(formData: CourseFormData): { error: any; } | PromiseLike<{ error: any; }> {
-  throw new Error('Function not implemented.');
 }
 
