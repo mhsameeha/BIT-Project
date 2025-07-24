@@ -18,7 +18,7 @@ namespace BusinessService.Services
         public string AddCourse(CourseDto newCourse, string email)
         {
             var tutor = (from u in _context.Users
-                        join t in _context.Tutors on u.UserId equals t.UserFk
+                        join t in _context.Tutors on u.UserId equals t.UserId
                         where u.Email == email
                         select new
                         {
@@ -37,8 +37,8 @@ namespace BusinessService.Services
                     Title = newCourse.Title,
                     Description = newCourse.Description,
                     Introduction = newCourse.Introduction,
-                    CategoryFk = newCourse.CategoryFk,
-                    CourseDifficultyFk = newCourse.CourseDifficultyFk,
+                    CategoryId = newCourse.CategoryFk,
+                    CourseDifficultyId = newCourse.CourseDifficultyFk,
                     Price = newCourse.Price,
                     IsEnabled = true,
                     LanguageFk = newCourse.LanguageFk,
@@ -67,7 +67,7 @@ namespace BusinessService.Services
                               SubContent = content.SubContent.Select((sub, index) => new SubContent
                               {
                                   SubContentId = Guid.NewGuid(),
-                                  ContentFk = cid,
+                                  ContentId = cid,
                                   SubContentTitle = sub.SubContentTitle,
                                   SubContentDescription = sub.SubContentDescription,
                                   Type = sub.Type,
@@ -94,7 +94,7 @@ namespace BusinessService.Services
         public string UpdateCourse(UpdateCourseDto updatedCourse, string email, Guid courseId)
         {
                 var tutor = (from u in _context.Users
-                             join t in _context.Tutors on u.UserId equals t.UserFk
+                             join t in _context.Tutors on u.UserId equals t.UserId
                              where u.Email == email
                              select new
                              {
@@ -129,12 +129,10 @@ namespace BusinessService.Services
             _context.CourseContents.RemoveRange(contentsToRemove);
 
             var indexMain = 0;
-            var index = 0;
 
             foreach (var contentDto in updatedCourse.CourseContent)
             {
                 indexMain++;
-                var subIndex = 0;
                 // Existing content - update
                 if (contentDto.ContentId != Guid.Empty &&
                     existingCourseContentIds.Contains(contentDto.ContentId))
@@ -185,7 +183,7 @@ namespace BusinessService.Services
                                 SubContentDescription = subDto.SubContentDescription,
                                 Type = subDto.Type,
                                 SubContentOrder = subDto.SubContentOrder,
-                                ContentFk = contentDto.ContentId
+                                ContentId = contentDto.ContentId
                                 // Assuming you want to set order based on index
                                 // ... other properties
                             });
@@ -220,7 +218,7 @@ namespace BusinessService.Services
                             SubContentDescription = sub.SubContentDescription,
                             Type = sub.Type,
                             SubContentOrder = sub.SubContentOrder,
-                            ContentFk = contentId,
+                            ContentId = contentId,
 
 
                             // ... other properties
@@ -261,10 +259,10 @@ namespace BusinessService.Services
                 Title = findCourse.Title,
                 Description = findCourse.Description,
                 Introduction = findCourse.Introduction,
-                CategoryFk = findCourse.CategoryFk,
-                CategoryName = _context.Categories.FirstOrDefault(x => x.CategoryId == findCourse.CategoryFk)?.CategoryName,
-                CourseDifficultyFk = findCourse.CourseDifficultyFk,
-                CourseDifficultyName = _context.CourseDifficulties.FirstOrDefault(x => x.CourseDifficultyId == findCourse.CourseDifficultyFk)?.CourseDifficultyName,
+                CategoryFk = findCourse.CategoryId,
+                CategoryName = _context.Categories.FirstOrDefault(x => x.CategoryId == findCourse.CategoryId)?.CategoryName,
+                CourseDifficultyFk = findCourse.CourseDifficultyId,
+                CourseDifficultyName = _context.CourseDifficulties.FirstOrDefault(x => x.CourseDifficultyId == findCourse.CourseDifficultyId)?.CourseDifficultyName,
                 Price = findCourse.Price,
                 IsEnabled = findCourse.IsEnabled,
                 LanguageFk = findCourse.LanguageFk,
@@ -293,7 +291,7 @@ namespace BusinessService.Services
                         SubContent = content.SubContent.Select((sub, index) => new UpdateSubContentDto
                         {
                             SubContentId = sub.SubContentId,
-                            ContentFk = sub.ContentFk,
+                            ContentFk = sub.ContentId,
                             SubContentTitle = sub.SubContentTitle,
                             SubContentDescription = sub.SubContentDescription,
                             Type = sub.Type
@@ -372,10 +370,10 @@ namespace BusinessService.Services
 
 
             var courses = (from course in _context.Courses
-                          join category in _context.Categories on course.CategoryFk equals category.CategoryId
-                          join difficulty in _context.CourseDifficulties on course.CourseDifficultyFk equals difficulty.CourseDifficultyId
+                          join category in _context.Categories on course.CategoryId equals category.CategoryId
+                          join difficulty in _context.CourseDifficulties on course.CourseDifficultyId equals difficulty.CourseDifficultyId
                           join tutor in _context.Tutors on course.TutorId equals tutor.TutorId
-                          join user in _context.Users on tutor.UserFk equals user.UserId //innerJoin
+                          join user in _context.Users on tutor.UserId equals user.UserId //innerJoin
                           where (course.IsEnabled== true && course.IsDeleted == false)
                           select new 
                           {
@@ -450,11 +448,11 @@ namespace BusinessService.Services
                 {
                     Course = c,
                     Category = _context.Categories
-                        .Where(cat => cat.CategoryId == c.CategoryFk)
+                        .Where(cat => cat.CategoryId == c.CategoryId)
                         .Select(cat => cat.CategoryName)
                         .FirstOrDefault(),
                     Difficulty = _context.CourseDifficulties
-                        .Where(d => d.CourseDifficultyId == c.CourseDifficultyFk)
+                        .Where(d => d.CourseDifficultyId == c.CourseDifficultyId)
                         .Select(d => d.CourseDifficultyName)
                         .FirstOrDefault(),
                     Language = _context.Languages
@@ -462,7 +460,7 @@ namespace BusinessService.Services
                         .Select(l => l.Languages)
                         .FirstOrDefault(),
                     Tutor = (from tutor in _context.Tutors
-                            join user in _context.Users on tutor.UserFk equals user.UserId
+                            join user in _context.Users on tutor.UserId equals user.UserId
                             where tutor.TutorId == c.TutorId
                             select new
                             {

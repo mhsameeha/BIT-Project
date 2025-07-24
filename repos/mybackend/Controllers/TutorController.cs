@@ -14,7 +14,7 @@ namespace mybackend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class TutorController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -144,12 +144,13 @@ namespace mybackend.Controllers
         [HttpGet ("tutorCourses/{page}")]
         public Task<PaginatedCoursesDto> GetCoursesByTutor( int page = 1, int items = 5 )
         {
-            var email = "prof.chen@educonnect.com";
-            //var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+
+            var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
             ITutorService tutorService = new TutorService(_context);
             var course = tutorService.GetCoursesByTutor( email, page, items);
             return course;
         }
+
         [HttpGet("TutorDashboardData")]
         public IActionResult GetTutorDashboardData()
         {
@@ -157,6 +158,25 @@ namespace mybackend.Controllers
             ITutorService TutorService = new TutorService(_context);
             var result = TutorService.GetTutorDashboardData(email);
             return Ok (result);
+        }
+
+        [HttpGet("TutorData")]
+        public IActionResult GetTutorAccountDetails()
+        {
+          
+            var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+            ITutorService TutorService = new TutorService(_context);
+            var result = TutorService.GetTutorAccountDetails(email);
+            return Ok(result);
+        }
+
+        [HttpGet("TutorData/{tutorId}")]
+        public IActionResult GetTutorAccountDetails(Guid tutorId)
+        {
+
+            ITutorService TutorService = new TutorService(_context);
+            var result = TutorService.GetTutorAccountDetails(tutorId);
+            return Ok(result);
         }
 
         // PUT api/<TutorController>/5

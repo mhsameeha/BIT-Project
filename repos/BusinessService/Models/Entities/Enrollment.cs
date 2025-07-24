@@ -24,6 +24,8 @@ namespace BusinessService.Models.Entities
         public DateTime? EnrolledDate { get; set; }
         [Column("enrollmentStatus")]
         public string? EnrollmentStatus { get; set; }
+
+        public Course Course { get; set; }
     }
 
 }

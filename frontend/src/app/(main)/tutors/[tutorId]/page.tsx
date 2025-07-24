@@ -1,8 +1,9 @@
 'use client';
 
 import * as React from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import {
+  Alert,
   Avatar,
   Box,
   Button,
@@ -12,15 +13,17 @@ import {
   Container,
   Grid,
   Rating,
+  Skeleton,
   Stack,
   Typography,
-  Alert,
-  Skeleton,
 } from '@mui/material';
-import { ArrowLeft, Clock, GraduationCap, Users, Star } from '@phosphor-icons/react/dist/ssr';
+import { ArrowLeft, Clock, GraduationCap, Star, Users } from '@phosphor-icons/react/dist/ssr';
 
-import { TUTORS_DATA, type TutorData } from '../../../../constants/tutors';
+
 import { paths } from '../../../../paths';
+import { getTutorDataById } from '@/Services/tutor';
+import { TutorData } from '@/types/tutor-data';
+import dayjs from 'dayjs';
 
 export default function TutorProfilePage(): React.JSX.Element {
   const router = useRouter();
@@ -30,22 +33,37 @@ export default function TutorProfilePage(): React.JSX.Element {
   const [tutor, setTutor] = React.useState<TutorData | null>(null);
   const [loading, setLoading] = React.useState(true);
 
-  React.useEffect(() => {
+React.useEffect(() => {
     // Simulate loading
-    const timer = setTimeout(() => {
-      const tutorData = TUTORS_DATA[tutorId];
-      setTutor(tutorData || null);
+    const timer = setTimeout(async () => {
+      const tutorData = await getTutorDataById(tutorId);
+
+      if ('error' in tutorData) {
+      console.error(tutorData.error);
+    } else {
+      setTutor(tutorData); 
+      console.log("tutorD",tutor);
+    }
       setLoading(false);
     }, 500);
 
     return () => {
       clearTimeout(timer);
     };
-  }, [tutorId]);
+  },[tutorId]);
 
   const handleBookSession = (): void => {
     router.push(paths.main.sessionBooking(tutorId));
   };
+ const parsedExperience = typeof tutor?.experience === 'string'
+  ? JSON.parse(tutor?.experience)
+  : tutor?.experience;
+
+    const parsedEducation = typeof tutor?.education === 'string'
+  ? JSON.parse(tutor?.education)
+  : tutor?.experience;
+
+
 
   if (loading) {
     return (
@@ -68,17 +86,15 @@ export default function TutorProfilePage(): React.JSX.Element {
   if (!tutor) {
     return (
       <Container maxWidth="lg" sx={{ py: 3 }}>
-        <Alert severity="error">
-          Tutor not found. Please go back and select a valid tutor.
-        </Alert>
+        <Alert severity="error">Tutor Details are not Available.</Alert>
         <Button
           startIcon={<ArrowLeft />}
           onClick={() => {
-            router.push(paths.main.session);
+            router.back();
           }}
           sx={{ mt: 2 }}
         >
-          Back to Tutors
+          Back
         </Button>
       </Container>
     );
@@ -110,10 +126,7 @@ export default function TutorProfilePage(): React.JSX.Element {
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 <Stack direction="row" spacing={3} alignItems="flex-start">
-                  <Avatar
-                    src={tutor.avatar}
-                    sx={{ width: 120, height: 120 }}
-                  />
+                  <Avatar src={tutor.avatar} sx={{ width: 120, height: 120 }} />
                   <Stack spacing={2} flex={1}>
                     <div>
                       <Typography variant="h4" component="h1" gutterBottom>
@@ -131,22 +144,20 @@ export default function TutorProfilePage(): React.JSX.Element {
                         </Stack>
                         <Stack direction="row" alignItems="center" spacing={1}>
                           <Users size={16} />
-                          <Typography variant="body2">
-                            {tutor.sessionsCompleted} sessions completed
-                          </Typography>
+                          <Typography variant="body2">{tutor.sessionsCompleted} sessions completed</Typography>
                         </Stack>
                       </Stack>
                     </div>
-                    
-                    <Stack direction="row" spacing={1} flexWrap="wrap">
+
+                    {/* <Stack direction="row" spacing={1} flexWrap="wrap">
                       {tutor.specialties.map((specialty) => (
                         <Chip key={specialty} label={specialty} size="small" color="primary" variant="outlined" />
                       ))}
-                    </Stack>
+                    </Stack> */}
 
                     <Stack direction="row" spacing={1} flexWrap="wrap">
-                      {tutor.languages.map((language) => (
-                        <Chip key={language} label={language} size="small" />
+                      {tutor.languages?.map((lang) => (
+                        <Chip key={lang} label={lang} size="small" />
                       ))}
                     </Stack>
                   </Stack>
@@ -161,7 +172,7 @@ export default function TutorProfilePage(): React.JSX.Element {
                   About
                 </Typography>
                 <Typography variant="body1" paragraph>
-                  {tutor.description}
+                  {tutor.tutorDescription}
                 </Typography>
               </CardContent>
             </Card>
@@ -171,13 +182,11 @@ export default function TutorProfilePage(): React.JSX.Element {
               <CardContent>
                 <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
                   <GraduationCap />
-                  <Typography variant="h6">
-                    Education
-                  </Typography>
+                  <Typography variant="h6">Education</Typography>
                 </Stack>
                 <Stack spacing={2}>
-                  {tutor.education.map((edu) => (
-                    <Box key={`${edu.institution}-${edu.year}`}>
+                  {parsedEducation?.map((edu:any, index:number) => (
+                    <Box key={index}>
                       <Typography variant="subtitle1" fontWeight="medium">
                         {edu.degree}
                       </Typography>
@@ -197,17 +206,15 @@ export default function TutorProfilePage(): React.JSX.Element {
                   Experience
                 </Typography>
                 <Stack spacing={3}>
-                  {tutor.experience.map((exp) => (
-                    <Box key={`${exp.company}-${exp.position}`}>
+                  {parsedExperience?.map((exp:any, index:number) => (
+                    <Box key={index}>
                       <Typography variant="subtitle1" fontWeight="medium">
                         {exp.position}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" gutterBottom>
-                        {exp.company} • {exp.duration}
+                        {exp.company} • {exp.from} {' - '} {exp.to}
                       </Typography>
-                      <Typography variant="body2">
-                        {exp.description}
-                      </Typography>
+                      <Typography variant="body2">{exp.description}</Typography>
                     </Box>
                   ))}
                 </Stack>
@@ -226,21 +233,21 @@ export default function TutorProfilePage(): React.JSX.Element {
                 <Stack spacing={2}>
                   <Box sx={{ textAlign: 'center', py: 2 }}>
                     <Typography variant="h4" color="primary" fontWeight="bold">
-                      {tutor.currency} {tutor.hourlyRate.toLocaleString()}
+                      {tutor.currency} {tutor.tutorRate.toLocaleString()}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       per hour
                     </Typography>
                   </Box>
-                  
+
                   <Button
                     variant="contained"
                     size="large"
                     fullWidth
                     onClick={handleBookSession}
-                    disabled={!tutor.isAvailable}
+                    disabled={tutor.status.toLowerCase() != 'approved'}
                   >
-                    {tutor.isAvailable ? 'Schedule Session' : 'Currently Unavailable'}
+                    {tutor.status.toLowerCase()==='approved' ? 'Schedule Session' : 'Currently Unavailable'}
                   </Button>
 
                   <Typography variant="caption" color="text.secondary" align="center">
@@ -256,7 +263,7 @@ export default function TutorProfilePage(): React.JSX.Element {
                 <Typography variant="h6" gutterBottom>
                   Availability
                 </Typography>
-                <Stack spacing={1}>
+                {/* <Stack spacing={1}>
                   {tutor.availability.map((avail) => (
                     <Box key={avail.day}>
                       <Typography variant="subtitle2" gutterBottom>
@@ -264,18 +271,12 @@ export default function TutorProfilePage(): React.JSX.Element {
                       </Typography>
                       <Stack direction="row" spacing={1} flexWrap="wrap">
                         {avail.timeSlots.map((slot) => (
-                          <Chip
-                            key={slot}
-                            label={slot}
-                            size="small"
-                            variant="outlined"
-                            icon={<Clock />}
-                          />
+                          <Chip key={slot} label={slot} size="small" variant="outlined" icon={<Clock />} />
                         ))}
                       </Stack>
                     </Box>
                   ))}
-                </Stack>
+                </Stack> */}
               </CardContent>
             </Card>
 
@@ -289,20 +290,21 @@ export default function TutorProfilePage(): React.JSX.Element {
                   <Stack direction="row" justifyContent="space-between">
                     <Typography variant="body2">Member since:</Typography>
                     <Typography variant="body2" fontWeight="medium">
-                      {tutor.joinedDate.toLocaleDateString('en-US', { 
-                        month: 'long', 
-                        year: 'numeric' 
-                      })}
+                      {tutor.approvedDate ? (
+                      <>
+                        {dayjs(tutor.approvedDate).format('MMMM')} {dayjs(tutor.approvedDate).format('YYYY')}
+                      </>
+                    ) : ''}
                     </Typography>
                   </Stack>
-                  
+
                   <Stack direction="row" justifyContent="space-between">
-                    <Typography variant="body2">Sessions completed:</Typography>
+                 {tutor.sessionsCompleted != null &&   <Typography variant="body2">Sessions completed:</Typography>}
                     <Typography variant="body2" fontWeight="medium">
-                      {tutor.sessionsCompleted}
+                      {tutor.sessionsCompleted > 0 && <>{tutor.sessionsCompleted}</>}
                     </Typography>
                   </Stack>
-                  
+
                   <Stack direction="row" justifyContent="space-between">
                     <Typography variant="body2">Average rating:</Typography>
                     <Stack direction="row" alignItems="center" spacing={1}>

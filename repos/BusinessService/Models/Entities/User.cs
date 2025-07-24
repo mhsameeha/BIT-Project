@@ -33,9 +33,11 @@ public class User
         [Column("updatedDate")]
         public DateTime? UpdatedDate { get; set; }
         [Column("isActive")]
-        public bool? IsActive { get; set; } = true;
+        public bool? IsActive { get; set; } = false;
         [Column("isDeleted")]
-        public bool? IsDeleted { get; set; }
+        public bool? IsDeleted { get; set; } = false;
+        public Tutor? Tutor { get; set; }
+    
 
 
 

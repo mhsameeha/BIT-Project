@@ -16,5 +16,11 @@ namespace BusinessService.Interfaces
 
         public List<NewStudentsDto> GetNewStudents(string email);
 
+        public TutorData GetTutorAccountDetails(string email);
+        public TutorData GetTutorAccountDetails(Guid tutorId);
+
+   
+
+
     }
 }

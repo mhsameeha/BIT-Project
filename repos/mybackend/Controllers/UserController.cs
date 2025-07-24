@@ -25,7 +25,7 @@ namespace mybackend.Controllers
         [HttpGet("GetUserProfile")]
         [Authorize]
 
-        public ActionResult<UserDto> GetUserProfile()
+        public ActionResult<NewLearnerUserDto> GetUserProfile()
         {
             var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
             if (string.IsNullOrEmpty(email))
@@ -47,11 +47,19 @@ namespace mybackend.Controllers
         }
 
         // POST api/<UserController>
-        [HttpPost("signup")]
-        public IActionResult SignUp([FromBody] UserDto user)
+        [HttpPost("LearnerSignUp")]
+        public IActionResult SignUp([FromBody] NewLearnerUserDto user)
         {
             IUserService UserService = new UserService(_context);
-            var newUser = UserService.AddUser(user);
+            var newUser = UserService.AddLearner(user);
+            return Ok(newUser);
+
+        }
+        [HttpPost("TutorSignUp")]
+        public IActionResult SignUp([FromBody] NewTutorUserDto user)
+        {
+            IUserService UserService = new UserService(_context);
+            var newUser = UserService.AddTutor(user);
             return Ok(newUser);
 
         }

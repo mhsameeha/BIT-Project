@@ -27,25 +27,26 @@ namespace BusinessService.Services
 
 
         //register users to the system
-        public User AddUser(UserDto newUser)
+        public string AddLearner(NewLearnerUserDto newLearner)
 
         {
+            if (newLearner == null) return "Unable to add User";
+
             var user = new User
             {
                 UserId = Guid.NewGuid(),
-                FirstName = newUser.FirstName,
-                LastName = newUser.LastName,
-                Dob = newUser.Dob,
-                Email = newUser.Email,
-                Role = newUser.Role,
-                Password = BCrypt.Net.BCrypt.HashPassword(newUser.Password),
+                FirstName = newLearner.FirstName,
+                LastName = newLearner.LastName,
+                Dob = newLearner.Dob,
+                Email = newLearner.Email,
+                Role = newLearner.Role,
+                Password = BCrypt.Net.BCrypt.HashPassword(newLearner.Password),
                 CreatedDate = DateTime.Now,
 
             };
             _context.Add(user);
             _context.SaveChanges();
-            if (newUser.Role == "Learner")
-            {
+
                 var newlearner = new Learner
                 {
 
@@ -53,26 +54,63 @@ namespace BusinessService.Services
                 };
                 _context.Add(newlearner);
                 _context.SaveChanges();
-            }
-            ;
-            if (newUser.Role == "Tutor")
-            {
-                var newTutor = new Tutor
-                {
 
-                    UserFk = user.UserId,
-                    Status = "Pending"
+            return "added successfully";
+        }
+
+        public string AddTutor(NewTutorUserDto newTutor)
+
+        {
+            if (newTutor == null) return "Unable to add User";
+
+            var userId = Guid.NewGuid();
+
+            var checkEmail = _context.Users.FirstOrDefault(x => x.Email == newTutor.Email);
+            if (checkEmail == null)
+            {
+
+                var user = new User
+                {
+                    UserId = userId,
+                    FirstName = newTutor.FirstName,
+                    LastName = newTutor.LastName,
+                    Dob = DateTime.Now,
+                    Email = newTutor.Email,
+                    Role = newTutor.Role,
+                    Password = BCrypt.Net.BCrypt.HashPassword(newTutor.Password),
+                    CreatedDate = DateTime.Now,
                 };
 
-                _context.Add(newTutor);
+                var Tutor = new Tutor
+                {
+                    TutorId = Guid.NewGuid(),
+                    TutorDescription = newTutor.TutorDescription,
+                    TutorRate = newTutor.TutorRate,
+                    ApprovalRequestDate = newTutor.ApprovalRequestDate,
+                    Education = newTutor.Education,
+                    Experience = newTutor.Experience,
+                    Status = "Pending",
+                    UserId = userId,
+                    Language = newTutor.Language,
+                    ApprovedDate = null,
+                    TutorProfPic = null,
+
+
+
+                };
+
+
+                _context.Users.Add(user);
+                _context.Tutors.Add(Tutor);
                 _context.SaveChanges();
+
+                return "Tutor Added Successfully";
             }
-                ;
 
-
-
-            return user;
+            return "Email Already Exists";
         }
+
+
 
         public GetUserProfileDto GetUserProfile(string email)
         {
@@ -96,7 +134,7 @@ namespace BusinessService.Services
             var user = _context.Users.SingleOrDefault(x => x.Email == currentUser.Email);
             Guid roleId = Guid.Empty; // Initialize with empty GUID
 
-            if (user != null && BCrypt.Net.BCrypt.Verify(currentUser.Password, user.Password))
+            if (user != null && user.Role == currentUser.Role && BCrypt.Net.BCrypt.Verify(currentUser.Password, user.Password))
             {
                 List<Claim> claims = new List<Claim>
             {

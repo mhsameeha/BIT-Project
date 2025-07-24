@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BusinessService.Models.Entities;
 
 namespace BusinessService.Models.DTOs
 {
@@ -23,7 +24,7 @@ namespace BusinessService.Models.DTOs
         // Related entity data
         public string? CategoryName { get; set; }
         public string? CourseDifficultyName { get; set; }
-        public string? LanguageName { get; set; }
+        public string? LanguageName { get; set; } //separate keyless tables is there for this
         
         // Tutor information
         public string? TutorFirstName { get; set; }
@@ -33,8 +34,8 @@ namespace BusinessService.Models.DTOs
 
         public string? TutorProfPic { get; set; }
         public string? TutorDescription { get; set; }
-        public string? TutorExperience { get; set; }
-        public string? TutorEducation { get; set; }
+        public List<Experience>? TutorExperience { get; set; }
+        public List<Education>? TutorEducation { get; set; }
 
         // Course statistics
         public int EnrolledStudents { get; set; }

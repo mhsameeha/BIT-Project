@@ -1,3 +1,4 @@
+using BusinessService.Models.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace BusinessService.Models.DTOs
     public class TutorAvailabilityDto
     {
         public string Day { get; set; }
-        public List<string> TimeSlots { get; set; } = new List<string>();
+        public List<string> TimeSlots { get; set; }
     }
 
     public class TutorDateAvailabilityDto

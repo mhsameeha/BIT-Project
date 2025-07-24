@@ -64,15 +64,15 @@ export function SideNav(): React.JSX.Element {
           <Logo color="light" height={32} width={122} />
         </Box>
         <Box
-          // sx={{
-          //   alignItems: 'center',
-          //   backgroundColor: 'var(--mui-palette-neutral-950)',
-          //   border: '1px solid var(--mui-palette-neutral-700)',
-          //   borderRadius: '12px',
-          //   cursor: 'pointer',
-          //   display: 'flex',
-          //   p: '4px 12px',
-          // }}
+        // sx={{
+        //   alignItems: 'center',
+        //   backgroundColor: 'var(--mui-palette-neutral-950)',
+        //   border: '1px solid var(--mui-palette-neutral-700)',
+        //   borderRadius: '12px',
+        //   cursor: 'pointer',
+        //   display: 'flex',
+        //   p: '4px 12px',
+        // }}
         >
           {/* <Box sx={{ flex: '1 1 auto' }}>
             <Typography color="var(--mui-palette-neutral-400)" variant="body2">
@@ -91,7 +91,7 @@ export function SideNav(): React.JSX.Element {
       </Box>
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
       {/* <Stack spacing={2} sx={{ p: '12px' }}> */}
-        {/* <div>
+      {/* <div>
           <Typography color="var(--mui-palette-neutral-100)" variant="subtitle2">
             Need more features?
           </Typography>
@@ -99,7 +99,7 @@ export function SideNav(): React.JSX.Element {
             Check out our Pro solution template.
           </Typography>
         </div> */}
-        {/* <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+      {/* <Box sx={{ display: 'flex', justifyContent: 'center' }}>
           <Box
             component="img"
             alt="Pro version"
@@ -107,7 +107,7 @@ export function SideNav(): React.JSX.Element {
             sx={{ height: 'auto', width: '160px' }}
           />
         </Box> */}
-        {/* <Button
+      {/* <Button
           component="a"
           endIcon={<ArrowSquareUpRightIcon fontSize="var(--icon-fontSize-md)" />}
           fullWidth

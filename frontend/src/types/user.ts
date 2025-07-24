@@ -2,11 +2,8 @@ export interface User {
   id: string;
   firstName: string;
   lastName: string;
-  avatar?: string
+  avatar?: string;
   email?: string;
-
-
-
 
   // CREATE TABLE user (
   //   id BIGINT PRIMARY KEY,
@@ -18,7 +15,7 @@ export interface User {
   //   createdDate DATETIME,
   //   isActive BOOLEAN,
   //   isDeleted BOOLEAN
-// );
+  // );
 
   [key: string]: unknown;
 }

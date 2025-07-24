@@ -2,15 +2,15 @@ import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
+import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import type { SxProps } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { ArrowDown as ArrowDownIcon } from '@phosphor-icons/react/dist/ssr/ArrowDown';
 import { ArrowUp as ArrowUpIcon } from '@phosphor-icons/react/dist/ssr/ArrowUp';
 import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
-import Divider from '@mui/material/Divider';
 
-export interface SessionRequestsProps{
+export interface SessionRequestsProps {
   diff?: number;
   trend: 'up' | 'down';
   sx?: SxProps;
@@ -29,23 +29,16 @@ export function SessionRequests({ diff, trend, sx, value }: SessionRequestsProps
             <Stack spacing={1}>
               <Typography color="text.secondary" variant="overline">
                 Session Requests
-              </Typography>  
+              </Typography>
             </Stack>
-           
-
           </Stack>
-          <Divider/>
+          <Divider />
           {diff ? (
             <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
               <Stack sx={{ alignItems: 'center' }} direction="row" spacing={0.5}>
-              
-                <Typography color={trendColor} variant="body2">
-     
-                </Typography>
+                <Typography color={trendColor} variant="body2"></Typography>
               </Stack>
-              <Typography color="text.secondary" variant="caption">
- 
-              </Typography>
+              <Typography color="text.secondary" variant="caption"></Typography>
             </Stack>
           ) : null}
         </Stack>

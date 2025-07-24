@@ -9,8 +9,8 @@ import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
 import { XSquare } from '@phosphor-icons/react/dist/ssr/XSquare';
 
 export const navIcons = {
-  'books': BooksIcon,
-  'calendar': CalendarIcon,
+  books: BooksIcon,
+  calendar: CalendarIcon,
   'chart-pie': ChartPieIcon,
   'gear-six': GearSixIcon,
   'plugs-connected': PlugsConnectedIcon,

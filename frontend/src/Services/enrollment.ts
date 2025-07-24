@@ -38,7 +38,7 @@ export interface EnrollmentStatus {
 }
 
 export async function checkEnrollmentStatus(courseId: string): Promise<EnrollmentStatus | ApiErrorResponse> {
-  const result = await api.get<EnrollmentStatus>(`/api/Enrollment/course-status/${courseId}`);
+  const result = await api.get<EnrollmentStatus>(`/Enrollment/course-status/${courseId}`);
   
   if (isApiError(result)) {
     return result;
@@ -48,7 +48,7 @@ export async function checkEnrollmentStatus(courseId: string): Promise<Enrollmen
 }
 
 export async function getMyEnrollments(): Promise<EnrollmentData[] | ApiErrorResponse> {
-  const result = await api.get<EnrollmentData[]>('/api/Enrollment/my-enrollments');
+  const result = await api.get<EnrollmentData[]>('/Enrollment/my-enrollments');
   
   if (isApiError(result)) {
     return result;
@@ -75,7 +75,7 @@ export async function submitPayment(paymentData: PaymentRequest): Promise<Paymen
   
   formData.append('paymentProof', paymentData.paymentProof);
 
-  const result = await api.postForm<PaymentResponse>('/api/Enrollment/payment', formData);
+  const result = await api.postForm<PaymentResponse>('/Enrollment/payment', formData);
   
   if (isApiError(result)) {
     return result;

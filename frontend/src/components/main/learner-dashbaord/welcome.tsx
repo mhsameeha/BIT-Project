@@ -10,19 +10,16 @@ import type { SxProps } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { ArrowDown as ArrowDownIcon } from '@phosphor-icons/react/dist/ssr/ArrowDown';
 import { ArrowUp as ArrowUpIcon } from '@phosphor-icons/react/dist/ssr/ArrowUp';
+import { ChalkboardTeacher as Session } from '@phosphor-icons/react/dist/ssr/ChalkboardTeacher';
 import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
-import {ChalkboardTeacher as Session } from '@phosphor-icons/react/dist/ssr/ChalkboardTeacher';
+
 import { User } from '@/types/user';
 
-
-export interface WelcomeHereProps{
-
-}
+export interface WelcomeHereProps {}
 
 export function WelcomeHere(): React.JSX.Element {
+  const [learnerDetails, setLearnerDetails] = React.useState<User[]>([]);
 
-      const [learnerDetails, setLearnerDetails] =  React.useState<User[]>([]);
-    
     const getLearnerDetails = async ()  => {
             try {
     
@@ -68,18 +65,14 @@ export function WelcomeHere(): React.JSX.Element {
       }, [])
 
   return (
-    <Card >
+    <Card>
       <CardContent>
         <Stack spacing={2}>
           <Stack direction="row" sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }} spacing={3}>
-
-
             <Typography color="text.secondary" variant="overline" fontSize={20}>
-               Hello, { "Sameeha "} 
-              </Typography>    
-
+              Hello, {'Sameeha '}
+            </Typography>
           </Stack>
-
         </Stack>
       </CardContent>
     </Card>

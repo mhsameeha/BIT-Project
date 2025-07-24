@@ -10,8 +10,8 @@ import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Clock as ClockIcon } from '@phosphor-icons/react/dist/ssr/Clock';
-import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
 import { User as UserIcon } from '@phosphor-icons/react/dist/ssr/User';
+import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
 import dayjs from 'dayjs';
 
 export interface Integration {
@@ -35,10 +35,10 @@ export interface IntegrationListItemProps {
 
 export function IntegrationListItem({ integration }: IntegrationListItemProps): React.JSX.Element {
   const router = useRouter();
-  
+
   // Extract level text without "Level : " prefix
   const levelText = integration.level.replace('Level : ', '');
-  
+
   // Determine chip color based on level
   const getLevelColor = (level: string): 'success' | 'warning' | 'error' | 'default' => {
     if (level.toLowerCase().includes('beginner')) return 'success';
@@ -50,13 +50,20 @@ export function IntegrationListItem({ integration }: IntegrationListItemProps): 
   // Determine category color
   const getCategoryColor = (category: string): 'primary' | 'secondary' | 'info' | 'success' | 'warning' | 'error' => {
     switch (category.toLowerCase()) {
-      case 'programming': return 'primary';
-      case 'mathematics': return 'info';
-      case 'graphic designing': return 'secondary';
-      case 'data science': return 'success';
-      case 'ai': return 'warning';
-      case 'cloud computing': return 'error';
-      default: return 'primary';
+      case 'programming':
+        return 'primary';
+      case 'mathematics':
+        return 'info';
+      case 'graphic designing':
+        return 'secondary';
+      case 'data science':
+        return 'success';
+      case 'ai':
+        return 'warning';
+      case 'cloud computing':
+        return 'error';
+      default:
+        return 'primary';
     }
   };
 
@@ -65,32 +72,32 @@ export function IntegrationListItem({ integration }: IntegrationListItemProps): 
   };
 
   return (
-    <Paper 
-      elevation={1} 
+    <Paper
+      elevation={1}
       onClick={handleCourseClick}
-      sx={{ 
-        p: 3, 
-        mb: 2, 
-        '&:hover': { 
+      sx={{
+        p: 3,
+        mb: 2,
+        '&:hover': {
           elevation: 3,
           cursor: 'pointer',
-          bgcolor: 'action.hover'
+          bgcolor: 'action.hover',
         },
-        transition: 'all 0.2s ease-in-out'
+        transition: 'all 0.2s ease-in-out',
       }}
     >
       <Stack direction="row" spacing={3} alignItems="flex-start">
         {/* Course Image */}
-        <Avatar 
-          src={integration.logo} 
-          variant="rounded" 
-          sx={{ 
-            width: 120, 
-            height: 80, 
-            flexShrink: 0 
-          }} 
+        <Avatar
+          src={integration.logo}
+          variant="rounded"
+          sx={{
+            width: 120,
+            height: 80,
+            flexShrink: 0,
+          }}
         />
-        
+
         {/* Course Content */}
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Stack spacing={1.5}>
@@ -100,31 +107,26 @@ export function IntegrationListItem({ integration }: IntegrationListItemProps): 
                 <Typography variant="h6" component="h3" sx={{ fontWeight: 600, lineHeight: 1.3 }}>
                   {integration.title}
                 </Typography>
-                <Chip 
-                  label={integration.category} 
-                  size="small" 
+                <Chip
+                  label={integration.category}
+                  size="small"
                   color={getCategoryColor(integration.category)}
                   sx={{ mt: 0.5 }}
                 />
               </Box>
-              <Chip 
-                label={levelText} 
-                size="small" 
-                color={getLevelColor(levelText)}
-                variant="outlined"
-              />
+              <Chip label={levelText} size="small" color={getLevelColor(levelText)} variant="outlined" />
             </Stack>
-            
+
             {/* Description */}
-            <Typography 
-              variant="body2" 
-              color="text.secondary" 
-              sx={{ 
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
                 display: '-webkit-box',
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: 'vertical',
                 overflow: 'hidden',
-                lineHeight: 1.4
+                lineHeight: 1.4,
               }}
             >
               {integration.description}
@@ -137,15 +139,10 @@ export function IntegrationListItem({ integration }: IntegrationListItemProps): 
                 Tutor: {integration.tutorName}
               </Typography>
             </Stack>
-            
+
             {/* Rating */}
             <Stack direction="row" alignItems="center" spacing={1}>
-              <Rating 
-                value={integration.rating} 
-                readOnly 
-                precision={0.1} 
-                size="small" 
-              />
+              <Rating value={integration.rating} readOnly precision={0.1} size="small" />
               <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                 {integration.rating}
               </Typography>
@@ -153,7 +150,7 @@ export function IntegrationListItem({ integration }: IntegrationListItemProps): 
                 ({integration.reviewCount} reviews)
               </Typography>
             </Stack>
-            
+
             {/* Meta Information */}
             <Stack direction="row" spacing={3} alignItems="center" sx={{ justifyContent: 'space-between' }}>
               <Stack direction="row" spacing={3} alignItems="center">
@@ -163,7 +160,7 @@ export function IntegrationListItem({ integration }: IntegrationListItemProps): 
                     {integration.enrolledStudents.toLocaleString()} students
                   </Typography>
                 </Stack>
-                
+
                 <Stack direction="row" alignItems="center" spacing={0.5}>
                   <ClockIcon fontSize="var(--icon-fontSize-sm)" />
                   <Typography variant="body2" color="text.secondary">

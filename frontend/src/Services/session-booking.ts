@@ -43,7 +43,7 @@ export async function bookSession(request: SessionBookingRequest): Promise<Sessi
     
     formData.append('paymentProof', request.paymentProof);
 
-    const result = await api.postForm<SessionBookingResponse>('/api/Session/book', formData);
+    const result = await api.postForm<SessionBookingResponse>('/Session/book', formData);
     
     if (isApiError(result)) {
       return { error: result.error };

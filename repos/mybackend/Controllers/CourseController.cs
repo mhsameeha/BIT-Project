@@ -48,7 +48,6 @@ namespace mybackend.Controllers
         public IActionResult AddNewCourse([FromBody] CourseDto newCourse)
 
         {
-            //var email = "prof.chen@educonnect.com";
             var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
             ICourseService courseService = new CourseService(_context);
             var course = courseService.AddCourse(newCourse, email);
@@ -96,7 +95,7 @@ namespace mybackend.Controllers
 
         public IActionResult UpdateCourse([FromBody] UpdateCourseDto course, Guid courseId)
         {
-            var email = "prof.chen@educonnect.com";
+            var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
             ICourseService courseService = new CourseService(_context);
             var result = courseService.UpdateCourse( course,email,courseId);
             return Ok();

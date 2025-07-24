@@ -15,7 +15,7 @@ export interface Integration {
   id: string;
   title: string;
   description: string;
-  level : string;
+  level: string;
   logo: string;
   enrolledStudents: number;
   rating: number;
@@ -43,7 +43,7 @@ export function IntegrationCard({ integration }: IntegrationCardProps): React.JS
               {integration.description}
             </Typography>
             <Typography align="center" fontWeight={600}>
-            {integration.level}
+              {integration.level}
             </Typography>
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1 }}>
               <Rating value={integration.rating} readOnly precision={0.1} size="small" />

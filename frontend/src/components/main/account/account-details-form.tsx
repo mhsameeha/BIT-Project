@@ -11,7 +11,7 @@ import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
 import FormControl from '@mui/material/FormControl';
 import Grid from '@mui/material/Grid'; // Correct stable Grid import
-import IconButton from '@mui/material/IconButton';
+
 import InputLabel from '@mui/material/InputLabel';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Stack from '@mui/material/Stack';
@@ -19,6 +19,15 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { Plus, Trash } from '@phosphor-icons/react';
+import IconButton from '@mui/material/IconButton';
+import { authClient } from '@/lib/auth/client';
+import TutorDashboardPage from '@/app/(main)/tutor-dashboard/page';
+import Chip from '@mui/material/Chip';
+import { getTutorAccountDetails } from '@/Services/tutor';
+import { TutorAccountDetails } from '@/types/tutor-account-data';
+
+
+const userInfo = authClient.getBasicUserInfo();
 
 interface Experience {
   id: string;
@@ -35,8 +44,8 @@ interface Education {
 }
 
 const user = {
-  name: 'Sofia Rivers',
-  avatar: '/assets/avatar.png',
+  name: userInfo?.name,
+  email: userInfo?.email,
   jobTitle: 'Senior Developer',
   country: 'USA',
   city: 'Los Angeles',
@@ -46,7 +55,24 @@ const user = {
 export function AccountDetailsForm(): React.JSX.Element {
   const [experiences, setExperiences] = React.useState<Experience[]>([]);
   const [educations, setEducations] = React.useState<Education[]>([]);
-  // Experience handlers
+  const [accountDetails, setAccountDetails] = React.useState<TutorAccountDetails>();
+
+        React.useEffect(() => {
+        const fetchData = async () => {
+          const returnValue = await getTutorAccountDetails();
+          if ('error' in returnValue) {
+            // Optionally, handle error UI here
+            return;
+          }
+          setAccountDetails(returnValue);
+        };
+         fetchData();
+      }, []);
+
+  const handleSubmit = () => {
+
+    }
+  
   const handleAddExperience = (): void => {
     setExperiences([...experiences, {
       id: `exp-${Date.now()}`,
@@ -89,7 +115,15 @@ export function AccountDetailsForm(): React.JSX.Element {
   return (
     <form onSubmit={(event) => event.preventDefault()}>
       <Card>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' , mr:2}}>
         <CardHeader subheader="The information can be edited" title="Profile" />
+        <Chip   sx={{
+    height: 36,          // Increase height
+    fontSize: '1rem',    // Adjust font size
+    padding: '0 12px',   // Adjust horizontal padding
+  }} label="Approved" color='success'/>
+        </Box>
+        {/* change later */}
         <Divider />
         <CardContent>
           <Stack spacing={2} sx={{ alignItems: 'center' }}>
@@ -134,7 +168,7 @@ export function AccountDetailsForm(): React.JSX.Element {
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth required>
                 <InputLabel>Email address</InputLabel>
-                <OutlinedInput defaultValue="sofia@devias.io" label="Email address" name="email" />
+                <OutlinedInput defaultValue={userInfo?.email} label="Email address" name="email" disabled/>
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -145,6 +179,16 @@ export function AccountDetailsForm(): React.JSX.Element {
             <Grid item xs={12}>
               <TextField fullWidth multiline rows={4} label="About Tutor" placeholder="About me" />
             </Grid>
+              <Grid item xs={4}>
+
+                <FormControl fullWidth required>
+                <InputLabel>Rate Per Session</InputLabel>
+                <OutlinedInput  label="TutorRate" name="tutorRate"/>
+              </FormControl>
+            </Grid>
+
+            {/* Tutor Rate */}
+
 
             {/* Experience Section */}
             <Grid item xs={12}>
@@ -164,7 +208,17 @@ export function AccountDetailsForm(): React.JSX.Element {
                   {experiences.map((experience) => (
                     <Card key={experience.id} variant="outlined">
                       <CardContent>
+                              <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 2 }}>
+                              <IconButton
+                                size="small"
+                                color="error"
+                                onClick={() => handleDeleteExperience(experience.id)}
+                              >
+                                <Trash size={16} />
+                              </IconButton>
+                            </Box>
                         <Grid container spacing={2}>
+                       
                           <Grid item xs={12} sm={6}>
                             <TextField
                               fullWidth
@@ -172,6 +226,7 @@ export function AccountDetailsForm(): React.JSX.Element {
                               value={experience.position}
                               onChange={(e) => handleExperienceChange(experience.id, 'position', e.target.value)}
                             />
+                          
                           </Grid>
                           <Grid item xs={12} sm={6}>
                             <TextField
@@ -216,6 +271,15 @@ export function AccountDetailsForm(): React.JSX.Element {
                   {educations.map((education) => (
                     <Card key={education.id} variant="outlined">
                       <CardContent>
+                           <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 2 }}>
+                              <IconButton
+                                size="small"
+                                color="error"
+                                onClick={() => handleDeleteEducation(education.id)}
+                              >
+                                <Trash size={16} />
+                              </IconButton>
+                            </Box>
                         <Grid container spacing={2}>
                           <Grid item xs={12} sm={6}>
                             <TextField

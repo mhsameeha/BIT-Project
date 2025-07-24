@@ -32,7 +32,7 @@ const schema = zod.object({
 
 type Values = zod.infer<typeof schema>;
 
-const defaultValues = { email: '', password: '', role: 'Learner' } satisfies Values;
+const defaultValues = { email: '', password: '', role: '' } satisfies Values;
 
 export function SignInForm(): React.JSX.Element {
   const router = useRouter();
@@ -88,8 +88,9 @@ export function SignInForm(): React.JSX.Element {
               <FormControl error={Boolean(errors.role)} fullWidth>
                 <InputLabel>Login as</InputLabel>
                 <Select {...field} label="Login as">
-                  <MenuItem value="Learner">Learner</MenuItem>
-                  <MenuItem value="Tutor">Tutor</MenuItem>
+                  <MenuItem value="learner">Learner</MenuItem>
+                  <MenuItem value="tutor">Tutor</MenuItem>
+                  <MenuItem value="admin">Admin</MenuItem>
                 </Select>
                 {errors.role ? <FormHelperText>{errors.role.message}</FormHelperText> : null}
               </FormControl>

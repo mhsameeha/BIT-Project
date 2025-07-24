@@ -1,5 +1,6 @@
 ﻿using BusinessService.Data;
 using BusinessService.Interfaces;
+using BusinessService.Models.DTOs;
 using BusinessService.Services;
 using BusinessService.Models.DTOs;
 using Microsoft.AspNetCore.Mvc;
@@ -30,8 +31,7 @@ namespace EduConnect.API.Controllers
         [HttpGet("SessionsByTutor")]
         public IActionResult GetSessionsByTutor()
         {
-            var email = "prof.chen@educonnect.com";
-            //var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+            var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
             ISessionService sessionService = new SessionService(_context);
             var result = sessionService.SessionsByTutor(email);
             return Ok(result);
@@ -68,9 +68,12 @@ namespace EduConnect.API.Controllers
         }
 
         // PUT api/<SessionController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPut("UpdateSessionStatus")]
+        public void UpdateSessionStatus([FromBody] SessionStatusDto sessionStatus)
         {
+            var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+            ISessionService sessionService = new SessionService(_context);
+            sessionService.UpdateSessionStatus(sessionStatus, email);
         }
 
         // DELETE api/<SessionController>/5

@@ -32,6 +32,9 @@ namespace BusinessService.Models.Entities
         public string? AdditionalInfo { get; set; }
         [Column("sessionStatus")]
         public string SessionStatus { get; set; }
+
+        [Column("sessionRate")]
+        public decimal SessionRate{ get; set; }
         [Column("sessionStatusInfo")]
         public string? SessionStatusInfo { get; set; }
         [Column("sessionFee")]

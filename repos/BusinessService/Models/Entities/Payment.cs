@@ -39,7 +39,5 @@ namespace BusinessService.Models.Entities
 
         public virtual Tutor Tutor { get; set; }
         public virtual Learner Learner { get; set; }
-
-
     }
 }
