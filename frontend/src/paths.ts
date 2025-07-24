@@ -13,11 +13,10 @@ export const paths = {
   //   courses: '/dashboard/courses/list',
   // },
   main: {
-    overview: '/dashboard',
-    // admindashboard : '/admin-dashboard',
+    adminDashboard: '/admin-dashboard',
     tutorDashboard: '/tutor-dashboard',
     learnerdashboard: '/learner-dashboard',
-    // tutorcourse: '/courses/tutor-course',
+    tutorManagement: '/tutor-management',
     account: '/account',
     customers: '/customers',
     integrations: '/integrations',

@@ -132,8 +132,14 @@ namespace BusinessService.Services
         public string SignIn(LoginDto currentUser)
         {
             var user = _context.Users.SingleOrDefault(x => x.Email == currentUser.Email);
-            Guid roleId = Guid.Empty; // Initialize with empty GUID
+        //    if(user!=null && user.Role.ToLower() == "tutor" )
+        //{    var tutor = _context.Tutors.SingleOrDefault(x => x.UserId == user.UserId)?.Status;
+        //        if (tutor != null && tutor.ToLower() == "pending" || tutor.ToLower() == "rejected")
+        //        {
 
+        //            return "Tutor Profile is not Verfied";
+        //        }
+        //    }
             if (user != null && user.Role == currentUser.Role && BCrypt.Net.BCrypt.Verify(currentUser.Password, user.Password))
             {
                 List<Claim> claims = new List<Claim>

@@ -57,6 +57,8 @@ namespace BusinessService.Models.Entities
         [Column("language")]
 
         public string[]? Language { get; set; }
+
+        public User Users { get; set; }
     }
     [Keyless]
     [NotMapped]

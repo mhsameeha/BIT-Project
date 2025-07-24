@@ -1,8 +1,10 @@
-export interface RecentTutorApplications {
+export interface TutorApplication {
   tutorId: string; // Guid in C# maps to string in TypeScript
   tutorName: string;
   status: string;
-  approvalRequestDate?: string; // Nullable DateTime maps to optional ISO string
+  approvalRequestDate?: string;
+  email: string;
+  specialities: string[]; // Nullable DateTime maps to optional ISO string
 }
 
 // Main dashboard DTO
@@ -15,5 +17,5 @@ export interface AdminDashboardData {
   approvedTutors: number;
   totalRevenue: number;
   monthlyRevenue: number;
-  recentTutorApplications?: RecentTutorApplications[]; // Nullable list
+  tutorApplications: TutorApplication[]; // Nullable list
 }

@@ -37,7 +37,6 @@ import {
   VideoCamera,
 } from '@phosphor-icons/react/dist/ssr';
 
-// import { addCourse } from '../../../../constants/courses';
 import type { TutorCourse } from '../../../../types/course';
 import { Category } from '@/types/category';
 import { addCourse, getAllCategories, getAllLanguages, getAllLevels } from '@/Services/courses';

@@ -35,7 +35,7 @@ const AuthClient = authClient.getBasicUserInfo()
       
         if (AuthClient?.role.toLowerCase() == 'tutor') {
       logger.debug('[GuestGuard]: User is logged in, redirecting to dashboard');
-      router.replace(paths.main.overview);
+      router.replace(paths.main.tutorDashboard);
       return;
     }
 
@@ -47,7 +47,7 @@ const AuthClient = authClient.getBasicUserInfo()
 
          if (AuthClient?.role.toLowerCase() == 'admin') {
       logger.debug('[GuestGuard]: User is logged in, redirecting to dashboard');
-      router.replace(paths.main.overview);
+      router.replace(paths.main.adminDashboard);
       return;
     }
       return;

@@ -173,8 +173,9 @@ class AuthClient {
         const {token} = await response.json();
 
       if (!response.ok || token.toLowerCase().includes('invalid')) {
-        return { error: token || 'Invalid credentials' };
+        return { error: token || 'Invalid Credentials' }
       }
+      
 
       localStorage.setItem('custom-auth-token', token);
 
