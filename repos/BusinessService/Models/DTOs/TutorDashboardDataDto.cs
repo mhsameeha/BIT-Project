@@ -14,6 +14,7 @@ namespace BusinessService.Models.DTOs
         public decimal MonthlyIncome { get; set; }
 
         public int NewStudents { get; set; }
+        public decimal TotalIncome { get; set; }
 
 
     }

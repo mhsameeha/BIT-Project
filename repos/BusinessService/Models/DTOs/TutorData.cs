@@ -42,7 +42,7 @@ namespace BusinessService.Models.DTOs
 
     public class TutorAvailabilitySlotsDto
     {
-        public string Day { get; set; }
+        public string? Day { get; set; }
 
         public ICollection<TutorTimeSlot>? TimeSlots { get; set; }
     }

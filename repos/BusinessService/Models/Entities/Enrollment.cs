@@ -25,7 +25,7 @@ namespace BusinessService.Models.Entities
         [Column("enrollmentStatus")]
         public string? EnrollmentStatus { get; set; }
 
-        public Course Course { get; set; }
+        public Course? Course { get; set; }
     }
 
 }

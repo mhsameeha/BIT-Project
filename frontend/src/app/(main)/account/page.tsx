@@ -29,7 +29,7 @@ export default function TutorProfilePage(): React.JSX.Element {
   const params = useParams();
   const tutorId = params.tutorId as string;
 
-  const [tutor, setTutor] = React.useState<TutorData | null>(null);
+  const [tutor, setTutor] = React.useState<TutorData>();
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
@@ -38,11 +38,11 @@ export default function TutorProfilePage(): React.JSX.Element {
       const tutorData = await getTutorData();
 
       if ('error' in tutorData) {
-      console.error(tutorData.error);
-    } else {
+      return 'error';
+    } 
       setTutor(tutorData); 
       console.log("tutorD",tutor);
-    }
+    
       setLoading(false);
     }, 500);
 
@@ -139,12 +139,13 @@ export default function TutorProfilePage(): React.JSX.Element {
                         <Stack direction="row" alignItems="center" spacing={1}>
                           <Rating value={tutor.rating} readOnly size="small" />
                           <Typography variant="body2">
-                            {tutor.rating} ({tutor.reviewCount} reviews)
+                            {tutor.rating}
+                             {/* ({tutor.reviewCount} reviews) */}
                           </Typography>
                         </Stack>
                         <Stack direction="row" alignItems="center" spacing={1}>
                           <Users size={16} />
-                          <Typography variant="body2">{tutor.sessionsCompleted} sessions completed</Typography>
+                          <Typography variant="body2">{tutor.sessionsCompleted} {tutor.sessionsCompleted > 1 ? ( 'sessions ') : ('session ')} completed</Typography>
                         </Stack>
                       </Stack>
                     </div>
@@ -233,7 +234,7 @@ export default function TutorProfilePage(): React.JSX.Element {
                 <Stack spacing={2}>
                   <Box sx={{ textAlign: 'center', py: 2 }}>
                     <Typography variant="h4" color="primary" fontWeight="bold">
-                      {tutor.currency} {tutor.tutorRate.toLocaleString()}
+                      {tutor.currency} {tutor.tutorRate?.toLocaleString()}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       per hour

@@ -28,10 +28,12 @@ namespace BusinessService.Models.DTOs
     public class CourseContentDto
     {
         public Guid ContentId { get; set; }
-        public string ContentTitle { get; set; }
+        public string? ContentTitle { get; set; }
         public string? ContentDuration { get; set; }
         public string? ContentDescription { get; set; }
         public string? ContentSortOrder { get; set; }
+
+        public string? FilePath { get; set; }
         public List<SubContentDto> SubContent { get; set; } = new List<SubContentDto>();
     }
 

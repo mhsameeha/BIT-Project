@@ -4,6 +4,7 @@ import type { PaginatedCourse } from "@/types/course";
 import type { Session } from "@/types/session";
 import { TutorAccountDetails } from '@/types/tutor-account-data';
 import { TutorData } from '@/types/tutor-data';
+import { TutorProfileData } from '@/types/tutor-profile-data';
 
 export interface TutorEducation {
   degree: string;
@@ -108,9 +109,8 @@ export async function getCoursesByTutor(page = 1): Promise<PaginatedCourse | { e
   return result;
 }
 
-export async function getTutorDashboardData(): Promise<Record<string, unknown> | { error: string }> {
-  // TODO: Replace hardcoded email with actual user email from auth context
-  const result = await api.get<Record<string, unknown>>('/Tutor/TutorProfileData/prof.chen@educonnect.com');
+export async function getTutorDashboardData(): Promise<TutorProfileData | { error: string }> {
+  const result = await api.get<TutorProfileData>('/Tutor/TutorDashboardData');
   
   if (isApiError(result)) {
     return { error: result.error };

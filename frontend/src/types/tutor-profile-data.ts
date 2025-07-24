@@ -1,6 +1,7 @@
-export interface TutorProfileData {
+export type  TutorProfileData = {
     monthlyCourseIncome : number,
     monthlySessionIncome : number,
-    newStudents : number,
-    monthlyIncome: number
+    newStudents : number;
+    monthlyIncome: number;
+    totalIncome: number;
 };

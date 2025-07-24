@@ -27,7 +27,7 @@ namespace BusinessService.Models.DTOs
         public List<TutorApplicationsDto>? TutorApplications { get; set; }
         public class TutorApplicationsDto
 {
-        public List<string> Specialities;
+        public List<string>? Specialities;
 
         public Guid? TutorId { get; set; }
         public string? TutorName { get; set; }

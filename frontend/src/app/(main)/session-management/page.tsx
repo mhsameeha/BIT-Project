@@ -646,6 +646,8 @@ function SessionRow({ session, onViewSession, onActionClick }: SessionRowProps):
         return 'error';
       case SessionStatus.Completed:
         return 'info';
+        case SessionStatus.PendingVerification:
+        return 'primary';
       default:
         return 'default';
     }
@@ -913,16 +915,19 @@ const sessionCounts = (status:string) => {
         return 'error';
       case SessionStatus.Completed:
         return 'info';
+      case SessionStatus.PendingVerification:
+        return 'primary';
       default:
         return 'default';
     }
   };
 
 
-  const pendingCount = sessionCounts("Pending");
+  const pendingCount = sessionCounts("Pending") + sessionCounts("Pending Payment Approval");
   const confirmedCount = sessionCounts("Confirmed");
   const rejectedCount = sessionCounts("Rejected");
   const completedCount = sessionCounts("Completed");
+
 
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>

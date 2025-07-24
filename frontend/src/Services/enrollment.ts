@@ -1,4 +1,5 @@
 import { api, isApiError, type ApiErrorResponse } from '@/lib/api-client';
+import { EnrollmentStats } from '@/types/tutor-dashboard-data';
 
 export interface PaymentRequest {
   courseId: string;
@@ -49,6 +50,16 @@ export async function checkEnrollmentStatus(courseId: string): Promise<Enrollmen
 
 export async function getMyEnrollments(): Promise<EnrollmentData[] | ApiErrorResponse> {
   const result = await api.get<EnrollmentData[]>('/Enrollment/my-enrollments');
+  
+  if (isApiError(result)) {
+    return result;
+  }
+  
+  return result;
+}
+
+export async function getEnrollmentStats(): Promise<EnrollmentStats[] | ApiErrorResponse> {
+  const result = await api.get<EnrollmentStats[]>('/Enrollment/enrollment-stats');
   
   if (isApiError(result)) {
     return result;

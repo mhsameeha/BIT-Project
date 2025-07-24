@@ -37,8 +37,11 @@ import { Chart } from '@/components/core/chart';
 import { getConfirmedSessions, getCompletedSessions } from '@/constants/sessions';
 import { SessionRequest } from '@/types/session';
 import { getSessionsByTutor } from '@/Services/sessions';
-import { getCoursesByTutor } from '@/Services/tutor';
+import { getCoursesByTutor, getTutorDashboardData } from '@/Services/tutor';
 import { TutorCourse } from '@/types/course';
+import { EnrollmentData, getEnrollmentStats, getMyEnrollments } from '@/Services/enrollment';
+import { EnrollmentStats } from '@/types/tutor-dashboard-data';
+import { TutorProfileData } from '@/types/tutor-profile-data';
 
 // Initialize dayjs plugin
 extend(relativeTime);
@@ -112,12 +115,18 @@ export default function TutorDashboardPage(): React.JSX.Element {
   const [timeRange, setTimeRange] = useState<number>(6); // Default to 6 months
   const [sessions, setSessions] = React.useState<SessionRequest[]>([]);
   const [courses,setCourses] = React.useState<TutorCourse[]>([])
+  const [enrollments,setEnrollments] = React.useState<EnrollmentStats[]>([])
+  const [tutorData,setTutorData] = React.useState<TutorProfileData>();
+
+  const [loading, setLoading] = React.useState<boolean>(true);
+  const [error, setError] = React.useState<string | null>(null);
   
 
 const page = 1;
 
       React.useEffect(() => {
         const fetchData = async () => {
+        try{         
           const tutorSessions = await getSessionsByTutor();
           if ('error' in tutorSessions) {
             // Optionally, handle error UI here
@@ -125,9 +134,29 @@ const page = 1;
           }
           setSessions(tutorSessions);
           console.log("sess",tutorSessions)
-        };
+        
+          const tutorEnrollments = await getEnrollmentStats();
+      if ('error' in tutorEnrollments) {
+            // Optionally, handle error UI here
+            return;
+          }
+          setEnrollments(tutorEnrollments);
+
+          const tutorDashboardData = await getTutorDashboardData();
+      if ('error' in tutorDashboardData) {
+            // Optionally, handle error UI here
+            return;
+          }
+          setTutorData(tutorDashboardData);
+        }
+      catch (err) {
+        setError('An unexpected error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
          fetchData();
-      }, []);
+     }, []);
 
 
 
@@ -147,13 +176,38 @@ const upcomingSession = sessions.filter(session => session.sessionStatus.toLower
     dayjs(session.startTime).month() === currentMonth && 
     dayjs(session.startTime).year() === currentYear
   );
-
-  
   
   const sessionIncome = completedSessions.reduce((total, session) => total + session.cost, 0);
   
   // Mock course enrollments income for the month
-  const courseIncome = 45000; // This would be calculated from actual enrollments
+const enrollmentsByCourse = enrollments.reduce((acc, enrollment) => {
+  const courseId = enrollment.courseId;
+  if (!courseId) return acc;
+
+  if (!acc[courseId]) {
+    acc[courseId] = {
+      courseName: enrollment.courseName,
+      coursePrice: enrollment.coursePrice || 0,
+      count: 0
+    };
+  }
+
+  acc[courseId].count += 1;
+  return acc;
+}, {} as Record<string, { courseName: string; coursePrice: number; count: number }>);
+
+const courseRevenueList = Object.entries(enrollmentsByCourse).map(([courseId, info]) => {
+  return {
+    courseId,
+    courseName: info.courseName,
+    enrollmentCount: info.count,
+    coursePrice: info.coursePrice,
+    revenue: info.count * info.coursePrice
+  };
+});
+
+const courseIncome = courseRevenueList.reduce((sum, course) => sum + course.revenue, 0);
+
   
   return {
     total: sessionIncome + courseIncome,
@@ -161,12 +215,18 @@ const upcomingSession = sessions.filter(session => session.sessionStatus.toLower
     courses: courseIncome
   };
 };
-        const monthlyIncome = calculateMonthlyIncome();
+    const monthlyIncome = calculateMonthlyIncome();
   // Handle time range change
   const handleTimeRangeChange = (event: SelectChangeEvent<number>): void => {
     setTimeRange(event.target.value as number);
   };
+  const newlyEnrollments = enrollments.filter(enrollment => dayjs(enrollment.enrolledDate) == dayjs(enrollment.enrolledDate).subtract(7,'day'));
+  const totalEnrollments = enrollments.length;
 
+   const enrolledStudents = totalEnrollments;
+                      // const completionRate = Math.floor(Math.random() * 40) + 60;
+  const monthlyRevenue = tutorData?.monthlyIncome;
+  const totalRevenue = tutorData?.totalIncome;
   // Get chart data based on selected time range
   const { months, sessionData, courseData } = getIncomeChartData(timeRange);
   const { months: enrollmentMonths, enrollmentData } = getStudentEnrollmentData(timeRange);
@@ -343,7 +403,7 @@ const upcomingSession = sessions.filter(session => session.sessionStatus.toLower
 
       {/* Stats Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        {/* <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} md={3}>
           <Card>
             <CardContent>
               <Stack direction="row" spacing={2} alignItems="center">
@@ -362,7 +422,7 @@ const upcomingSession = sessions.filter(session => session.sessionStatus.toLower
                     New Students
                   </Typography>
                   <Typography variant="h4">
-                    {NEWLY_ENROLLED_STUDENTS.length}
+                    {newlyEnrollments.length}
                   </Typography>
                   <Typography variant="body2" color="success.main">
                     This week
@@ -371,7 +431,7 @@ const upcomingSession = sessions.filter(session => session.sessionStatus.toLower
               </Stack>
             </CardContent>
           </Card>
-        </Grid> */}
+        </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
           <Card>
@@ -544,17 +604,17 @@ const upcomingSession = sessions.filter(session => session.sessionStatus.toLower
         </Grid>
 
         {/* Newly Enrolled Students */}
-        {/* <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={6}>
           <Card>
             <CardHeader 
               title="Newly Enrolled Students" 
-              subheader={`${NEWLY_ENROLLED_STUDENTS.length} new students this week`}
+              subheader={`${newlyEnrollments.length} new students this week`}
             />
             <CardContent>
               <Stack spacing={2}>
-                {NEWLY_ENROLLED_STUDENTS.map((student) => (
+                {newlyEnrollments.map((student) => (
                   <Stack
-                    key={student.id}
+                    key={student.enrollmentId}
                     direction="row"
                     spacing={2}
                     alignItems="center"
@@ -565,13 +625,13 @@ const upcomingSession = sessions.filter(session => session.sessionStatus.toLower
                       borderRadius: 1,
                     }}
                   >
-                    <Avatar src={student.avatar} alt={student.name} />
+                    <Avatar src={student.learnerProfPic} alt={student.learnerName} />
                     <Box sx={{ flexGrow: 1 }}>
                       <Typography variant="subtitle2">
-                        {student.name}
+                        {student.learnerName}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {student.course}
+                        {student.courseName}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
                         Enrolled {dayjs(student.enrolledDate).fromNow()}
@@ -588,7 +648,7 @@ const upcomingSession = sessions.filter(session => session.sessionStatus.toLower
               </Stack>
             </CardContent>
           </Card>
-        </Grid> */}
+        </Grid>
 
         {/* Upcoming Sessions */}
         <Grid item xs={12} md={6}>
@@ -667,18 +727,14 @@ const upcomingSession = sessions.filter(session => session.sessionStatus.toLower
                       <TableCell align="right">Total Revenue</TableCell>
                     </TableRow>
                   </TableHead>
-                  {/* <TableBody>
-                    {TUTOR_COURSES_DATA.slice(0, 5).map((course) => {
-                      const enrolledStudents = Math.floor(Math.random() * 20) + 5;
-                      const completionRate = Math.floor(Math.random() * 40) + 60;
-                      const monthlyRevenue = enrolledStudents * course.fee * 0.1;
-                      const totalRevenue = enrolledStudents * course.fee;
+                  <TableBody>
                       
-                      return (
-                        <TableRow key={course.id}>
+                      {/* {courseRevenueList.map((course) => {
+                        return (
+                        <TableRow key={course.courseId}>
                           <TableCell>
                             <Typography variant="subtitle2">
-                              {course.title}
+                              {course.courseTitle}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
                               {course.category}
@@ -712,9 +768,9 @@ const upcomingSession = sessions.filter(session => session.sessionStatus.toLower
                             </Typography>
                           </TableCell>
                         </TableRow>
-                      );
-                    })}
-                  </TableBody> */}
+                        );
+                    })} */}
+                  </TableBody>
                 </Table>
               </TableContainer>
             </CardContent>

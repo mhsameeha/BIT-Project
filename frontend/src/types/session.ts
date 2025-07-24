@@ -3,6 +3,7 @@ export const SessionStatus = {
   Confirmed: 'Confirmed',
   Rejected: 'Rejected',
   Completed: 'Completed',
+  PendingVerification: 'Pending Payment Approval',
 } as const;
 
 export type SessionStatusType = (typeof SessionStatus)[keyof typeof SessionStatus];
