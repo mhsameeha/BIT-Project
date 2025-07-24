@@ -122,15 +122,16 @@ namespace BusinessService.Services
                .Where(x => x.TutorId == tutor.Id)
                .Select(c => c.Price * c.Enrollment.Count)
                .Sum();
-       
-                var monthlyIncome = monthlyCourseIncome + monthlySessionIncome;
+            var totalIncome = courseIncome + sessionIncome;
+            var monthlyIncome = monthlyCourseIncome + monthlySessionIncome;
 
                 return new TutorDashboardDataDto
                 {
                     MonthylCourseIncome = courseIncome,
                     MonthlySessionIncome = sessionIncome,
                     NewStudents = newStudents,
-                    MonthlyIncome = monthlyIncome
+                    MonthlyIncome = monthlyIncome,
+                    TotalIncome = totalIncome
                 };
 
 
@@ -584,25 +585,27 @@ namespace BusinessService.Services
                 return null;
             }
 
-            var availability = _context.TutorWeeklyAvailabilities
-                .Where(a => a.TutorId == tutor.Id)
-                .Include(a => a.TimeSlots) // assumes a.TimeSlots is ICollection<TutorTimeSlot>
-                .ToList();
+            //var availability = _context.TutorWeeklyAvailabilities
+            //    .Where(a => a.TutorId == tutor.Id)
+            //    .Include(a => a.TimeSlots) // assumes a.TimeSlots is ICollection<TutorTimeSlot>
+            //    .ToList();
 
-            var allDayAvailableDays = _context.TutorWeeklyAvailabilities
-                                    .Where(x => x.IsAvailable && x.AllDay)
-                                    .Select(x => x.Day)
-                                    .ToList();
-            var someSlotsAvailable = _context.TutorWeeklyAvailabilities
-                                  .Where(x => x.IsAvailable && x.AllDay == false)
-                                  .Select(x => new TutorAvailabilitySlotsDto
-                                  {
-                                     Day = x.Day,
-                                     TimeSlots = x.TimeSlots,
-                                  })
-                                  .ToList();
+            //var allDayAvailableDays = _context.TutorWeeklyAvailabilities
+            //                        .Where(x => x.IsAvailable && x.AllDay)
+            //                        .Select(x => x.Day)
+            //                        .ToList();
+            //var someSlotsAvailable = _context.TutorWeeklyAvailabilities
+            //                      .Where(x => x.IsAvailable && x.AllDay == false)
+            //                      .Select(x => new TutorAvailabilitySlotsDto
+            //                      {
+            //                         Day = x.Day,
+            //                         TimeSlots = x.TimeSlots,
+            //                      })
+            //                      .ToList();
 
-            var sessionsCompleted = 0;
+            var sessionsCompleted = _context.Sessions
+                                    .Where(s => s.TutorFk == tutor.Id && s.SessionStatus.ToLower() == "completed").Count();
+
 
             decimal avgRating = 0;
 
@@ -629,7 +632,9 @@ namespace BusinessService.Services
                 Experience = tutorDetails.Tutor.ExperienceJson,
                 Language = tutorDetails.Tutor.Language,
                 ApprovedDate = tutorDetails.Tutor.ApprovedDate,
-                Availability = someSlotsAvailable,
+                SessionsCompleted = sessionsCompleted,
+                Rating = avgRating,
+                //Availability = someSlotsAvailable,
 
             };
           

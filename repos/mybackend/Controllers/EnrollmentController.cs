@@ -130,10 +130,18 @@ namespace mybackend.Controllers
         }
 
         // POST api/<EnrollmentController>
-        [HttpPost]
-        public void Post([FromBody] string value)
+        [HttpGet("enrollment-stats")]
+
+        public IActionResult GetEnrollmentsByTutor()
         {
+            var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+            IEnrollementService enrollementService = new EnrollementService(_context);
+            var result = enrollementService.GetEnrollmentsByTutor(email);
+            return Ok(result);
         }
+        //public void Post([FromBody] string value)
+        //{
+        //}
 
         // PUT api/<EnrollmentController>/5
         [HttpPut("{id}")]

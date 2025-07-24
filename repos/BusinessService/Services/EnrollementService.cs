@@ -19,22 +19,22 @@ namespace BusinessService.Services
             _context = context;
         }
         
-        public List<EnrollmentDto> GetEnrolledCourses(Guid learnerid)
-        {
-            var result = (from enrollement in _context.Enrollments
-                          join course in _context.Courses on enrollement.CourseId equals course.CourseId
-                          where enrollement.LearnerFk == learnerid
-                          select new EnrollmentDto
-                          {
-                              CourseName = course.Title,
-                              EnrollmentId = enrollement.EnrollmentId,
-                              CourseId = enrollement.CourseId ?? Guid.Empty,
-                              EnrollmentStatus = enrollement.EnrollmentStatus,
-                              EnrolledDate = enrollement.EnrolledDate ?? DateTime.UtcNow,
-                              IsPaid = enrollement.IsPaid
-                          }).ToList();
-            return result;
-        }
+        //public List<EnrollmentDto> GetEnrolledCourses(Guid learnerid)
+        //{
+        //    var result = (from enrollement in _context.Enrollments
+        //                  join course in _context.Courses on enrollement.CourseId equals course.CourseId
+        //                  where enrollement.LearnerFk == learnerid
+        //                  select new EnrollmentDto
+        //                  {
+        //                      CourseName = course.Title,
+        //                      EnrollmentId = enrollement.EnrollmentId,
+        //                      CourseId = enrollement.CourseId ?? Guid.Empty,
+        //                      EnrollmentStatus = enrollement.EnrollmentStatus,
+        //                      EnrolledDate = enrollement.EnrolledDate ?? DateTime.UtcNow,
+        //                      IsPaid = enrollement.IsPaid
+        //                  }).ToList();
+        //    return result;
+        //}
 
         public async Task<List<EnrollmentDto>> GetEnrollmentsByLearnerEmailAsync(string userEmail)
         {
@@ -86,31 +86,35 @@ namespace BusinessService.Services
 
         public List<EnrollmentsByTutorDto> GetEnrollmentsByTutor(string email)
         {
-            //var tutors = (from u in _context.Users
-            //              join t in _context.Tutors on u.UserId equals t.UserId
-            //              where u.Email == email
-            //              select new
-            //              {
-            //                  Id = t.TutorId
-            //              }).FirstOrDefault();
+            var tutors = (from u in _context.Users
+                          join t in _context.Tutors on u.UserId equals t.UserId
+                          where u.Email == email
+                          select new
+                          {
+                              Id = t.TutorId
+                          }).FirstOrDefault();
 
-            //if (tutors == null) return null;
+            if (tutors == null) return null;
 
-            //var findEnrollments = _context.Enrollments
-            //                .Include(c => c.Course)
-            //                .Where(c => c.EnrollmentStatus.ToLower() == "active")
-            //                .Select(c => new EnrollmentsByTutorDto
-            //                {
-            //                    EnrollmentId = c.EnrollmentId,
-            //                    CourseId = c.CourseId,
-            //                    CourseName = c.Course.Title,
-            //                    EnrolledDate = c.EnrolledDate,
-            //                    CoursePrice = c.Course.Price,
-            //                }).toList();
+            var findEnrollments = (from e in _context.Enrollments
+                                   join c in _context.Courses on e.CourseId equals c.CourseId
+                                   join l in _context.Learners on e.LearnerFk equals l.LearnerId
+                                   join u in _context.Users on l.UserFk equals u.UserId into courseGroup
+                                   from g in courseGroup.DefaultIfEmpty() // This makes it a LEFT JOIN
+                                   where e.EnrollmentStatus.ToLower() == "active" && c.TutorId == tutors.Id
+                                   select new EnrollmentsByTutorDto
+                                   {
+                                       EnrollmentId = e.EnrollmentId,
+                                       CourseId = c != null ? c.CourseId : Guid.Empty,
+                                       CourseName = c != null ? c.Title : "Unknown",
+                                       EnrolledDate = e.EnrolledDate,
+                                       CoursePrice = c != null ? c.Price : 0,
+                                       LearnerName = g.FirstName + ' ' + g.LastName,
+                                       LearnerProfPic = l.LearnerProfPic
+                                   }).ToList();
 
-            //return findEnrollments;
+            return findEnrollments;
 
-            return null;
                 }
 
         public async Task<PaymentResponseDto> ProcessPaymentAsync(PaymentDto paymentDto, string userEmail)
