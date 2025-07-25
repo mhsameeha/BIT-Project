@@ -707,6 +707,94 @@ namespace BusinessService.Services
 
         }
 
+        public List<MonthlyEarningsDto> GetMonthlyEarnings(string email, DateTime startDate, DateTime endDate)
+        {
+            // Get tutor ID from email
+            var tutor = _context.Users
+                .Where(u => u.Email == email)
+                .Join(_context.Tutors, u => u.UserId, t => t.UserId, (u, t) => t.TutorId)
+                .FirstOrDefault();
+
+            if (tutor == Guid.Empty)
+            {
+                return new List<MonthlyEarningsDto>();
+            }
+
+            var monthlyEarnings = new List<MonthlyEarningsDto>();
+
+            // Get all completed payments for this tutor within the date range
+            var completedPayments = _context.Payments
+                .Where(p => p.TutorFk == tutor && 
+                           p.PaymentStatus == "Completed" && 
+                           p.PaymentDate >= startDate && 
+                           p.PaymentDate <= endDate)
+                .ToList();
+
+            // Group payments by year and month
+            var groupedPayments = completedPayments
+                .GroupBy(p => new { 
+                    Year = p.PaymentDate.Value.Year, 
+                    Month = p.PaymentDate.Value.Month 
+                })
+                .OrderBy(g => g.Key.Year)
+                .ThenBy(g => g.Key.Month);
+
+            foreach (var group in groupedPayments)
+            {
+                var sessionEarnings = group
+                    .Where(p => p.PaymentType?.ToLower() == "session booking")
+                    .Sum(p => p.Amount ?? 0);
+
+                var courseEarnings = group
+                    .Where(p => p.PaymentType?.ToLower() == "course payment")
+                    .Sum(p => p.Amount ?? 0);
+
+                var monthName = new DateTime(group.Key.Year, group.Key.Month, 1).ToString("MMM yyyy");
+
+                monthlyEarnings.Add(new MonthlyEarningsDto
+                {
+                    Month = monthName,
+                    Year = group.Key.Year,
+                    MonthNumber = group.Key.Month,
+                    SessionEarnings = sessionEarnings,
+                    CourseEarnings = courseEarnings,
+                    TotalEarnings = sessionEarnings + courseEarnings
+                });
+            }
+
+            // Fill in missing months with zero earnings
+            var current = new DateTime(startDate.Year, startDate.Month, 1);
+            var end = new DateTime(endDate.Year, endDate.Month, 1);
+            
+            var allMonths = new List<MonthlyEarningsDto>();
+            
+            while (current <= end)
+            {
+                var existing = monthlyEarnings.FirstOrDefault(m => m.Year == current.Year && m.MonthNumber == current.Month);
+                
+                if (existing != null)
+                {
+                    allMonths.Add(existing);
+                }
+                else
+                {
+                    allMonths.Add(new MonthlyEarningsDto
+                    {
+                        Month = current.ToString("MMM yyyy"),
+                        Year = current.Year,
+                        MonthNumber = current.Month,
+                        SessionEarnings = 0,
+                        CourseEarnings = 0,
+                        TotalEarnings = 0
+                    });
+                }
+                
+                current = current.AddMonths(1);
+            }
+
+            return allMonths;
+        }
+
  
     }
 }

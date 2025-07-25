@@ -120,9 +120,6 @@ namespace BusinessService.Services
         public async Task<PaymentResponseDto> ProcessPaymentAsync(PaymentDto paymentDto, string userEmail)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
-
-
-            
             try
             {
                 var leanerId = (from u in _context.Users

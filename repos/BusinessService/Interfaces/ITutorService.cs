@@ -19,7 +19,7 @@ namespace BusinessService.Interfaces
         public TutorData GetTutorAccountDetails(string email);
         public TutorData GetTutorDataById(Guid tutorId);
 
-   
+        public List<MonthlyEarningsDto> GetMonthlyEarnings(string email, DateTime startDate, DateTime endDate);
 
 
     }

@@ -175,7 +175,8 @@ namespace BusinessService.Services
                                 PaymentDate = p.PaymentDate,
                                 ReferenceNo = p.GatewayRef,
                                 PaymentProof = p.PaymentProof,
-                                Amount = p.Amount
+                                Amount = p.Amount ?? 0,
+
                             }).ToList();
 
             return payments;
@@ -183,19 +184,21 @@ namespace BusinessService.Services
 
         public string GetPaymentStatus(Guid paymentId, string status)
         {
-   
-         var payment = _context.Payments.FirstOrDefault(x => x.PaymentId ==paymentId);
-        if (payment !=null){
-            payment.PaymentStatus = "Completed";
 
-            if (payment.PaymentType?.ToLower()=="course payment"){
-                var enrollment = _context.Enrollments
-                                .FirstOrDefault(e => e.LearnerFk == payment.LearnerFk && e.CourseId == payment.CourseFk);
+            var payment = _context.Payments.FirstOrDefault(x => x.PaymentId == paymentId);
+            if (payment != null)
+            {
+                payment.PaymentStatus = "Completed";
 
-                enrollment.IsPaid = true;
-                enrollment.EnrollmentStatus = "Active";
-                enrollment.EnrolledDate = DateTime.Now;
-                    _context.SaveChanges();
+                if (payment.PaymentType?.ToLower() == "course payment")
+                {
+                    var enrollment = _context.Enrollments
+                                    .FirstOrDefault(e => e.LearnerFk == payment.LearnerFk && e.CourseId == payment.CourseFk);
+
+                    enrollment.IsPaid = true;
+                    enrollment.EnrollmentStatus = "Active";
+                    enrollment.EnrolledDate = DateTime.Now;
+
                 }
 
                 if (payment.PaymentType?.ToLower() == "session booking")
@@ -204,7 +207,6 @@ namespace BusinessService.Services
                                     .FirstOrDefault(s => s.LearnerFk == payment.LearnerFk && s.TutorFk == payment.TutorFk);
                     session.SessionStatus = "Confirmed";
                     session.IsPaid = true;
-                    _context.SaveChanges();
 
 
                 }
@@ -212,11 +214,92 @@ namespace BusinessService.Services
 
                 return "Payment status updated successfully.";
             }
-      
+
 
 
             return "Payment status update unsuccessful";
+        }
 
+        public byte[]? GetPaymentProofFile(Guid paymentId)
+        {
+            var payment = _context.Payments.FirstOrDefault(p => p.PaymentId == paymentId);
+            return payment?.PaymentProof;
+        }
+
+        public List<MonthlyEarningsDto> GetMonthlyEarnings(DateTime startDate, DateTime endDate)
+        {
+            var monthlyEarnings = new List<MonthlyEarningsDto>();
+
+            // Get all completed payments within the date range
+            var completedPayments = _context.Payments
+                .Where(p => p.PaymentStatus == "Completed" && 
+                           p.PaymentDate >= startDate && 
+                           p.PaymentDate <= endDate)
+                .ToList();
+
+            // Group payments by year and month
+            var groupedPayments = completedPayments
+                .GroupBy(p => new { 
+                    Year = p.PaymentDate.Value.Year, 
+                    Month = p.PaymentDate.Value.Month 
+                })
+                .OrderBy(g => g.Key.Year)
+                .ThenBy(g => g.Key.Month);
+
+            foreach (var group in groupedPayments)
+            {
+                var sessionEarnings = group
+                    .Where(p => p.PaymentType?.ToLower() == "session booking")
+                    .Sum(p => p.Amount ?? 0);
+
+                var courseEarnings = group
+                    .Where(p => p.PaymentType?.ToLower() == "course payment")
+                    .Sum(p => p.Amount ?? 0);
+
+                var monthName = new DateTime(group.Key.Year, group.Key.Month, 1).ToString("MMM yyyy");
+
+                monthlyEarnings.Add(new MonthlyEarningsDto
+                {
+                    Month = monthName,
+                    Year = group.Key.Year,
+                    MonthNumber = group.Key.Month,
+                    SessionEarnings = sessionEarnings,
+                    CourseEarnings = courseEarnings,
+                    TotalEarnings = sessionEarnings + courseEarnings
+                });
+            }
+
+            // Fill in missing months with zero earnings
+            var current = new DateTime(startDate.Year, startDate.Month, 1);
+            var end = new DateTime(endDate.Year, endDate.Month, 1);
+            
+            var allMonths = new List<MonthlyEarningsDto>();
+            
+            while (current <= end)
+            {
+                var existing = monthlyEarnings.FirstOrDefault(m => m.Year == current.Year && m.MonthNumber == current.Month);
+                
+                if (existing != null)
+                {
+                    allMonths.Add(existing);
+                }
+                else
+                {
+                    allMonths.Add(new MonthlyEarningsDto
+                    {
+                        Month = current.ToString("MMM yyyy"),
+                        Year = current.Year,
+                        MonthNumber = current.Month,
+                        SessionEarnings = 0,
+                        CourseEarnings = 0,
+                        TotalEarnings = 0
+                    });
+                }
+                
+                current = current.AddMonths(1);
+            }
+
+            return allMonths;
         }
     }
           

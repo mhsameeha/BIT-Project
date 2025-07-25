@@ -79,6 +79,7 @@ export async function submitPayment(paymentData: PaymentRequest): Promise<Paymen
   formData.append('courseId', paymentData.courseId);
   formData.append('amount', paymentData.amount.toString());
   formData.append('currency', paymentData.currency || 'LKR');
+  formData.append('paymentType', 'Course Payment');
   
   if (paymentData.transactionReference) {
     formData.append('transactionReference', paymentData.transactionReference);

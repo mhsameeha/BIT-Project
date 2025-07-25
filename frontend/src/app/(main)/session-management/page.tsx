@@ -853,6 +853,15 @@ const router = useRouter();
       fetchData();
   };
   const handleFilter = (status: string) => {
+  if (status === "Pending") {
+    // For pending tab, include both "Pending" and "Pending Payment Approval" statuses
+    const filtered = sessions.filter(session => 
+      session.sessionStatus === "Pending" || 
+      session.sessionStatus === "Pending Payment Approval"
+    );
+    return filtered;
+  }
+  
   const filtered = sessions.filter(session => session.sessionStatus === status);
   return filtered;
 };

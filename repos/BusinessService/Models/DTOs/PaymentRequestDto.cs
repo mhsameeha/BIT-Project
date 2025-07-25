@@ -14,5 +14,6 @@ namespace BusinessService.Models.DTOs
         public string? Currency { get; set; }
         public string? TransactionReference { get; set; }
         public IFormFile? PaymentProof { get; set; }
+        public string PaymentType { get; set; }
     }
 }

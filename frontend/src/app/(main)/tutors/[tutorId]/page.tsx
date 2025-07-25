@@ -55,6 +55,7 @@ React.useEffect(() => {
   const handleBookSession = (): void => {
     router.push(paths.main.sessionBooking(tutorId));
   };
+  
  const parsedExperience = typeof tutor?.experience === 'string'
   ? JSON.parse(tutor?.experience)
   : tutor?.experience;
@@ -189,13 +190,13 @@ React.useEffect(() => {
                 <Stack spacing={2}>
                   {parsedEducation?.map((edu:any, index:number) => (
                     <Box key={index}>
-                      <Typography variant="subtitle1" fontWeight="medium">
-                        {edu.degree}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {edu.institution} • {edu.year}
-                      </Typography>
-                    </Box>
+                                         <Typography variant="subtitle1" fontWeight="medium">
+                                           {edu.Qualification}
+                                         </Typography>
+                                         <Typography variant="body2" color="text.secondary">
+                                           {edu.Institute} • {edu.GraduationDate}
+                                         </Typography>
+                                       </Box>
                   ))}
                 </Stack>
               </CardContent>
@@ -211,10 +212,10 @@ React.useEffect(() => {
                   {parsedExperience?.map((exp:any, index:number) => (
                     <Box key={index}>
                       <Typography variant="subtitle1" fontWeight="medium">
-                        {exp.position}
+                        {exp.Position}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" gutterBottom>
-                        {exp.company} • {exp.from} {' - '} {exp.to}
+                        {exp.Company} • {exp.TimePeriod}
                       </Typography>
                       <Typography variant="body2">{exp.description}</Typography>
                     </Box>

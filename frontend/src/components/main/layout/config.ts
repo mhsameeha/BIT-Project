@@ -17,9 +17,7 @@ export const navItems = [
   { key: 'course-management', title: 'Course Management', href: paths.main.courseManagement, icon: 'books' },
   { key: 'session', title: 'Session', href: paths.main.session, icon: 'users' },
   { key: 'session-management', title: 'Session Management', href: paths.main.sessionManagement, icon: 'calendar' },
-  { key: 'reports', title: 'Reports', href: paths.main.reports, icon: 'chart-bar' },
+  { key: 'reports', title: 'Tutor Reports', href: paths.main.reports, icon: 'chart-line'  },
   { key: 'admin-reports', title: 'Admin Reports', href: paths.main.adminReports, icon: 'chart-line' },
-  { key: 'settings', title: 'Settings', href: paths.main.settings, icon: 'gear-six' },
   { key: 'account', title: 'Account', href: paths.main.account, icon: 'user' },
-  { key: 'error', title: 'Error', href: paths.errors.notFound, icon: 'x-square' },
 ] satisfies NavItemConfig[];

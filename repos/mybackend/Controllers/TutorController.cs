@@ -170,6 +170,27 @@ namespace mybackend.Controllers
             return Ok(result);
         }
 
+        [HttpGet("MonthlyEarnings")]
+        public IActionResult GetMonthlyEarnings([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        {
+            try
+            {
+                var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+                if (string.IsNullOrEmpty(email))
+                {
+                    return Unauthorized(new { error = "User email not found in token" });
+                }
+
+                ITutorService tutorService = new TutorService(_context);
+                var result = tutorService.GetMonthlyEarnings(email, startDate, endDate);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
         [HttpGet("TutorData/{tutorId}")]
         public IActionResult GetTutorDataById(Guid tutorId)
         {

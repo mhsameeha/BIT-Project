@@ -11,10 +11,7 @@ export const allowedNavKeys: Record<RoleType, string[]> = {
     'learner-dashboard',
     'courses',
     'session',
-    'reports',
-    'settings',
     'account',
-    'error',
   ],
   [Role.TUTOR]: [
     'tutor-dashboard',

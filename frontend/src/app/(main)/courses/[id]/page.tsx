@@ -319,7 +319,7 @@ export default function CourseDetailPage(): React.JSX.Element {
         <MainCard>
           {(enrollmentPending || enrollmentStatus?.enrollmentStatus === 'Pending Verification') ? (
             <Box sx={{ mb: 3 }}>
-              <Paper elevation={2} sx={{ p: 3, backgroundColor: 'success.light', color: 'success.contrastText' }}>
+              <Paper elevation={2} sx={{ p: 3, backgroundColor: 'warning.light', color: 'warning.contrastText' }}>
                 <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
                   🎉 Payment Successful!
                 </Typography>

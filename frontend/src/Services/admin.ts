@@ -1,7 +1,16 @@
 import { Payment } from '@/app/(main)/payment-management/page';
 
-import { AdminDashboardData } from '@/types/admin-dashboard-data';
 import { api, isApiError } from '@/lib/api-client';
+import { AdminDashboardData } from '@/types/admin-dashboard-data';
+
+export interface MonthlyEarningsData {
+  month: string;
+  sessionEarnings: number;
+  courseEarnings: number;
+  totalEarnings: number;
+  year: number;
+  monthNumber: number;
+}
 
 export async function getAdminDashboardData(): Promise<AdminDashboardData | { error: string }> {
   const result = await api.get<AdminDashboardData>('/Admin/AdminDashboardData', { requireAuth: false });
@@ -59,5 +68,15 @@ export async function rejectTutorApplication(tutorId: string): Promise<void | { 
   if (isApiError(result)) {
     return { error: result.error };
   }
+  return result;
+}
+
+export async function getMonthlyEarnings(startDate: string, endDate: string): Promise<MonthlyEarningsData[] | { error: string }> {
+  const result = await api.get<MonthlyEarningsData[]>(`/Admin/MonthlyEarnings?startDate=${startDate}&endDate=${endDate}`, { requireAuth: false });
+
+  if (isApiError(result)) {
+    return { error: result.error };
+  }
+
   return result;
 }

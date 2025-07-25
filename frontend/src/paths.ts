@@ -21,7 +21,6 @@ export const paths = {
     account: '/account',
     customers: '/customers',
     integrations: '/integrations',
-    settings: '/settings',
     courses: '/courses/list',
     courseDetail: (id: string) => `/courses/${id}`,
     session: '/session',

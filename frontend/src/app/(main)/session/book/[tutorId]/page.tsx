@@ -117,9 +117,9 @@ const parseEducation = (education: string | TutorEducation[]): TutorEducation[] 
         if (typeof item === 'object' && item !== null) {
           const edu = item as Record<string, unknown>;
           return {
-            degree: typeof edu.degree === 'string' ? edu.degree : '',
-            institution: typeof edu.institution === 'string' ? edu.institution : '',
-            year: typeof edu.year === 'string' ? edu.year : '',
+            degree: typeof edu.Qualification === 'string' ? edu.Qualification : '',
+            institution: typeof edu.Institute === 'string' ? edu.Institute : '',
+            year: typeof edu.GraduationDate === 'string' ? edu.GraduationDate : '',
           };
         }
         return { degree: String(item), institution: '', year: '' };
@@ -145,9 +145,9 @@ const parseExperience = (experience: string | TutorExperience[]): TutorExperienc
         if (typeof item === 'object' && item !== null) {
           const exp = item as Record<string, unknown>;
           return {
-            position: typeof exp.position === 'string' ? exp.position : '',
-            company: typeof exp.company === 'string' ? exp.company : '',
-            duration: typeof exp.duration === 'string' ? exp.duration : '',
+            position: typeof exp.Position === 'string' ? exp.Position : '',
+            company: typeof exp.Company === 'string' ? exp.Company : '',
+            duration: typeof exp.TimePeriod === 'string' ? exp.TimePeriod : '',
             description: typeof exp.description === 'string' ? exp.description : '',
           };
         }
@@ -303,6 +303,8 @@ export default function SessionBookingPage(): React.JSX.Element {
 
     return [];
   };
+
+  console.log(tutor?.experience, "tutor experience");
 
   const shouldDisableDate = (date: Dayjs): boolean => {
     const today = dayjs();

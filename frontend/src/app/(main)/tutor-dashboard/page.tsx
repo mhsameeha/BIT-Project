@@ -454,9 +454,6 @@ const courseIncome = courseRevenueList.reduce((sum, course) => sum + course.reve
                   <Typography variant="h4">
                     LKR {monthlyIncome.total.toLocaleString()}
                   </Typography>
-                  <Typography variant="body2" color="success.main">
-                    +12% from last month
-                  </Typography>
                 </Box>
               </Stack>
             </CardContent>
@@ -530,78 +527,12 @@ const courseIncome = courseRevenueList.reduce((sum, course) => sum + course.reve
           Analytics Overview
         </Typography>
         <FormControl size="small" sx={{ minWidth: 180 }}>
-          <Select
-            value={timeRange}
-            onChange={handleTimeRangeChange}
-            displayEmpty
-          >
-            <MenuItem value={12}>Last 12 months</MenuItem>
-            <MenuItem value={6}>Last 6 months</MenuItem>
-            <MenuItem value={3}>Last 3 months</MenuItem>
-          </Select>
+          
         </FormControl>
       </Box>
 
       <Grid container spacing={3}>
-        {/* Income Chart */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardHeader title={`Monthly Income Overview (Last ${timeRange} months)`} />
-            <CardContent>
-              <Chart
-                height={300}
-                options={incomeChartOptions}
-                series={incomeChartSeries}
-                type="area"
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Sessions Count Chart */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardHeader title={`Sessions Conducted (Last ${timeRange} months)`} />
-            <CardContent>
-              <Chart
-                height={300}
-                options={enrollmentChartOptions}
-                series={enrollmentChartSeries}
-                type="bar"
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Student Enrollment Over Time - Bar Chart */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardHeader title={`Student Enrollments (Last ${timeRange} months)`} />
-            <CardContent>
-              <Chart
-                height={300}
-                options={studentBarChartOptions}
-                series={studentBarChartSeries}
-                type="bar"
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Total Income Over Time - Bar Chart */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardHeader title={`Total Income (Last ${timeRange} months)`} />
-            <CardContent>
-              <Chart
-                height={300}
-                options={incomeBarChartOptions}
-                series={incomeBarChartSeries}
-                type="bar"
-              />
-            </CardContent>
-          </Card>
-        </Grid>
+        
 
         {/* Newly Enrolled Students */}
         <Grid item xs={12} md={6}>

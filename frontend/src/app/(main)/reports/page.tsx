@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import * as React from 'react';
 import { Download as DownloadIcon, Assessment as ReportIcon } from '@mui/icons-material';
 import {
   Box,
@@ -16,9 +16,11 @@ import {
   TextField,
   Typography,
   type SelectChangeEvent,
+  Alert,
 } from '@mui/material';
 import dayjs from 'dayjs';
 import { jsPDF } from 'jspdf';
+import { getTutorMonthlyEarnings } from '@/Services/tutor';
 
 // Types for report data
 type ReportType = 'earnings' | 'enrollments';
@@ -41,7 +43,7 @@ interface EnrollmentData {
   }[];
 }
 
-// Mock course data
+// Mock course data for enrollments (keeping this for enrollments report)
 const MOCK_COURSES = [
   { id: '1', title: 'Python Programming Fundamentals' },
   { id: '2', title: 'Advanced Python & Data Science' },
@@ -50,30 +52,7 @@ const MOCK_COURSES = [
   { id: '5', title: 'Database Management' },
 ];
 
-// Mock data generators
-const generateEarningsData = (startDate: string, endDate: string): EarningsData[] => {
-  const start = dayjs(startDate);
-  const end = dayjs(endDate);
-  const data = [];
-
-  let current = start.startOf('month');
-  while (current.isBefore(end) || current.isSame(end, 'month')) {
-    const monthStr = current.format('MMM YYYY');
-    const sessionEarnings = Math.floor(Math.random() * 50000) + 20000;
-    const courseEarnings = Math.floor(Math.random() * 80000) + 30000;
-
-    data.push({
-      month: monthStr,
-      sessionEarnings,
-      courseEarnings,
-      totalEarnings: sessionEarnings + courseEarnings,
-    });
-    current = current.add(1, 'month');
-  }
-
-  return data;
-};
-
+// Mock data generator for enrollments (to be replaced later)
 const generateEnrollmentData = (startDate: string, endDate: string): EnrollmentData[] => {
   const start = dayjs(startDate);
   const end = dayjs(endDate);
@@ -269,11 +248,12 @@ const generatePDF = (
 };
 
 export default function ReportsPage(): React.JSX.Element {
-  const [reportType, setReportType] = useState<ReportType>('earnings');
-  const [exportFormat, setExportFormat] = useState<ExportFormat>('excel');
-  const [startDate, setStartDate] = useState<string>(dayjs().subtract(6, 'month').format('YYYY-MM-DD'));
-  const [endDate, setEndDate] = useState<string>(dayjs().format('YYYY-MM-DD'));
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [reportType, setReportType] = React.useState<ReportType>('earnings');
+  const [exportFormat, setExportFormat] = React.useState<ExportFormat>('excel');
+  const [startDate, setStartDate] = React.useState<string>(dayjs().subtract(6, 'month').format('YYYY-MM-DD'));
+  const [endDate, setEndDate] = React.useState<string>(dayjs().format('YYYY-MM-DD'));
+  const [isGenerating, setIsGenerating] = React.useState<boolean>(false);
+  const [error, setError] = React.useState<string>('');
 
   const handleReportTypeChange = (event: SelectChangeEvent<ReportType>): void => {
     setReportType(event.target.value as ReportType);
@@ -285,20 +265,30 @@ export default function ReportsPage(): React.JSX.Element {
 
   const handleGenerateAndDownload = async (): Promise<void> => {
     setIsGenerating(true);
-
-    // Simulate processing delay
-    await new Promise<void>((resolve) => {
-      setTimeout(() => {
-        resolve();
-      }, 1500);
-    });
+    setError('');
 
     try {
       // Generate data based on report type
-      let data;
+      let data: EarningsData[] | EnrollmentData[];
+      
       if (reportType === 'earnings') {
-        data = generateEarningsData(startDate, endDate);
+        // Fetch real earnings data from API for the current tutor
+        const result = await getTutorMonthlyEarnings(startDate, endDate);
+        
+        if ('error' in result) {
+          setError(`Failed to fetch earnings data: ${result.error}`);
+          return;
+        }
+        
+        // Transform API data to match our EarningsData interface
+        data = result.map(item => ({
+          month: item.month,
+          sessionEarnings: item.sessionEarnings,
+          courseEarnings: item.courseEarnings,
+          totalEarnings: item.totalEarnings
+        }));
       } else {
+        // Use mock data for enrollments (to be replaced later)
         data = generateEnrollmentData(startDate, endDate);
       }
 
@@ -311,8 +301,8 @@ export default function ReportsPage(): React.JSX.Element {
         // Generate PDF directly (no need to return content)
         generatePDF(data, reportType, startDate, endDate);
       }
-    } catch (error) {
-      // Handle error silently or log to proper logging service
+    } catch (err) {
+      setError('An error occurred while generating the report. Please try again.');
     } finally {
       setIsGenerating(false);
     }
@@ -341,6 +331,12 @@ export default function ReportsPage(): React.JSX.Element {
           }
         />
         <CardContent>
+          {error.length > 0 && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {error}
+            </Alert>
+          )}
+          
           <Grid container spacing={3}>
             {/* Report Type Selection */}
             <Grid item xs={12} md={6}>

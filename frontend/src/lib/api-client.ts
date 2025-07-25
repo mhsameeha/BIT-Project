@@ -2,6 +2,7 @@ import { API_BASE_URL } from '../config';
 
 export interface ApiRequestOptions extends RequestInit {
   requireAuth?: boolean;
+  responseType?: 'json' | 'text' | 'blob';
 }
 
 export interface ApiErrorResponse {
@@ -49,7 +50,7 @@ export async function apiRequest<T>(
   endpoint: string, 
   options: ApiRequestOptions = {}
 ): Promise<T | ApiErrorResponse> {
-  const { requireAuth = true, headers: customHeaders, ...fetchOptions } = options;
+  const { requireAuth = true, responseType = 'json', headers: customHeaders, ...fetchOptions } = options;
   
   try {
     const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
@@ -82,6 +83,11 @@ export async function apiRequest<T>(
     const contentType = response.headers.get('content-type');
     if (!contentType || response.status === 204) {
       return {} as T;
+    }
+
+    // Handle different response types based on responseType option
+    if (responseType === 'blob') {
+      return await response.blob() as T;
     }
 
     if (contentType.includes('application/json')) {

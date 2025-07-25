@@ -183,16 +183,16 @@ export default function TutorProfilePage(): React.JSX.Element {
               <CardContent>
                 <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
                   <GraduationCap />
-                  <Typography variant="h6">Education</Typography>
+                  <Typography variant="h6">Educationsss</Typography>
                 </Stack>
                 <Stack spacing={2}>
                   {parsedEducation?.map((edu:any, index:number) => (
                     <Box key={index}>
                       <Typography variant="subtitle1" fontWeight="medium">
-                        {edu.degree}
+                        {edu.Qualification}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {edu.institution} • {edu.year}
+                        {edu.Institute} • {edu.GraduationDate}
                       </Typography>
                     </Box>
                   ))}

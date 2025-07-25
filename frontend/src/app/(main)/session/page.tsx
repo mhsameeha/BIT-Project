@@ -39,7 +39,7 @@ export default function Page(): React.JSX.Element {
     description: apiTutor.tutorDescription || '',
     education: [], // You might want to parse this from the education field
     experience: [], // You might want to parse this from the experience field
-    rating: 4.5, // Default rating - you might want to calculate this
+    rating: 0, // Default rating - you might want to calculate this
     reviewCount: 0, // Default - you might want to get this from the database
     sessionsCompleted: 0, // Default - you might want to get this from the database
     hourlyRate: apiTutor.tutorRate || 0,

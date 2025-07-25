@@ -11,10 +11,11 @@ import LinearProgress from '@mui/material/LinearProgress';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import { ArrowRight as ArrowRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowRight';
-import { CheckCircle as CheckCircleIcon } from '@phosphor-icons/react/dist/ssr/CheckCircle';
 import { authClient } from '@/lib/auth/client';
 import { useRouter } from 'next/navigation';
-import { EnrollmentData, getEnrollmentsByLearner } from '@/Services/enrollment';
+import type { EnrollmentData } from '@/Services/enrollment';
+import { getEnrollmentsByLearner } from '@/Services/enrollment';
+import { UpcomingSessions } from '@/components/main/learner-dashbaord/upcoming-sessions';
 import dayjs from 'dayjs';
 
 export default function LearnerDashboard(): React.JSX.Element {
@@ -24,30 +25,23 @@ export default function LearnerDashboard(): React.JSX.Element {
   const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (): Promise<void> => {
       try {
         const course = await getEnrollmentsByLearner();
         if ('error' in course) {
-          console.error('Error fetching enrollments');
           return;
         }
         setCourses(course);
         setIsLoading(false);
       } catch (error) {
-        console.error('Error fetching data', error);
+        // Error handling
       }
     };
-    fetchData();
+    void fetchData();
   }, []);
 
   const ongoingCourses = courses.filter(course => 
-    course.enrollmentStatus.toLowerCase() === "active" && 
-    (course.enrollmentStatus === undefined || course.enrollmentStatus.toLowerCase() !== "completed")
-  );
-
-  const completedCourses = courses.filter(course => 
-    course.enrollmentStatus.toLowerCase() === "active" && 
-    course.enrollmentStatus?.toLowerCase() === "completed"
+    course.enrollmentStatus.toLowerCase() === "active"
   );
 
   // Helper data
@@ -78,12 +72,6 @@ export default function LearnerDashboard(): React.JSX.Element {
       changeType: ongoingCourses.length > 0 ? 'increase' : 'decrease',
     },
     {
-      label: 'Completed Courses',
-      value: completedCourses.length.toString(),
-      change: completedCourses.length > 0 ? 15 : 0,
-      changeType: completedCourses.length > 0 ? 'increase' : 'decrease',
-    },
-    {
       label: 'Assignments Due',
       value: pendingAssignments.length.toString(),
       change: pendingAssignments.length > 0 ? 5 : 0,
@@ -98,8 +86,7 @@ export default function LearnerDashboard(): React.JSX.Element {
         <Stack spacing={2}>
           <Typography variant="h4">Welcome back, {learnerName}!</Typography>
           <Typography color="text.secondary" variant="body1">
-            You have {ongoingCourses.length} ongoing courses, {completedCourses.length} completed courses, 
-            and {pendingAssignments.length} pending assignments.
+            You have {ongoingCourses.length} ongoing courses and upcoming sessions to join.
           </Typography>
           <div>
             <Button endIcon={<ArrowRightIcon />} variant="contained">
@@ -108,6 +95,12 @@ export default function LearnerDashboard(): React.JSX.Element {
           </div>
         </Stack>
         
+      </Grid>
+
+
+{/* Upcoming Sessions */}
+      <Grid lg={12} sm={12} xs={12}>
+        <UpcomingSessions />
       </Grid>
 
 
@@ -126,19 +119,11 @@ export default function LearnerDashboard(): React.JSX.Element {
                     <Stack direction="row" justifyContent="space-between" alignItems="center">
                       <div>
                         <Typography variant="subtitle1">{course.courseName}</Typography>
-                        {course.progress && (
-                          <Stack spacing={1} sx={{ mt: 1 }}>
-                            <Typography variant="body2">
-                              Progress: {course.progress}%
-                            </Typography>
-                            <LinearProgress variant="determinate" value={course.progress} />
-                          </Stack>
-                        )}
                       </div>
                       <Button 
                         variant="outlined" 
                         size="small"
-                        onClick={() => router.push(`/courses/${course.courseId}`)}
+                        onClick={() => { router.push(`/courses/${course.courseId}`); }}
                       >
                         Continue
                       </Button>
@@ -152,7 +137,7 @@ export default function LearnerDashboard(): React.JSX.Element {
                 <Typography>No ongoing courses found</Typography>
               )}
 
-              <Button fullWidth variant="outlined" onClick={() => router.push('/courses/list')}>
+              <Button fullWidth variant="outlined" onClick={() => { router.push('/courses/list'); }}>
                 Explore More Courses
               </Button>
             </Stack>
@@ -160,51 +145,7 @@ export default function LearnerDashboard(): React.JSX.Element {
         </Card>
       </Grid>
 
-      {/* Completed Courses */}
-      <Grid lg={6} sm={6} xs={12}>
-        <Card>
-          <CardContent>
-            <Stack spacing={3}>
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <CheckCircleIcon color="success" size={24} />
-                <Typography variant="h6">Completed Courses</Typography>
-              </Stack>
-              
-              {isLoading ? (
-                <Typography>Loading courses...</Typography>
-              ) : completedCourses.length > 0 ? (
-                completedCourses.map((course) => (
-                  <Stack key={course.enrollmentId} spacing={2}>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center">
-                      <div>
-                        <Typography variant="subtitle1">{course.courseName}</Typography>
-                        {course.completionDate && (
-                          <Typography color="text.secondary" variant="body2">
-                            Completed on: {course.completionDate}
-                          </Typography>
-                        )}
-                      </div>
-                      <Button 
-                        variant="outlined" 
-                        size="small"
-                        onClick={() => router.push(`/courses/${course.courseId}`)}
-                      >
-                        View Course
-                      </Button>
-                    </Stack>
-                    {course.progress && (
-                      <LinearProgress variant="determinate" value={100} color="success" />
-                    )}
-                  </Stack>
-                ))
-              ) : (
-                <Typography>No completed courses yet</Typography>
-              )}
-            </Stack>
-          </CardContent>
-        </Card>
-      </Grid>
-
+      
       {/* Pending Assignments */}
       <Grid lg={6} sm={6} xs={12}>
         <Card>

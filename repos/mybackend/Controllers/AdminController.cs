@@ -1,6 +1,7 @@
 ﻿using BusinessService.Data;
 using BusinessService.Interfaces;
 using BusinessService.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -9,6 +10,7 @@ namespace EduConnect.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    //[Authorize(Roles ="Admin")]
     public class AdminController : ControllerBase
     {
 
@@ -89,6 +91,31 @@ namespace EduConnect.API.Controllers
         [HttpDelete("{id}")]
         public void Delete(int id)
         {
+        }
+
+        [HttpGet("DownloadPaymentProof/{paymentId}")]
+        public IActionResult DownloadPaymentProof(Guid paymentId)
+        {
+            IAdminService adminService = new AdminService(_context);
+            var fileBytes = adminService.GetPaymentProofFile(paymentId);
+            if (fileBytes == null)
+                return NotFound();
+            return File(fileBytes, "application/pdf", $"PaymentProof_{paymentId}.pdf");
+        }
+
+        [HttpGet("MonthlyEarnings")]
+        public IActionResult GetMonthlyEarnings([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        {
+            try
+            {
+                IAdminService adminService = new AdminService(_context);
+                var result = adminService.GetMonthlyEarnings(startDate, endDate);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
     }
 }

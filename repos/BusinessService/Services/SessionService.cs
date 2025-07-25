@@ -172,5 +172,48 @@ namespace BusinessService.Services
             }
 
         }
+
+        public List<SessionByLearnerDto> GetUpcomingSessionsByLearner(string email)
+        {
+            var learner = (from u in _context.Users
+                          join l in _context.Learners on u.UserId equals l.UserFk
+                          where u.Email == email
+                          select new
+                          {
+                              Id = l.LearnerId
+                          }).FirstOrDefault();
+
+            if (learner == null)
+            {
+                return new List<SessionByLearnerDto>();
+            }
+
+            var upcomingSessions = (from session in _context.Sessions
+                                  join tutor in _context.Tutors on session.TutorFk equals tutor.TutorId
+                                  join tutorUser in _context.Users on tutor.UserId equals tutorUser.UserId
+                                  where session.LearnerFk == learner.Id 
+                                        && session.StartTime > DateTime.UtcNow
+                                        && (session.SessionStatus == "Confirmed" || session.SessionStatus == "Pending")
+                                  orderby session.StartTime
+                                  select new SessionByLearnerDto
+                                  {
+                                      SessionId = session.SessionId,
+                                      SessionName = session.SessionName,
+                                      TutorName = tutorUser.FirstName + " " + tutorUser.LastName,
+                                      TutorEmail = tutorUser.Email,
+                                      StartTime = session.StartTime,
+                                      EndTime = session.EndTime,
+                                      Duration = session.EndTime - session.StartTime,
+                                      SessionStatus = session.SessionStatus,
+                                      Cost = session.SessionFee,
+                                      Currency = "LKR", // Default currency, could be from payment table
+                                      IsPaid = session.IsPaid,
+                                      SessionLink = session.SessionLink ?? "",
+                                      RequestMessage = session.RequestMessage,
+                                      RejectionReason = session.RejectionReason
+                                  }).ToList();
+
+            return upcomingSessions;
+        }
     }
 }

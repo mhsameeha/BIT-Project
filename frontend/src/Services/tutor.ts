@@ -139,12 +139,31 @@ export async function getTutorData(): Promise<TutorData | { error: string }> {
   return result;
 }
 
-export async function getTutorDataById(tutorId:string): Promise<TutorDetailData | { error: string }> {
-  const result = await api.get<TutorDetailData>(`/Tutor/TutorData/${tutorId}`);
+export interface MonthlyEarningsData {
+  month: string;
+  sessionEarnings: number;
+  courseEarnings: number;
+  totalEarnings: number;
+  year: number;
+  monthNumber: number;
+}
+
+export async function getTutorDataById(tutorId:string): Promise<TutorData | { error: string }> {
+  const result = await api.get<TutorData>(`/Tutor/TutorData/${tutorId}`);
   
   if (isApiError(result)) {
     return { error: result.error };
   }
   console.log("res",result);
+  return result;
+}
+
+export async function getTutorMonthlyEarnings(startDate: string, endDate: string): Promise<MonthlyEarningsData[] | { error: string }> {
+  const result = await api.get<MonthlyEarningsData[]>(`/Tutor/MonthlyEarnings?startDate=${startDate}&endDate=${endDate}`);
+
+  if (isApiError(result)) {
+    return { error: result.error };
+  }
+
   return result;
 }

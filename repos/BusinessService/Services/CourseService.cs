@@ -172,7 +172,6 @@ namespace BusinessService.Services
                             existingSub.SubContentDescription = subDto.SubContentDescription;
                             existingSub.Type = subDto.Type;
                             existingSub.SubContentOrder = subDto.SubContentOrder;
-                            existingSub.FilePath = subDto.FilePath;
 
 
                             updatedSubContents.Add(existingSub);

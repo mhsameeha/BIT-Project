@@ -39,6 +39,21 @@ namespace EduConnect.API.Controllers
             return Ok(result);
         }
 
+        // GET api/<SessionController>/upcoming-sessions
+        [HttpGet("UpcomingSessionsByLearner")]
+        public IActionResult GetUpcomingSessionsByLearner()
+        {
+            var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(email))
+            {
+                return Unauthorized(new { message = "User is not authenticated." });
+            }
+
+            ISessionService sessionService = new SessionService(_context);
+            var result = sessionService.GetUpcomingSessionsByLearner(email);
+            return Ok(result);
+        }
+
         // POST api/<SessionController>
         [HttpPost("book")]
         public async Task<IActionResult> BookSession([FromForm] SessionBookingRequestDto request)

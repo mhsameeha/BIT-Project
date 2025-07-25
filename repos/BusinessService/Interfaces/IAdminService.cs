@@ -19,5 +19,8 @@ namespace BusinessService.Interfaces
 
         public string GetPaymentStatus(Guid paymentId, string status);
 
+        byte[]? GetPaymentProofFile(Guid paymentId);
+        
+        List<MonthlyEarningsDto> GetMonthlyEarnings(DateTime startDate, DateTime endDate);
     }
 }
