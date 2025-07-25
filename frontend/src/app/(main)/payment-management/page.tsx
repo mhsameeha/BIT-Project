@@ -23,7 +23,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import DownloadIcon from '@mui/icons-material/Download';
 import { config } from '@/config';
-import { getPaymentApprovals, getPaymentStatus } from '@/Services/admin';
+import { getPaymentApprovals, getPaymentStatusApproved, getPaymentStatusRejected } from '@/Services/admin';
 import dayjs from 'dayjs';
 
 // export const metadata = { title: `Payments | Approval | ${config.site.name}` } satisfies Metadata;
@@ -36,6 +36,7 @@ export interface Payment {
   paymentProof: string;
   referenceNo: string;
   paymentDate: string;
+  amount:number;
 }
 
 
@@ -44,6 +45,7 @@ export default function Page(): React.JSX.Element {
   const [openApproveDialog, setOpenApproveDialog] = useState(false);
   const [openRejectDialog, setOpenRejectDialog] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const[isLoading, setIsLoading] = useState(true);
 
   React.useEffect(()=> {
     const fetchData = async () => {
@@ -56,6 +58,7 @@ export default function Page(): React.JSX.Element {
             }
             setPayments(paymentApprovals);
             console.log(paymentApprovals);
+            setIsLoading(false);
         }
         catch {
             console.error('error')
@@ -82,7 +85,7 @@ export default function Page(): React.JSX.Element {
           payment.paymentId === selectedPayment.paymentId ? { ...payment, status: 'completed' } : payment
         )
       );
-    const paymentApproved =  getPaymentStatus(selectedPayment.paymentId, selectedPayment.status);
+    const paymentApproved =  getPaymentStatusApproved(selectedPayment.paymentId);
 
       // API call would go here
       console.log(`Approved payment ${selectedPayment.paymentId}`);
@@ -98,7 +101,7 @@ export default function Page(): React.JSX.Element {
         )
       );
       // API call would go here
-       const paymentRejected =  getPaymentStatus(selectedPayment.paymentId, selectedPayment.status);
+       const paymentRejected =  getPaymentStatusRejected(selectedPayment.paymentId);
       console.log(`Rejected payment ${selectedPayment.paymentId}`);
       setOpenRejectDialog(false);
     }
@@ -121,6 +124,14 @@ export default function Page(): React.JSX.Element {
     }
   };
 
+  if (isLoading) {
+        <Box sx={{ p: 3 }}>
+      <Stack spacing={3}>
+        <Typography variant="h4">Loading Payment Approvals</Typography>
+        </Stack>
+        </Box>
+  }
+
   return (
     <Box sx={{ p: 3 }}>
       <Stack spacing={3}>
@@ -133,6 +144,7 @@ export default function Page(): React.JSX.Element {
                 <TableCell>Learner Name</TableCell>
                 <TableCell>Payment Type</TableCell>
                 <TableCell>Status</TableCell>
+                <TableCell>Amount</TableCell>
                 <TableCell>Payment Proof</TableCell>
                 <TableCell>Reference No</TableCell>
                 <TableCell>Date</TableCell>
@@ -147,6 +159,7 @@ export default function Page(): React.JSX.Element {
                   </TableCell>
                   <TableCell>{payment.paymentType}</TableCell>
                   <TableCell>{getStatusChip(payment.status?.toLowerCase())}</TableCell>
+                  <TableCell>{payment.amount}</TableCell>
                   <TableCell>
                     <Link href={payment.paymentProof} download>
                       <Stack direction="row" alignItems="center" spacing={0.5}>

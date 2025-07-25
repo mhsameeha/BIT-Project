@@ -28,7 +28,7 @@ export const allowedNavKeys: Record<RoleType, string[]> = {
   [Role.ADMIN]: [
     'admin-dashboard',
     'tutor-management',
-    'payment-approval',
+    'payment-management',
     'courses',
     'session',
     'admin-reports',
