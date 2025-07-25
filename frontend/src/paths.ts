@@ -17,6 +17,7 @@ export const paths = {
     tutorDashboard: '/tutor-dashboard',
     learnerdashboard: '/learner-dashboard',
     tutorManagement: '/tutor-management',
+    paymentApproval:'/payment-approval',
     account: '/account',
     customers: '/customers',
     integrations: '/integrations',

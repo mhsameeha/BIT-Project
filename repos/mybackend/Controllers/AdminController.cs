@@ -27,6 +27,17 @@ namespace EduConnect.API.Controllers
 
         }
 
+        [HttpGet("PaymentApproval")]
+        public IActionResult GetPaymentApprovals()
+        {
+            IAdminService adminService = new AdminService(_context);
+            var result = adminService.GetPaymentApprovals();
+            return Ok(result);
+
+        }
+
+
+
         // GET api/<AdminController>/5
         [HttpGet("{id}")]
         public string Get(int id)

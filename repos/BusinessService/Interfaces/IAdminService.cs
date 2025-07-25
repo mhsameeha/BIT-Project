@@ -15,5 +15,7 @@ namespace BusinessService.Interfaces
 
         public string RejectTutorApplication(Guid tutorId);
 
+        public List<PaymentApprovalDto> GetPaymentApprovals();
+
     }
 }

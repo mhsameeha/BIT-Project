@@ -66,7 +66,7 @@ function decodeJWT(token: string): Record<string, any> | null {
   try {
     const payload = token.split('.')[1];
     // atob for base64url (replace -/_)
-    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const base64 = payload?.replace(/-/g, '+').replace(/_/g, '/');
     const json = decodeURIComponent(
       atob(base64)
         .split('')

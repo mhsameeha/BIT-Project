@@ -3,10 +3,12 @@ import { paths } from '@/paths';
 
 export const navItems = [
   // { key: 'overview', title: 'Overview', href: paths.main.overview, icon: 'chart-pie' },
+
+  { key: 'admin-dashboard', title: 'Admin Dashboard', href: paths.main.adminDashboard, icon: 'chart-pie' },
   { key: 'tutor-dashboard', title: 'Tutor Dashboard', href: paths.main.tutorDashboard, icon: 'chart-pie' },
-  { key: 'overview', title: 'Dashboard', href: paths.main.learnerdashboard, icon: 'chart-pie' },
+  { key: 'learner-dashboard', title: 'Learner Dashboard', href: paths.main.learnerdashboard, icon: 'chart-pie' },
   { key: 'tutor-management', title: 'Tutor Management', href: paths.main.tutorManagement, icon: 'chart-pie' },
-  { key: 'admin-management', title: 'Admin Management', href: paths.main.adminDashboard, icon: 'chart-pie' },
+  { key: 'payment-approval', title: 'Payment Approval', href: paths.main.paymentApproval, icon: 'chart-pie' },
 
 
 

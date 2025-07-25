@@ -246,9 +246,9 @@ export default function TutorProfilePage(): React.JSX.Element {
                     size="large"
                     fullWidth
                     onClick={handleBookSession}
-                    disabled={tutor.status.toLowerCase() != 'approved'}
+                    disabled={tutor.status?.toLowerCase() != 'approved'}
                   >
-                    {tutor.status.toLowerCase()==='approved' ? 'Schedule Session' : 'Currently Unavailable'}
+                    {tutor.status?.toLowerCase()==='approved' ? 'Schedule Session' : 'Currently Unavailable'}
                   </Button>
 
                   <Typography variant="caption" color="text.secondary" align="center">

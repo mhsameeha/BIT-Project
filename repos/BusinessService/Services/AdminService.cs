@@ -154,6 +154,31 @@ namespace BusinessService.Services
             _context.SaveChanges();
             return "Tutor Rejected";
         }
+
+        public List<PaymentApprovalDto> GetPaymentApprovals()
+        {
+            var payments = (from p in _context.Payments
+
+
+                            join l in _context.Learners on p.LearnerFk equals l.LearnerId into learnerGroup
+                            from l in learnerGroup.DefaultIfEmpty()
+
+                            join u in _context.Users on l.UserFk equals u.UserId into userGroup
+                            from u in userGroup.DefaultIfEmpty()
+
+                            select new PaymentApprovalDto
+                            {
+                                PaymentId = p.PaymentId,
+                                PaymentType = p.PaymentType,
+                                LearnerName = u != null ? u.FirstName + " " + u.LastName : "Unknown",
+                                Status = p.PaymentStatus,
+                                PaymentDate = p.PaymentDate,
+                                ReferenceNo = p.GatewayRef,
+                                PaymentProof = p.PaymentProof
+                            }).ToList();
+
+            return payments;
+        }
     }
           
 }

@@ -49,8 +49,8 @@ import { getAllSpecialties } from '@/Services/courses';
 const schema = zod.object({
   firstName: zod.string().min(1, { message: 'First name is required' }),
   lastName: zod.string().min(1, { message: 'Last name is required' }),
-//   dob: zod.date({ required_error: 'Date of Birth is required' })
-//     .max(new Date(), { message: 'Invalid Date of Birth' }),
+  dob: zod.date({ required_error: 'Date of Birth is required' })
+    .max(new Date(), { message: 'Invalid Date of Birth' }),
 specialities: zod.string().min(1, { message: 'Select at least one' }),
   email: zod.string().min(1, { message: 'Email is required' }).email(),
   password: zod.string()

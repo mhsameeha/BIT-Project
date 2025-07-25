@@ -19,3 +19,14 @@ export interface AdminDashboardData {
   monthlyRevenue: number;
   tutorApplications: TutorApplication[]; // Nullable list
 }
+
+export interface PaymentApprovals {
+  paymentId: string; // Guid → string
+  paymentType?: string;
+  learnerName?: string;
+  status?: string;
+  paymentDate?: string; // Use string for date inputs (ISO format)
+  referenceNo?: string;
+  paymentProof?: File | null; // byte[] → File in browser
+}
+
