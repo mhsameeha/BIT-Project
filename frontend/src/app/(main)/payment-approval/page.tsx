@@ -158,7 +158,7 @@ export default function Page(): React.JSX.Element {
                   <TableCell>{payment.referenceNo}</TableCell>
                   <TableCell>{dayjs(payment?.paymentDate).format('DD MMMM YYYY')}</TableCell>
                   <TableCell>
-                    {/* {payment.status?.toLowerCase() === 'pending verification' && ( */}
+                    {payment.status?.toLowerCase() === 'pending verification' && (
                       <Stack direction="row" spacing={1}>
                         <IconButton
                           color="success"
@@ -175,7 +175,7 @@ export default function Page(): React.JSX.Element {
                           <CloseIcon />
                         </IconButton>
                       </Stack>
-                    {/* )} */}
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
