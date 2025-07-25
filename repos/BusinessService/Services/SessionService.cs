@@ -149,6 +149,8 @@ namespace BusinessService.Services
 
         public void UpdateSessionStatus(SessionStatusDto sessionStatus, string email)
         {
+            if (sessionStatus == null) return;
+
             var tutors = (from u in _context.Users
                           join t in _context.Tutors on u.UserId equals t.UserId
                           where u.Email == email
@@ -156,6 +158,7 @@ namespace BusinessService.Services
                           {
                               Id = t.TutorId
                           }).FirstOrDefault();
+            
             var session = _context.Sessions.FirstOrDefault(x => x.SessionId == sessionStatus.SessionId);
 
             if (tutors != null && session != null)

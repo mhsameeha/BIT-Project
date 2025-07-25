@@ -25,6 +25,7 @@ namespace BusinessService.Models.DTOs
         public int SessionsCompleted { get; set; }
 
         public string? Status { get; set; }
+        public List<string> Specialities { get; set; }
 
         public DateTime? ApprovedDate { get; set; }
 

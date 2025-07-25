@@ -18,27 +18,14 @@ export async function getSessionsByTutor(): Promise<Session[] | { error: string 
   error?: string;
 };
 
-export async function updateSessionStatus(sessionStatus : SessionStatus):  Promise<UpdateSessionStatusResult | undefined> {
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/Session/UpdateSessionStatus`, {
-      method: 'PUT',
-    headers: {
-    //     'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-     body: JSON.stringify(sessionStatus),
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();;
-    return { error: errorData.message || 'Failed to save course' };
-
-    }
-    return {data : sessionStatus};
-  } catch (error) {
-    console.error('Request Error:', error);
+export async function updateSessionStatus(sessionStatus: SessionStatus):  Promise<{data?:any; error?: string }> {
+    const result = await api.put<unknown>(`/Session/UpdateSessionStatus`, sessionStatus);
+  
+  if (isApiError(result)) {
+    return { error: result.error };
   }
+  
+  return { data : result};
 }
 
 

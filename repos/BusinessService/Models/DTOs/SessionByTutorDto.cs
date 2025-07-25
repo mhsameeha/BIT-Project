@@ -26,7 +26,7 @@ namespace BusinessService.Models.DTOs
 
         public string SessionStatusInfo { get; set; }
 
-        public decimal Cost { get; set; }
+        public decimal? Cost { get; set; }
 
 
         public bool? IsPaid { get; set; }

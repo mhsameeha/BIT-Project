@@ -10,9 +10,9 @@ namespace BusinessService.Models.DTOs
     {
         public Guid SessionId { get; set; }
 
-        public string SessionStatus { get; set; }
+        public string? SessionStatus { get; set; }
 
-        public string RejectionReason { get; set; }
+        public string? RejectionReason { get; set; }
 
 
     }

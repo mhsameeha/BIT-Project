@@ -836,9 +836,10 @@ const router = useRouter();
 
     const newStatus = actionType === 'approve' ? SessionStatus.Confirmed : SessionStatus.Rejected;
     const reason = actionType === 'reject' ? rejectionReason : undefined;
+
    const fetchData = async () => {
         const success = await updateSessionStatus({
-          sessionId: selectedSession?.sessionId ?? '',
+               sessionId: selectedSession?.sessionId ?? '',
           sessionStatus:newStatus,
           rejectionReason: reason || ''
         });
@@ -900,7 +901,7 @@ const sessionCounts = (status:string) => {
 
   const paginatedSessions = useMemo(() => {
   const startIndex = page * rowsPerPage;
-  return filteredSessions.slice(startIndex, startIndex + rowsPerPage);
+  return filteredSessions?.slice(startIndex, startIndex + rowsPerPage);
 }, [filteredSessions, page, rowsPerPage]);
 
   const getStatusColor = (

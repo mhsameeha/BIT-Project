@@ -139,8 +139,8 @@ export async function getTutorData(): Promise<TutorData | { error: string }> {
   return result;
 }
 
-export async function getTutorDataById(tutorId:string): Promise<TutorData | { error: string }> {
-  const result = await api.get<TutorData>(`/Tutor/TutorData/${tutorId}`);
+export async function getTutorDataById(tutorId:string): Promise<TutorDetailData | { error: string }> {
+  const result = await api.get<TutorDetailData>(`/Tutor/TutorData/${tutorId}`);
   
   if (isApiError(result)) {
     return { error: result.error };

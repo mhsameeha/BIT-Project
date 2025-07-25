@@ -3,9 +3,9 @@ import type { Category } from '@/types/category';
 import type { Level } from '@/types/level';
 import type { PaginatedCourse, CourseDetailsResponse, TutorCourse } from '@/types/course';
 import type { Language } from '@/types/language';
-import type { CourseFormData } from '@/types/course-form-data';
 import type { Speciality } from '@/types/speciality';
 import { API_BASE_URL } from '@/config';
+import { CourseFormData } from '@/app/(main)/course-management/add/page';
 
 export async function getAllCategories(): Promise<Category[] | { error: string }> {
   const result = await api.get<Category[]>('/Course/Categories', { requireAuth: false });

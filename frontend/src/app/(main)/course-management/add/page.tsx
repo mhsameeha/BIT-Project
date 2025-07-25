@@ -82,7 +82,7 @@ interface Course {
   createdDate: Date;
 }
 
-interface CourseFormData {
+export interface CourseFormData {
   title: string;
   description: string;
   introduction: string;

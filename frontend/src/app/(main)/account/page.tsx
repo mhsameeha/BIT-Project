@@ -150,14 +150,14 @@ export default function TutorProfilePage(): React.JSX.Element {
                       </Stack>
                     </div>
 
-                    {/* <Stack direction="row" spacing={1} flexWrap="wrap">
-                      {tutor.specialties.map((specialty) => (
-                        <Chip key={specialty} label={specialty} size="small" color="primary" variant="outlined" />
+                    <Stack direction="row" spacing={1} flexWrap="wrap">
+                      {tutor.specialities?.map((speciality) => (
+                        <Chip key={speciality} label={speciality} size="small" color="primary" variant="outlined" />
                       ))}
-                    </Stack> */}
+                    </Stack>
 
                     <Stack direction="row" spacing={1} flexWrap="wrap">
-                      {tutor.languages?.map((lang) => (
+                      {tutor.language?.map((lang) => (
                         <Chip key={lang} label={lang} size="small" />
                       ))}
                     </Stack>

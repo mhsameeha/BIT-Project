@@ -8,13 +8,13 @@ namespace BusinessService.Models.DTOs
 {
     public class TutorDashboardDataDto
     {
-        public decimal MonthylCourseIncome { get; set; }
-        public decimal MonthlySessionIncome { get; set; }
+        public decimal? MonthylCourseIncome { get; set; }
+        public decimal? MonthlySessionIncome { get; set; }
 
-        public decimal MonthlyIncome { get; set; }
+        public decimal? MonthlyIncome { get; set; }
 
-        public int NewStudents { get; set; }
-        public decimal TotalIncome { get; set; }
+        public int? NewStudents { get; set; }
+        public decimal? TotalIncome { get; set; }
 
 
     }

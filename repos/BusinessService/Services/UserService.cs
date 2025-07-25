@@ -39,7 +39,7 @@ namespace BusinessService.Services
                 LastName = newLearner.LastName,
                 Dob = newLearner.Dob,
                 Email = newLearner.Email,
-                Role = newLearner.Role,
+                Role ="learner",
                 Password = BCrypt.Net.BCrypt.HashPassword(newLearner.Password),
                 CreatedDate = DateTime.Now,
 
@@ -76,7 +76,7 @@ namespace BusinessService.Services
                     LastName = newTutor.LastName,
                     Dob = DateTime.Now,
                     Email = newTutor.Email,
-                    Role = newTutor.Role,
+                    Role = "tutor",
                     Password = BCrypt.Net.BCrypt.HashPassword(newTutor.Password),
                     CreatedDate = DateTime.Now,
                 };
@@ -88,7 +88,7 @@ namespace BusinessService.Services
                     TutorRate = newTutor.TutorRate,
                     ApprovalRequestDate = newTutor.ApprovalRequestDate,
                     Education = newTutor.Education,
-                    Experience = newTutor.Experience,
+                    //Experience = newTutor.Experience,
                     Status = "Pending",
                     UserId = userId,
                     Language = newTutor.Language,

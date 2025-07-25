@@ -1,7 +1,4 @@
 'use client';
-
-import { watch } from 'fs';
-
 import * as React from 'react';
 import RouterLink from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -40,8 +37,8 @@ const schema = zod.object({
     .string()
     .min(1, { message: 'Password is Required' })
     .min(8, { message: 'Password must be at least 8 characters long' }),
-  role: zod.string().min(1, { message: 'Select your role' }),
   terms: zod.boolean().refine((value) => value, 'You must accept the terms and conditions'),
+   role: zod.literal('Learner').default('Learner'),
 });
 
 type Values = zod.infer<typeof schema>;
@@ -52,8 +49,8 @@ const defaultValues = {
   dob: new Date(),
   email: '',
   password: '',
-  role: '',
   terms: false,
+  role:'Learner'
 } satisfies Values;
 
 export function SignUpForm(): React.JSX.Element {
@@ -63,8 +60,6 @@ export function SignUpForm(): React.JSX.Element {
 
   const [isPending, setIsPending] = React.useState<boolean>(false);
 
-  const [role, setRole] = React.useState('');
-  // const [clicked, setClicked] = useState(false);
 
   const {
     control,
@@ -75,35 +70,26 @@ export function SignUpForm(): React.JSX.Element {
     formState: { errors },
   } = useForm<Values>({ defaultValues, resolver: zodResolver(schema) });
 
-  const handleClick = (_role: string) => {
-    console.log(_role);
-    setValue('role', _role);
-    //  setRole(_role);
-  };
 
   const onSubmit = React.useCallback(
     async (values: Values) => {
       setIsPending(true);
-
+      control.register('role', { value: 'Learner' });
       const { error } = await authClient.signUp(values);
+      console.log(values);
 
       if (error) {
         setError('root', { type: 'server', message: error });
         setIsPending(false);
         return;
       }
-
-      // Refresh the auth state
+      router.push('/auth/sign-in')
       await checkSession?.();
-
-      // UserProvider, for this case, will not refresh the router
-      // After refresh, GuestGuard will handle the redirect
       router.refresh();
     },
     [checkSession, router, setError]
   );
 
-  const formRole = watch('role');
 
   return (
     <Box component="section" sx={{ p: 10, pl: 40, pr: 40, border: '1px' }}>
@@ -127,44 +113,6 @@ export function SignUpForm(): React.JSX.Element {
 
         <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={2}>
-            <Stack direction="row">
-              <Controller
-                control={control}
-                name="role"
-                render={() => (
-                  <FormControl error={Boolean(errors.role)}>
-                    <Button
-                      type="button"
-                      value="Tutor"
-                      variant={formRole === 'Tutor' ? 'contained' : 'outlined'}
-                      onClick={() => handleClick('Tutor')}
-                      sx={{ mr: 2 }}
-                    >
-                      As a Tutor
-                    </Button>
-                    {errors.role ? <FormHelperText>{errors.role.message}</FormHelperText> : null}
-                  </FormControl>
-                )}
-              />
-              <Controller
-                control={control}
-                name="role"
-                render={() => (
-                  <FormControl error={Boolean(errors.role)}>
-                    <Button
-                      id="lbotton"
-                      value="Learner"
-                      variant={formRole === 'Learner' ? 'contained' : 'outlined'}
-                      onClick={() => handleClick('Learner')}
-                      sx={{ mr: 2 }}
-                    >
-                      As a Learner
-                    </Button>
-                    {errors.role ? <FormHelperText>{errors.role.message}</FormHelperText> : null}
-                  </FormControl>
-                )}
-              />
-            </Stack>
             <Controller
               control={control}
               name="firstName"
@@ -247,7 +195,7 @@ export function SignUpForm(): React.JSX.Element {
               )}
             />
             {errors.root ? <Alert color="error">{errors.root.message}</Alert> : null}
-            <Button disabled={isPending} type="submit" variant="contained">
+            <Button disabled={isPending} type='submit' variant="contained">
               Sign up
             </Button>
           </Stack>

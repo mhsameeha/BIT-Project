@@ -14,7 +14,7 @@ namespace BusinessService.Models.Entities
         [Column("sessionId")]
         public Guid SessionId { get; set; }
         [Column("sessionName")]
-        public string SessionName { get; set; }
+        public string? SessionName { get; set; }
         [Column("sessionLink")]
         public string? SessionLink { get; set; }
         [Column("learnerFk")]
@@ -31,10 +31,10 @@ namespace BusinessService.Models.Entities
         [Column("additionalInfo")]
         public string? AdditionalInfo { get; set; }
         [Column("sessionStatus")]
-        public string SessionStatus { get; set; }
+        public string? SessionStatus { get; set; }
 
         [Column("sessionRate")]
-        public decimal SessionRate{ get; set; }
+        public decimal? SessionRate{ get; set; }
         [Column("sessionStatusInfo")]
         public string? SessionStatusInfo { get; set; }
         [Column("sessionFee")]

@@ -195,7 +195,7 @@ namespace BusinessService.Services
                 enrollment.IsPaid = true;
                 enrollment.EnrollmentStatus = "Active";
                 enrollment.EnrolledDate = DateTime.Now;
-                  
+                    _context.SaveChanges();
                 }
 
                 if (payment.PaymentType?.ToLower() == "session booking")
@@ -204,7 +204,8 @@ namespace BusinessService.Services
                                     .FirstOrDefault(s => s.LearnerFk == payment.LearnerFk && s.TutorFk == payment.TutorFk);
                     session.SessionStatus = "Confirmed";
                     session.IsPaid = true;
-                  
+                    _context.SaveChanges();
+
 
                 }
                 _context.SaveChanges();

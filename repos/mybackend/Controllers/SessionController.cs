@@ -6,6 +6,7 @@ using BusinessService.Models.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -13,6 +14,7 @@ namespace EduConnect.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class SessionController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -72,6 +74,7 @@ namespace EduConnect.API.Controllers
         public void UpdateSessionStatus([FromBody] SessionStatusDto sessionStatus)
         {
             var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+            //var email = "dr.johnson@educonnect.com";
             ISessionService sessionService = new SessionService(_context);
             sessionService.UpdateSessionStatus(sessionStatus, email);
         }

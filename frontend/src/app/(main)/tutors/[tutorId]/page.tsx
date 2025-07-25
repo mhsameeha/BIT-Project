@@ -158,7 +158,7 @@ React.useEffect(() => {
                     </Stack> */}
 
                     <Stack direction="row" spacing={1} flexWrap="wrap">
-                      {tutor.languages?.map((lang) => (
+                      {tutor.language?.map((lang) => (
                         <Chip key={lang} label={lang} size="small" />
                       ))}
                     </Stack>

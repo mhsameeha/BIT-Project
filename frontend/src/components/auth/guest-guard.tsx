@@ -18,7 +18,7 @@ export function GuestGuard({ children }: GuestGuardProps): React.JSX.Element | n
   const router = useRouter();
   const { user, error, isLoading } = useUser();
   const [isChecking, setIsChecking] = React.useState<boolean>(true);
-const AuthClient = authClient.getBasicUserInfo()
+const AuthClient = authClient.getBasicUserInfo();
 
   const checkPermissions = async (): Promise<void> => {
     if (isLoading) {
@@ -50,8 +50,8 @@ const AuthClient = authClient.getBasicUserInfo()
       router.replace(paths.main.adminDashboard);
       return;
     }
-      return;
-    }
+    return;
+  }
 
     setIsChecking(false);
   };

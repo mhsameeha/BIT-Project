@@ -1,10 +1,11 @@
 'use client';
 
 import axios from 'axios';
-import type { User } from '@/types/user';
 import dayjs from 'dayjs';
-import { API_BASE_URL } from '@/config';
+
 import { Speciality } from '@/types/speciality';
+import type { User } from '@/types/user';
+import { API_BASE_URL } from '@/config';
 
 function generateToken(): string {
   const arr = new Uint8Array(12);
@@ -20,32 +21,32 @@ export interface SignUpParams {
   password: string;
   role: string;
 }
- interface Experience {
+interface Experience {
   position: string;
   company: string;
   timePeriod: string;
 }
 
- interface Education {
+interface Education {
   qualification: string;
   institute: string;
   graduationDate: string;
 }
 
- interface Language {
+interface Language {
   name: string;
   proficiency: string;
 }
 
 export interface TutorSignUpParams extends SignUpParams {
-tutorDescription:string;
-tutorRate :number;
-status:string;
-approvalRequestDate:Date;
-experience:Experience[];
-education:Education[];
-language:Language[];
-specialities: Speciality[]
+  tutorDescription: string;
+  tutorRate: number;
+  status: string;
+  approvalRequestDate: Date;
+  experience: Experience[];
+  education: Education[];
+  language: string[];
+  specialities: Speciality[];
 }
 
 export interface SignInWithOAuthParams {
@@ -66,7 +67,7 @@ function decodeJWT(token: string): Record<string, any> | null {
   try {
     const payload = token.split('.')[1];
     // atob for base64url (replace -/_)
-    const base64 = payload?.replace(/-/g, '+').replace(/_/g, '/');
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
     const json = decodeURIComponent(
       atob(base64)
         .split('')
@@ -83,34 +84,29 @@ function decodeJWT(token: string): Record<string, any> | null {
 }
 
 class AuthClient {
-
-  getBasicUserInfo(): { id : string, email: string; name: string; role: string } | null {
+  getBasicUserInfo(): { id: string; email: string; name: string; role: string } | null {
     const token = localStorage.getItem('custom-auth-token') || '';
     const decoded = decodeJWT(token);
     if (!decoded) return null;
     return {
-      id : decoded ["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] || "",
-      email: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] || "",    
-      name: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || "",
-      role: decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || "",
+      id: decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || '',
+      email: decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || '',
+      name: decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || '',
+      role: decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || '',
     };
   }
 
-
   async signUp(params: SignUpParams): Promise<{ error?: string }> {
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/User/LearnerSignUp`, {
+      const response = await axios.post(`${API_BASE_URL}/User/LearnerSignUp`, {
         firstName: params.firstName,
         lastName: params.lastName,
         dob: params.dob,
         email: params.email,
         password: params.password,
-        role: params.role,
+        role: 'learner',
       });
 
-      // Make API request
-
-      // We do not handle the API, so we'll just generate a token and store it in localStorage.
       const token = generateToken();
       localStorage.setItem('custom-auth-token', token);
 
@@ -121,26 +117,26 @@ class AuthClient {
     }
   }
 
-    async tutorSignUp(params: TutorSignUpParams): Promise<{ error?: string }> {
+  async tutorSignUp(params: TutorSignUpParams): Promise<{ error?: string }> {
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/User/TutorSignUp`, {
+      const response = await axios.post(`${API_BASE_URL}/User/TutorSignUp`, {
         firstName: params.firstName,
         lastName: params.lastName,
         dob: params.dob,
         email: params.email,
         password: params.password,
-        role: params.role,
         tutorDescription: params.tutorDescription,
-        tutorRate :params.tutorRate,
-        status:params.status,
+        tutorRate: params.tutorRate,
+        status: params.status,
         approvalRequestDate: dayjs().toDate(),
-        experience:params.experience,
-        education:params.education,
-        language:params.language,
-        specialities:params.specialities
+        experience: params.experience,
+        education: params.education,
+        language: params.language,
+        specialities: params.specialities,
+        role: 'tutor',
       });
 
-  if ( response?.data.toLowerCase().includes('Exists')) {
+      if (response?.data.toLowerCase().includes('Exists')) {
         return { error: 'Email already exists' };
       }
       const token = generateToken();
@@ -157,10 +153,9 @@ class AuthClient {
     return { error: 'Social authentication not implemented' };
   }
 
-
   async signInWithPassword(params: SignInWithPasswordParams): Promise<{ error?: string }> {
     const { email, password } = params;
-  
+
     //Sign In API request
     try {
       const response = await fetch(`${API_BASE_URL}/User/SignIn`, {
@@ -170,30 +165,28 @@ class AuthClient {
         },
         body: JSON.stringify(params),
       });
-        const {token} = await response.json();
+      const { token } = await response.json();
 
       if (!response.ok || token.toLowerCase().includes('invalid')) {
-        return { error: token || 'Invalid Credentials' }
+        return { error: token || 'Invalid Credentials' };
       }
-      
 
       localStorage.setItem('custom-auth-token', token);
 
       return {};
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Sign-in error:', error);
       return { error: 'Something went wrong while signing in' };
     }
-  } 
+  }
 
   async resetPassword(_: ResetPasswordParams): Promise<{ error?: string }> {
     return { error: 'Password reset not implemented' };
-  };
+  }
 
   async updatePassword(_: ResetPasswordParams): Promise<{ error?: string }> {
     return { error: 'Update reset not implemented' };
-  };
+  }
 
   async getUser(): Promise<{ data?: any | null; error?: string }> {
     // Make API request
@@ -204,7 +197,7 @@ class AuthClient {
     if (!token) {
       return { data: null };
     }
-const user = authClient.getBasicUserInfo()
+    const user = authClient.getBasicUserInfo();
     return { data: user };
   }
 
@@ -213,7 +206,6 @@ const user = authClient.getBasicUserInfo()
 
     return {};
   }
-
 }
 
 export const authClient = new AuthClient();

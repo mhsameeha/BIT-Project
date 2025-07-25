@@ -22,7 +22,7 @@ export interface TutorData {
   name: string;
   avatar: string;
   title: string;
-  specialties: string[];
+  specialities: string[];
   tutorDescription: string;
   education: TutorEducation[];
   experience: TutorExperience[];
@@ -31,7 +31,7 @@ export interface TutorData {
   sessionsCompleted: number;
   tutorRate: number;
   currency: string;
-  languages: string[];
+  language: string[];
   availability: TutorAvailability[];
   isAvailable: boolean;
   status: string;

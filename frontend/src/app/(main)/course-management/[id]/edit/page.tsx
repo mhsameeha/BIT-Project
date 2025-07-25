@@ -191,6 +191,7 @@ React.useEffect(() => {
       return;
     }
 
+    setCourse(returnValue);
 
     if (courseId && returnValue) {
 const incomingContents = returnValue.courseContent || [];

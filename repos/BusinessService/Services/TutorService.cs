@@ -583,7 +583,18 @@ namespace BusinessService.Services
             if (tutorDetails == null)
             {
                 return null;
+
             }
+
+            var hasAvailableTimeSlots = _context.TutorWeeklyAvailabilities
+             .Any(wa => wa.TutorId == tutor.Id &&
+              _context.TutorTimeslots.Any(ts => ts.AvailabilityId == wa.AvailabilityId));
+
+            // Get specialities for this tutor
+            var specialities = (from ts in _context.TutorSpecialities
+                                join s in _context.Specialities on ts.SpecialityId equals s.SpecialityId
+                                where ts.TutorId == tutor.Id
+                                select s.SpecialityName ?? string.Empty).ToList();
 
             //var availability = _context.TutorWeeklyAvailabilities
             //    .Where(a => a.TutorId == tutor.Id)
@@ -611,9 +622,9 @@ namespace BusinessService.Services
 
             if (sessionsCompleted > 0)
             {
-                avgRating = _context.Sessions
+                avgRating = (_context.Sessions
                             .Where(s => s.TutorFk == tutor.Id && s.SessionStatus.ToLower() == "completed")
-                            .Sum(s => s.SessionRate) / sessionsCompleted;
+                            .Sum(s => s.SessionFee) / sessionsCompleted);
             }
 
           
@@ -634,27 +645,44 @@ namespace BusinessService.Services
                 ApprovedDate = tutorDetails.Tutor.ApprovedDate,
                 SessionsCompleted = sessionsCompleted,
                 Rating = avgRating,
+                Specialities = specialities,
+
                 //Availability = someSlotsAvailable,
 
             };
           
         }
 
-        public TutorData GetTutorAccountDetails(Guid tutorId)
+        public TutorData GetTutorDataById(Guid tutorId)
         {
         
 
             var tutorDetails = _context.Users
                                .Include(u => u.Tutor).FirstOrDefault(t => t.Tutor.TutorId == tutorId);
 
+            var specialities = (from ts in _context.TutorSpecialities
+                                join s in _context.Specialities on ts.SpecialityId equals s.SpecialityId
+                                where ts.TutorId == tutorId
+                                select s.SpecialityName ?? string.Empty).ToList();
 
-    
+
 
             if (tutorDetails == null)
             {
                 return null;
             }
+            var sessionsCompleted = _context.Sessions
+                                   .Where(s => s.TutorFk == tutorId && s.SessionStatus.ToLower() == "completed").Count();
 
+
+            decimal avgRating = 0;
+
+            if (sessionsCompleted > 0)
+            {
+                avgRating = _context.Sessions
+                            .Where(s => s.TutorFk == tutorId && s.SessionStatus.ToLower() == "completed")
+                            .Sum(s => s.SessionFee) / sessionsCompleted;
+            }
 
             var TutorProfileData = new TutorData
             {
@@ -668,6 +696,10 @@ namespace BusinessService.Services
                 Education = tutorDetails.Tutor.EducationJson,
                 Experience = tutorDetails.Tutor.ExperienceJson,
                 Language = tutorDetails.Tutor.Language,
+                ApprovedDate = tutorDetails.Tutor.ApprovedDate,
+                SessionsCompleted = sessionsCompleted,
+                Rating = avgRating,
+                Specialities = specialities,
 
             };
 

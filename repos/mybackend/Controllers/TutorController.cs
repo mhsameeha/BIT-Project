@@ -171,11 +171,11 @@ namespace mybackend.Controllers
         }
 
         [HttpGet("TutorData/{tutorId}")]
-        public IActionResult GetTutorAccountDetails(Guid tutorId)
+        public IActionResult GetTutorDataById(Guid tutorId)
         {
 
             ITutorService TutorService = new TutorService(_context);
-            var result = TutorService.GetTutorAccountDetails(tutorId);
+            var result = TutorService.GetTutorDataById(tutorId);
             return Ok(result);
         }
 

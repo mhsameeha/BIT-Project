@@ -49,7 +49,8 @@ import { getAllSpecialties } from '@/Services/courses';
 const schema = zod.object({
   firstName: zod.string().min(1, { message: 'First name is required' }),
   lastName: zod.string().min(1, { message: 'Last name is required' }),
-  dob: zod.date({ required_error: 'Date of Birth is required' })
+  dob: zod.coerce
+    .date({ required_error: 'Date of Birth is required' }) // Catch empty
     .max(new Date(), { message: 'Invalid Date of Birth' }),
 specialities: zod.string().min(1, { message: 'Select at least one' }),
   email: zod.string().min(1, { message: 'Email is required' }).email(),
@@ -57,6 +58,7 @@ specialities: zod.string().min(1, { message: 'Select at least one' }),
     .min(1, { message: 'Password is required' })
     .min(8, { message: 'Password must be at least 8 characters' }),
   about: zod.string().optional(),
+role: zod.literal('Tutor').default('Tutor'),
   rate: zod.number().min(1, { message: 'Rate is required' }),
   terms: zod.boolean().refine((value) => value, 'You must accept terms'),
   languages: zod.array(zod.object({
@@ -107,6 +109,7 @@ export function TutorRegistrationForm(): React.JSX.Element {
       experiences: [],
       educations: [],
       specialities:'',
+    //   role: 'Tutor',
     }
   });
 
@@ -118,8 +121,6 @@ export function TutorRegistrationForm(): React.JSX.Element {
         return;
 
       }
-
-      console.log(returnValue);
       setAllSpecialties(returnValue);
     };
      fetchData();
@@ -195,7 +196,7 @@ export function TutorRegistrationForm(): React.JSX.Element {
 
   const onSubmit = async (data: FormValues): Promise<void> => {
   setIsPending(true);
-  
+  control.register('role', { value: 'Tutor' });
   try {
     const success = await authClient.tutorSignUp({
       firstName: data.firstName,
@@ -222,17 +223,15 @@ export function TutorRegistrationForm(): React.JSX.Element {
         institute: edu.institute,
         graduationDate: edu.graduationDate
       })),
-      language: languages.map(lang => ({
-        name: lang.name,
-        proficiency: lang.proficiency
-      }))
+      language: languages.map(lang => lang.name)
     });
 
     if (success.error) {
       setError('root', { type: 'server', message: success.error });
       return;
     }
-    console.log("tutor", success)
+    router.push('/auth/sign-in')
+
 
     await checkSession?.();
     router.refresh();

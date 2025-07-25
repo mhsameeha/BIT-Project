@@ -33,8 +33,9 @@ import {
 import dayjs from 'dayjs';
 
 
-import type { TutorCourse,CourseContent, SubContent } from '../../../../types/course';
+import type { CourseContent, SubContent } from '../../../../types/course';
 import { getCourseById } from '@/Services/courses';
+import { TutorCourse } from '@/types/tutor-course-for-course-managment';
 
 
 export default function CourseDetailsPage(): React.JSX.Element {
