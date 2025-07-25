@@ -24,14 +24,14 @@ namespace mybackend.Controllers
             return new string[] { "value1", "value2" };
         }
         //GET api/<EnrollmentController>/5
-        [HttpGet("EnrollmentsByLearner")]
-        public IActionResult GetEnrollmentsByLearnerEmailAsync()
-        {
-            var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
-            IEnrollementService EnrollementService = new EnrollementService(_context);
-            var result = EnrollementService.GetEnrollmentsByLearnerEmailAsync(email);
-            return Ok(result);
-        }
+        //[HttpGet("EnrollmentsByLearner")]
+        //public IActionResult GetEnrollmentsByLearnerEmailAsync()
+        //{
+        //    var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+        //    IEnrollementService EnrollementService = new EnrollementService(_context);
+        //    var result = EnrollementService.GetEnrollmentsByLearnerEmailAsync(email);
+        //    return Ok(result);
+        //}
         // GET api/<EnrollmentController>/5
         //[HttpGet("{id}")]
         //public List<EnrollmentDto> Get(Guid id)
@@ -41,28 +41,28 @@ namespace mybackend.Controllers
         //    return result;
         //}
 
-        // GET api/<EnrollmentController>/my-enrollments
-        //[HttpGet("my-enrollments")]
-        //public async Task<ActionResult<List<EnrollmentDto>>> GetMyEnrollments()
-        //{
-        //    try
-        //    {
-        //        var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
-        //        if (email == null)
-        //        {
-        //            return Unauthorized(new { message = "User is not authenticated." });
-        //        }
+        //GET api/<EnrollmentController>/my-enrollments
+       [HttpGet("my-enrollments")]
+        public async Task<ActionResult<List<EnrollmentDto>>> GetMyEnrollments()
+        {
+            try
+            {
+                var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+                if (email == null)
+                {
+                    return Unauthorized(new { message = "User is not authenticated." });
+                }
 
-        //        IEnrollementService enrollmentService = new EnrollementService(_context);
-        //        var result = await enrollmentService.GetEnrollmentsByLearnerEmailAsync(email);
+                IEnrollementService enrollmentService = new EnrollementService(_context);
+                var result = await enrollmentService.GetEnrollmentsByLearnerEmailAsync(email);
 
-        //        return Ok(result);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, new { message = "An error occurred while fetching enrollments.", details = ex.Message });
-        //    }
-        //}
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while fetching enrollments.", details = ex.Message });
+            }
+        }
 
         // GET api/<EnrollmentController>/course-status/courseId
         //[HttpGet("course-status/{courseId}")]

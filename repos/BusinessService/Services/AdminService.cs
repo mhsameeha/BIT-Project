@@ -174,10 +174,48 @@ namespace BusinessService.Services
                                 Status = p.PaymentStatus,
                                 PaymentDate = p.PaymentDate,
                                 ReferenceNo = p.GatewayRef,
-                                PaymentProof = p.PaymentProof
+                                PaymentProof = p.PaymentProof,
+                                Amount = p.Amount
                             }).ToList();
 
             return payments;
+        }
+
+        public string GetPaymentStatus(Guid paymentId, string status)
+        {
+   
+         var payment = _context.Payments.FirstOrDefault(x => x.PaymentId ==paymentId);
+        if (payment !=null){
+            payment.PaymentStatus = "Completed";
+
+            if (payment.PaymentType?.ToLower()=="course payment"){
+                var enrollment = _context.Enrollments
+                                .FirstOrDefault(e => e.LearnerFk == payment.LearnerFk && e.CourseId == payment.CourseFk);
+
+                enrollment.IsPaid = true;
+                enrollment.EnrollmentStatus = "Active";
+                enrollment.EnrolledDate = DateTime.Now;
+                  
+                }
+
+                if (payment.PaymentType?.ToLower() == "session booking")
+                {
+                    var session = _context.Sessions
+                                    .FirstOrDefault(s => s.LearnerFk == payment.LearnerFk && s.TutorFk == payment.TutorFk);
+                    session.SessionStatus = "Confirmed";
+                    session.IsPaid = true;
+                  
+
+                }
+                _context.SaveChanges();
+
+                return "Payment status updated successfully.";
+            }
+      
+
+
+            return "Payment status update unsuccessful";
+
         }
     }
           

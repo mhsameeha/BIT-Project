@@ -17,5 +17,7 @@ namespace BusinessService.Interfaces
 
         public List<PaymentApprovalDto> GetPaymentApprovals();
 
+        public string GetPaymentStatus(Guid paymentId, string status);
+
     }
 }

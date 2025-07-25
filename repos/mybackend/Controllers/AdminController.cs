@@ -36,6 +36,25 @@ namespace EduConnect.API.Controllers
 
         }
 
+        [HttpPut("PaymentRejected/{paymentId}")]
+        public IActionResult GetPaymentStatusRejected(Guid paymentId)
+        {
+            IAdminService adminService = new AdminService(_context);
+            var result = adminService.GetPaymentStatus(paymentId,"Rejected");
+            return Ok(result);
+
+        }
+        [HttpPut("PaymentApproved/{paymentId}")]
+
+        public IActionResult GetPaymentStatusApproved(Guid paymentId)
+        {
+            IAdminService adminService = new AdminService(_context);
+            var result = adminService.GetPaymentStatus(paymentId, "Approved");
+            return Ok(result);
+
+        }
+
+
 
 
         // GET api/<AdminController>/5

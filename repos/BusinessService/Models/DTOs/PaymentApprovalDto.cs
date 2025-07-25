@@ -15,7 +15,8 @@ namespace BusinessService.Models.DTOs
             public string? PaymentType { get; set; }
             public string? LearnerName { get; set; }
             public string? Status { get; set; }
-            public DateTime? PaymentDate { get; set; }
+        public decimal? Amount { get; set; }
+        public DateTime? PaymentDate { get; set; }
             public string? ReferenceNo { get; set; }
             public byte[]? PaymentProof { get; set; }
 

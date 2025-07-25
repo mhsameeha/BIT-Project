@@ -8,7 +8,7 @@ export const navItems = [
   { key: 'tutor-dashboard', title: 'Tutor Dashboard', href: paths.main.tutorDashboard, icon: 'chart-pie' },
   { key: 'learner-dashboard', title: 'Learner Dashboard', href: paths.main.learnerdashboard, icon: 'chart-pie' },
   { key: 'tutor-management', title: 'Tutor Management', href: paths.main.tutorManagement, icon: 'chart-pie' },
-  { key: 'payment-approval', title: 'Payment Approval', href: paths.main.paymentApproval, icon: 'chart-pie' },
+  { key: 'payment-management', title: 'Payment Management', href: paths.main.paymentApproval, icon: 'chart-pie' },
 
 
 

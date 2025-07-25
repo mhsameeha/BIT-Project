@@ -13,9 +13,10 @@ namespace BusinessService.Models.Entities
         [Key]
         [Column("enrollmentId")]
         public Guid EnrollmentId { get; set; }
-
+        [ForeignKey("Course")]
         [Column("courseFk")]
         public Guid? CourseId { get; set; }
+        [ForeignKey("Learner")]
         [Column("learnerFk")]
         public Guid? LearnerFk { get; set; }
         [Column("isPaid")]
@@ -26,6 +27,7 @@ namespace BusinessService.Models.Entities
         public string? EnrollmentStatus { get; set; }
 
         public Course? Course { get; set; }
+        public virtual Learner Learner { get; set; }
     }
 
 }
