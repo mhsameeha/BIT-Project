@@ -32,39 +32,7 @@ namespace BusinessService.Services
 
             if (tutor == null) return "Tutor not found";
 
-            // Get all existing disabled dates for this tutor
-            var existingDisabledDates = _context.TutorDisabledDates
-                .Where(d => d.TutorId == tutor.Id)
-                .ToList();
-
-            // New dates coming from the frontend
-            var newDisabledDates = tutorAvailability.DisabledDates; // List<DateOnly>
-
-            // Find which existing dates are NOT in the new list (to remove)
-            var disabledDatesToRemove = existingDisabledDates
-                .Where(d => !newDisabledDates.Contains(d.DisabledDate))
-                .ToList();
-
-            // Remove old dates not present in the new list
-            _context.TutorDisabledDates.RemoveRange(disabledDatesToRemove);
-
-
-            foreach (var d in tutorAvailability.DisabledDates)
-            {
-                 var findExistingDisabledDates = _context.TutorDisabledDates
-                .FirstOrDefault(c => c.DisabledDate == d);
-                if (findExistingDisabledDates == null)
-                    {   
-                        var disabledAvailabilities = new TutorDisabledDate
-                        {
-                            TutorId = tutor.Id,
-                            DisabledDateId = Guid.NewGuid(),
-                            DisabledDate = d,
-                        };
-                            _context.TutorDisabledDates.Add(disabledAvailabilities);
-                }
-            }
-
+            // Skip disabled dates logic for now - focus only on weekly schedule
 
             var existingWeeklySchedule = _context.TutorWeeklyAvailabilities
                                          .Where(d => d.TutorId == tutor.Id)
@@ -72,101 +40,110 @@ namespace BusinessService.Services
 
             var newWeeklySchedule = tutorAvailability.WeeklySchedule.ToList();
 
-            var weeklyScheduleToRemove = existingWeeklySchedule
-                               .Where(d => !newWeeklySchedule.Any(n =>
-                                   n.IsAvailable == d.IsAvailable &&
-                                   n.AllDay == d.AllDay &&
-                                   n.Day == d.Day))
-                               .ToList();
+            // Simple approach: Clear existing and add new
+            // Remove all existing weekly availabilities for this tutor
+            var existingAvailabilities = _context.TutorWeeklyAvailabilities
+                .Where(wa => wa.TutorId == tutor.Id)
+                .ToList();
 
-            _context.TutorWeeklyAvailabilities.RemoveRange(weeklyScheduleToRemove);
-
-            foreach (var u in tutorAvailability.WeeklySchedule)
+            // Remove associated time slots first
+            foreach (var existing in existingAvailabilities)
             {
-                // First check if this day's schedule already exists
-                var existingSchedule = _context.TutorWeeklyAvailabilities
-                                       .FirstOrDefault(d => d.TutorId == tutor.Id && d.Day == u.Day);
+                var existingTimeSlots = _context.TutorTimeslots
+                    .Where(ts => ts.AvailabilityId == existing.AvailabilityId)
+                    .ToList();
+                _context.TutorTimeslots.RemoveRange(existingTimeSlots);
+            }
 
-                if (existingSchedule != null)
+            // Remove the weekly availabilities
+            _context.TutorWeeklyAvailabilities.RemoveRange(existingAvailabilities);
+
+            // Add new weekly schedule
+            foreach (var schedule in tutorAvailability.WeeklySchedule)
+            {
+                var availability = new TutorWeeklyAvailability
                 {
-                    // Update existing schedule if there are changes
-                    if (existingSchedule.IsAvailable != u.IsAvailable || existingSchedule.AllDay != u.AllDay)
-                    {
-                        existingSchedule.IsAvailable = u.IsAvailable;
-                        existingSchedule.AllDay = u.AllDay;
+                    AvailabilityId = Guid.NewGuid(),
+                    TutorId = tutor.Id,
+                    Day = schedule.Day,
+                    IsAvailable = schedule.IsAvailable,
+                    AllDay = schedule.AllDay
+                };
+                _context.TutorWeeklyAvailabilities.Add(availability);
 
-                        // If changing to non-allDay available, update timeslots
-                        if (u.AllDay == false && u.IsAvailable == true)
-                        {
-                            // Remove existing timeslots for this schedule
-                            var existingTimeSlots = _context.TutorTimeslots
-                                                    .Where(t => t.AvailabilityId == existingSchedule.AvailabilityId)
-                                                    .ToList();
-                            _context.TutorTimeslots.RemoveRange(existingTimeSlots);
-
-                            // Add new timeslots
-                            foreach (var day in u.TimeSlots)
-                            {
-                                TimeSpan endTime = TimeSpan.Parse(day.Endtime);
-                                TimeSpan newEndTime = endTime.Add(TimeSpan.FromHours(1));
-                                string newEndTimeString = newEndTime.ToString(@"hh\:mm");
-
-                                var timeSlot = new TutorTimeSlot
-                                {
-                                    TimeslotId = Guid.NewGuid(),
-                                    Starttime = day.Starttime,
-                                    Endtime = newEndTimeString,
-                                    AvailabilityId = existingSchedule.AvailabilityId
-                                };
-                                _context.TutorTimeslots.Add(timeSlot);
-                            }
-                        }
-                        else
-                        {
-                            // If changing to allDay or not available, remove all timeslots
-                            var slotsToRemove = _context.TutorTimeslots
-                                                .Where(t => t.AvailabilityId == existingSchedule.AvailabilityId)
-                                                .ToList();
-                            _context.TutorTimeslots.RemoveRange(slotsToRemove);
-                        }
-                    }
-                }
-                else
+                // Add time slots if not all day and is available
+                if (schedule.IsAvailable && !schedule.AllDay && schedule.TimeSlots != null)
                 {
-                    // Add new schedule if it doesn't exist
-                    var availability = new TutorWeeklyAvailability
+                    foreach (var timeSlot in schedule.TimeSlots)
                     {
-                        AvailabilityId = Guid.NewGuid(),
-                        TutorId = tutor.Id,
-                        Day = u.Day,
-                        IsAvailable = u.IsAvailable,
-                        AllDay = u.AllDay
-                    };
-                    _context.TutorWeeklyAvailabilities.Add(availability);
-
-                    if (u.AllDay == false && u.IsAvailable == true)
-                    {
-                        foreach (var day in u.TimeSlots)
+                        var tutorTimeSlot = new TutorTimeSlot
                         {
-                            TimeSpan endTime = TimeSpan.Parse(day.Endtime);
-                            TimeSpan newEndTime = endTime.Add(TimeSpan.FromHours(1));
-                            string newEndTimeString = newEndTime.ToString(@"hh\:mm");
-
-                            var timeSlot = new TutorTimeSlot
-                            {
-                                TimeslotId = Guid.NewGuid(),
-                                Starttime = day.Starttime,
-                                Endtime = newEndTimeString,
-                                AvailabilityId = availability.AvailabilityId
-                            };
-                            _context.TutorTimeslots.Add(timeSlot);
-                        }
+                            TimeslotId = Guid.NewGuid(),
+                            Starttime = timeSlot.Starttime,
+                            Endtime = timeSlot.Endtime,
+                            AvailabilityId = availability.AvailabilityId
+                        };
+                        _context.TutorTimeslots.Add(tutorTimeSlot);
                     }
                 }
             }
 
             _context.SaveChanges();
             return "success";
+        }
+
+        public TutorAvailabilitySettingsDto GetTutorAvailability(string email)
+        {
+            var tutor = (from u in _context.Users
+                         join t in _context.Tutors on u.UserId equals t.UserId
+                         where u.Email == email
+                         select new
+                         {
+                             Id = t.TutorId
+                         }).FirstOrDefault();
+
+            if (tutor == null)
+            {
+                return new TutorAvailabilitySettingsDto
+                {
+                    DisabledDates = new List<string>(),
+                    WeeklySchedule = new List<AvailabilityDto>()
+                };
+            }
+
+            // Get weekly availability with time slots
+            var weeklyAvailabilities = _context.TutorWeeklyAvailabilities
+                .Where(wa => wa.TutorId == tutor.Id)
+                .ToList();
+
+            var weeklySchedule = new List<AvailabilityDto>();
+
+            foreach (var availability in weeklyAvailabilities)
+            {
+                // Get time slots for this availability
+                var timeSlots = _context.TutorTimeslots
+                    .Where(ts => ts.AvailabilityId == availability.AvailabilityId)
+                    .Select(ts => new TutorTimeSlotDto
+                    {
+                        Starttime = ts.Starttime,
+                        Endtime = ts.Endtime
+                    })
+                    .ToList();
+
+                weeklySchedule.Add(new AvailabilityDto
+                {
+                    Day = availability.Day,
+                    IsAvailable = availability.IsAvailable,
+                    AllDay = availability.AllDay,
+                    TimeSlots = timeSlots
+                });
+            }
+
+            return new TutorAvailabilitySettingsDto
+            {
+                DisabledDates = new List<string>(), // Empty list for now
+                WeeklySchedule = weeklySchedule
+            };
         }
     }
 }

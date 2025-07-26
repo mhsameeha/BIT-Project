@@ -51,8 +51,7 @@ import { joinRoom } from '@/components/main/session/jitsi-meet';
 import { RefObject, useMemo, useRef } from 'react';
 import { getSessionsByTutor, updateSessionStatus } from '@/Services/sessions';
 import { TutorAvailabilitySettings, TimeSlot, DayAvailability } from '@/types/tutor-availability';
-import { AddAvailability } from '@/Services/tutor-availability';
-import { setTimeout } from 'timers/promises';
+import { AddAvailability, GetTutorAvailability } from '@/Services/tutor-availability';
 
 // Types for availability management
 
@@ -157,8 +156,8 @@ interface AvailabilityManagementProps {
 }
 
 function AvailabilityManagement({ tutorId: _tutorId }: AvailabilityManagementProps): React.JSX.Element {
-  const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  const timeSlotOptions = [
+  const daysOfWeek = React.useMemo(() => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], []);
+  const timeSlotOptions = React.useMemo(() => [
     '00:00',
     '01:00',
     '02:00',
@@ -183,7 +182,7 @@ function AvailabilityManagement({ tutorId: _tutorId }: AvailabilityManagementPro
     '21:00',
     '22:00',
     '23:00',
-  ];
+  ], []);
 
   // Initialize default availability
   const [availability, setAvailability] = React.useState<TutorAvailabilitySettings>({
@@ -200,6 +199,57 @@ function AvailabilityManagement({ tutorId: _tutorId }: AvailabilityManagementPro
   const [expandedCard, setExpandedCard] = React.useState(false);
   const [timeSlotDialogOpen, setTimeSlotDialogOpen] = React.useState(false);
   const [selectedDayIndex, setSelectedDayIndex] = React.useState<number | null>(null);
+  const [isLoading, setIsLoading] = React.useState(false);
+
+  // Fetch saved availability settings on component mount
+  React.useEffect(() => {
+    const fetchAvailabilitySettings = async (): Promise<void> => {
+      setIsLoading(true);
+      try {
+        const result = await GetTutorAvailability();
+        
+        if ('error' in result) {
+          // Failed to fetch, but don't show console error in production
+        } else {
+          // Transform the backend data to match frontend format
+          const transformedWeeklySchedule = daysOfWeek.map((day) => {
+            const backendDay = result.weeklySchedule.find((d) => d.day === day);
+            
+            if (backendDay) {
+              return {
+                day,
+                isAvailable: backendDay.isAvailable,
+                allDay: backendDay.allDay,
+                timeSlots: backendDay.timeSlots.map((slot) => ({
+                  starttime: slot.starttime,
+                  endtime: slot.endtime,
+                })),
+              };
+            }
+            
+            // Return default structure for days not found in backend
+            return {
+              day,
+              isAvailable: false,
+              allDay: false,
+              timeSlots: [],
+            };
+          });
+
+          setAvailability({
+            weeklySchedule: transformedWeeklySchedule,
+            disabledDates: result.disabledDates || [],
+          });
+        }
+      } catch (error) {
+        // Error handling for availability fetch
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void fetchAvailabilitySettings();
+  }, [daysOfWeek]);
 
   const handleDayAvailabilityChange = (dayIndex: number, isAvailable: boolean): void => {
     setAvailability((prev) => ({
@@ -297,10 +347,13 @@ const saveAvailability = async (): Promise<void> => {
       weeklySchedule: availability.weeklySchedule
     });
   } catch (error) {
-    console.error("Failed to save availability:", error);
+    // Error handling for save availability
   }
+
   
-   setSaveSuccess(false);
+  await setTimeout(() => {
+     setSaveSuccess(false);
+}, 3000); // 5000 milliseconds = 5 seconds
 };
 
   return (
@@ -330,6 +383,10 @@ const saveAvailability = async (): Promise<void> => {
             </Box>
 
             {saveSuccess ? <Alert severity="success">Availability settings saved successfully!</Alert> : null}
+
+            {isLoading ? (
+              <Alert severity="info">Loading availability settings...</Alert>
+            ) : null}
 
             {expandedCard ? (
               <>
@@ -400,11 +457,11 @@ const saveAvailability = async (): Promise<void> => {
 
                 {/* Disabled Dates */}
                 <Box>
-                  <Typography variant="subtitle1" gutterBottom>
+                  {/* <Typography variant="subtitle1" gutterBottom>
                     Unavailable Dates
-                  </Typography>
+                  </Typography> */}
                   <Stack spacing={2}>
-                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                    {/* <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                       <TextField
                         type="date"
                         value={newDisabledDate}
@@ -422,9 +479,9 @@ const saveAvailability = async (): Promise<void> => {
                       >
                         Add
                       </Button>
-                    </Box>
+                    </Box> */}
 
-                    {availability.disabledDates.length > 0 && (
+                    {/* {availability.disabledDates.length > 0 && (
                       <Box>
                         <Typography variant="body2" color="text.secondary" gutterBottom>
                           Unavailable Dates:
@@ -444,7 +501,7 @@ const saveAvailability = async (): Promise<void> => {
                           ))}
                         </Stack>
                       </Box>
-                    )}
+                    )} */}
                   </Stack>
                 </Box>
 

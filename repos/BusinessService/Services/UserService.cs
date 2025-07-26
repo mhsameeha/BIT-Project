@@ -94,7 +94,7 @@ namespace BusinessService.Services
                     TutorRate = newTutor.TutorRate,
                     ApprovalRequestDate = newTutor.ApprovalRequestDate,
                     Education = newTutor.Education,
-                    //Experience = newTutor.Experience,
+                    Experience = newTutor.Experience,
                     Status = "Pending",
                     UserId = userId,
                     Language = newTutor.Language,

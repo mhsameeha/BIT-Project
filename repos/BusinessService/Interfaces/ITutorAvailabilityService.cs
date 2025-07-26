@@ -11,5 +11,6 @@ namespace BusinessService.Interfaces
     {
 
         public string SaveTutorAvailabilty(TutorAvailabilitySettingsDto tutorAvailability, string email);
+        public TutorAvailabilitySettingsDto GetTutorAvailability(string email);
     }
 }

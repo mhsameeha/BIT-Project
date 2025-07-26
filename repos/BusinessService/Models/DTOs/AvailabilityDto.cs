@@ -18,7 +18,7 @@ namespace BusinessService.Models.DTOs
 
         public bool AllDay { get; set; }
 
-        public ICollection<TutorTimeSlot> TimeSlots { get; set; }
+        public ICollection<TutorTimeSlotDto> TimeSlots { get; set; }
     }
 
     public class TutorTimeSlotDto

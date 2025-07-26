@@ -44,6 +44,30 @@ namespace mybackend.Controllers
             var result = tutorAvailabilityService.SaveTutorAvailabilty(tutorAvailability, email);
         }
 
+        // GET api/TutorAvailability/GetAvailability
+        [HttpGet("GetAvailability")]
+        public ActionResult<TutorAvailabilitySettingsDto> GetAvailability()
+        {
+            try
+            {
+                var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+                
+                if (string.IsNullOrEmpty(email))
+                {
+                    return BadRequest("User email not found in claims");
+                }
+
+                ITutorAvailabilityService tutorAvailabilityService = new TutorAvailabiltyService(_context);
+                var result = tutorAvailabilityService.GetTutorAvailability(email);
+                
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
         // PUT api/<ValuesController>/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] string value)
