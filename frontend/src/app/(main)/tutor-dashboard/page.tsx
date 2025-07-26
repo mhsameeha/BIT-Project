@@ -422,7 +422,7 @@ const courseIncome = courseRevenueList.reduce((sum, course) => sum + course.reve
                     New Students
                   </Typography>
                   <Typography variant="h4">
-                    {newlyEnrollments.length}
+                    {tutorData?.newStudents}
                   </Typography>
                   <Typography variant="body2" color="success.main">
                     This week
@@ -452,7 +452,10 @@ const courseIncome = courseRevenueList.reduce((sum, course) => sum + course.reve
                     Monthly Income
                   </Typography>
                   <Typography variant="h4">
-                    LKR {monthlyIncome.total.toLocaleString()}
+                    LKR {tutorData?.monthlyIncome?.toLocaleString()}
+                  </Typography>
+                     <Typography variant="body2" color="text.secondary">
+                    This month
                   </Typography>
                 </Box>
               </Stack>
@@ -479,7 +482,7 @@ const courseIncome = courseRevenueList.reduce((sum, course) => sum + course.reve
                     Session Income
                   </Typography>
                   <Typography variant="h4">
-                    LKR {monthlyIncome.sessions.toLocaleString()}
+                    LKR {tutorData?.sessionIncome?.toLocaleString()}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     This month

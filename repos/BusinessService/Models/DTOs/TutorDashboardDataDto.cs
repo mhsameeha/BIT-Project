@@ -10,6 +10,8 @@ namespace BusinessService.Models.DTOs
     {
         public decimal? MonthylCourseIncome { get; set; }
         public decimal? MonthlySessionIncome { get; set; }
+        public decimal? SessionIncome { get; set; }
+
 
         public decimal? MonthlyIncome { get; set; }
 

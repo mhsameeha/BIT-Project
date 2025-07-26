@@ -31,21 +31,25 @@ namespace BusinessService.Services
 
         {
             if (newLearner == null) return "Unable to add User";
+            var checkEmail = _context.Users.FirstOrDefault(x => x.Email == newLearner.Email);
 
-            var user = new User
+            if (checkEmail == null)
             {
-                UserId = Guid.NewGuid(),
-                FirstName = newLearner.FirstName,
-                LastName = newLearner.LastName,
-                Dob = newLearner.Dob,
-                Email = newLearner.Email,
-                Role ="learner",
-                Password = BCrypt.Net.BCrypt.HashPassword(newLearner.Password),
-                CreatedDate = DateTime.Now,
 
-            };
-            _context.Add(user);
-            _context.SaveChanges();
+                var user = new User
+                {
+                    UserId = Guid.NewGuid(),
+                    FirstName = newLearner.FirstName,
+                    LastName = newLearner.LastName,
+                    Dob = newLearner.Dob,
+                    Email = newLearner.Email,
+                    Role = "learner",
+                    Password = BCrypt.Net.BCrypt.HashPassword(newLearner.Password),
+                    CreatedDate = DateTime.Now,
+
+                };
+                _context.Add(user);
+                _context.SaveChanges();
 
                 var newlearner = new Learner
                 {
@@ -55,7 +59,9 @@ namespace BusinessService.Services
                 _context.Add(newlearner);
                 _context.SaveChanges();
 
-            return "added successfully";
+                return "added successfully";
+            }
+            return "Email Already exists";
         }
 
         public string AddTutor(NewTutorUserDto newTutor)

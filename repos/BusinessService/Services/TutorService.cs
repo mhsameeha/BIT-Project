@@ -93,7 +93,7 @@ namespace BusinessService.Services
             var oneMonthAgo = DateTime.Now.AddDays(-30);
 
             var monthlySessionIncome = _context.Sessions
-            .Where(x => x.TutorFk == tutor.Id && x.EndTime >= oneMonthAgo && x.SessionStatus == "Completed")
+            .Where(x => x.TutorFk == tutor.Id && x.EndTime >= oneMonthAgo && x.SessionStatus == "Confirmed")
             .Sum(x => x.SessionFee);
             var oneWeekAgo = DateTime.Now.AddDays(-7);
 
@@ -128,10 +128,11 @@ namespace BusinessService.Services
                 return new TutorDashboardDataDto
                 {
                     MonthylCourseIncome = courseIncome,
-                    MonthlySessionIncome = sessionIncome,
+                    MonthlySessionIncome = monthlySessionIncome,
                     NewStudents = newStudents,
                     MonthlyIncome = monthlyIncome,
-                    TotalIncome = totalIncome
+                    TotalIncome = totalIncome,
+                    SessionIncome = sessionIncome
                 };
 
 

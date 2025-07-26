@@ -4,4 +4,5 @@ export type  TutorProfileData = {
     newStudents : number;
     monthlyIncome: number;
     totalIncome: number;
+    sessionIncome:number;
 };
